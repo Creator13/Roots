@@ -42,26 +42,27 @@ namespace World
             Dictionary<Vector2Int, Chunk> newChunks = new();
             
             // Create new chunks
-            for (int x = -loadRadius + playerChunkX; x < loadRadius + playerChunkX + 1; x++)
+            for (int x = -loadRadius; x < loadRadius + 1; x++)
             {
-                for (int z = -loadRadius + playerChunkZ; z < loadRadius + playerChunkZ + 1; z++)
+                for (int z = -loadRadius; z < loadRadius + 1; z++)
                 {
-                    Vector2Int key = new Vector2Int(x, z);
+                    
+                    Vector2Int key = new Vector2Int(x + playerChunkX, z + playerChunkZ);
                     if (loadedChunks.TryGetValue(key, out var chunk))
                     {
                         newChunks.Add(key, chunk);
                     }
                     else
                     {
-                        newChunks.Add(key, CreateChunk(x, z));
+                        newChunks.Add(key, CreateChunk(x + playerChunkX, z + playerChunkZ));
                     }
                 }
             }
 
             // Invalidate and remove old chunks
-            foreach (var key in loadedChunks.Keys)
+            foreach (var (key, chunk) in loadedChunks)
             {
-                if (!newChunks.TryGetValue(key, out Chunk chunk))
+                if (!newChunks.ContainsKey(key))
                 {
                     Destroy(chunk.gameObject);
                 }
