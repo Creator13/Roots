@@ -1,0 +1,118 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace World
+{
+    public class ChunkLoader : MonoBehaviour
+    {
+        [SerializeField] private Transform player;
+        [SerializeField] private Chunk chunkPrefab;
+        [SerializeField] private float chunkSize = 10;
+        [SerializeField] private int loadRadius = 3;
+
+        [SerializeField] private int playerChunkX;
+        [SerializeField] private int playerChunkZ;
+    
+        private Vector3 playerPosition;
+        private Dictionary<Vector2Int, Chunk> loadedChunks;
+
+        private bool playerChunkChanged;
+
+        private void Awake()
+        {
+            loadedChunks = new Dictionary<Vector2Int, Chunk>();
+        }
+
+        private void Start()
+        {
+            UpdateVisibleChunks();
+        }
+
+        private void Update()
+        {
+            playerPosition = player.transform.position;
+        
+            UpdateCurrentChunk();
+        
+            if (playerChunkChanged) UpdateVisibleChunks();
+        }
+
+        private void UpdateVisibleChunks()
+        {
+            Dictionary<Vector2Int, Chunk> newChunks = new();
+            
+            // Create new chunks
+            for (int x = -loadRadius + playerChunkX; x < loadRadius + playerChunkX + 1; x++)
+            {
+                for (int z = -loadRadius + playerChunkZ; z < loadRadius + playerChunkZ + 1; z++)
+                {
+                    Vector2Int key = new Vector2Int(x, z);
+                    if (loadedChunks.TryGetValue(key, out var chunk))
+                    {
+                        newChunks.Add(key, chunk);
+                    }
+                    else
+                    {
+                        newChunks.Add(key, CreateChunk(x, z));
+                    }
+                }
+            }
+
+            // Invalidate and remove old chunks
+            foreach (var key in loadedChunks.Keys)
+            {
+                if (!newChunks.TryGetValue(key, out Chunk chunk))
+                {
+                    Destroy(chunk.gameObject);
+                }
+            }
+
+            // Update loaded chunks
+            loadedChunks = newChunks;
+        }
+
+        private void UpdateCurrentChunk()
+        {
+            int originalChunkX = playerChunkX;
+            int originalChunkZ = playerChunkZ;
+        
+            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkSize);
+            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkSize);
+
+            if (playerChunkX != originalChunkX || playerChunkZ != originalChunkZ)
+            {
+                playerChunkChanged = true;
+            }
+        }
+
+        private Chunk CreateChunk(int x, int z)
+        {
+            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenter(x, z), Quaternion.identity, transform);
+            chunk.gameObject.name = $"Chunk ({x}, {z})";
+            chunk.LoadAt(x, z);
+            return chunk;
+        }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(CalculateChunkCenter(playerChunkX, playerChunkZ), new Vector3(chunkSize, chunkSize, chunkSize));
+
+            if (loadedChunks != null)
+            {
+                Gizmos.color = Color.green;
+                foreach (var pos in loadedChunks.Keys)
+                {
+                    if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
+                    
+                    Gizmos.DrawWireCube(CalculateChunkCenter(pos.x, pos.y), new Vector3(chunkSize, chunkSize, chunkSize));
+                }
+            }
+        }
+
+        private Vector3 CalculateChunkCenter(int x, int z)
+        {
+            return new Vector3(x * chunkSize + .5f * chunkSize, 0, z * chunkSize + .5f * chunkSize);
+        }
+    }
+}
