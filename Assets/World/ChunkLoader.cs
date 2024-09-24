@@ -5,14 +5,21 @@ namespace World
 {
     public class ChunkLoader : MonoBehaviour
     {
-        [SerializeField] private Transform player;
         [SerializeField] private Chunk chunkPrefab;
+        [SerializeField] private Transform treePrefab;
+
+        [Space]
         [SerializeField] private float chunkSize = 10;
         [SerializeField] private int loadRadius = 3;
 
+        [Space]
+        [SerializeField] private Transform player;
         [SerializeField] private int playerChunkX;
         [SerializeField] private int playerChunkZ;
-    
+
+        [Space]
+        [SerializeField] private float treeDensity;
+
         private Vector3 playerPosition;
         private Dictionary<Vector2Int, Chunk> loadedChunks;
 
@@ -30,23 +37,23 @@ namespace World
 
         private void Update()
         {
+            playerChunkChanged = false;
             playerPosition = player.transform.position;
-        
+
             UpdateCurrentChunk();
-        
+
             if (playerChunkChanged) UpdateVisibleChunks();
         }
 
         private void UpdateVisibleChunks()
         {
             Dictionary<Vector2Int, Chunk> newChunks = new();
-            
+
             // Create new chunks
             for (int x = -loadRadius; x < loadRadius + 1; x++)
             {
                 for (int z = -loadRadius; z < loadRadius + 1; z++)
                 {
-                    
                     Vector2Int key = new Vector2Int(x + playerChunkX, z + playerChunkZ);
                     if (loadedChunks.TryGetValue(key, out var chunk))
                     {
@@ -76,7 +83,7 @@ namespace World
         {
             int originalChunkX = playerChunkX;
             int originalChunkZ = playerChunkZ;
-        
+
             playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkSize);
             playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkSize);
 
@@ -91,7 +98,21 @@ namespace World
             Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenter(x, z), Quaternion.identity, transform);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
             chunk.LoadAt(x, z);
+            SpawnTrees(chunk.transform);
             return chunk;
+        }
+
+        private void SpawnTrees(Transform chunkTransform)
+        {
+            float targetTreesPerChunk = chunkSize * chunkSize * treeDensity;
+            int treeCount = (int)Random.Range(targetTreesPerChunk * .8f, targetTreesPerChunk * 1.2f);
+            for (int i = 0; i < treeCount; i++)
+            {
+                float x = Random.Range(0, chunkSize) - chunkSize * .5f;
+                float z = Random.Range(0, chunkSize) - chunkSize * .5f;
+                Transform treeInstance = Instantiate(treePrefab, chunkTransform, true);
+                treeInstance.SetLocalPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, Random.Range(-180, 180), 0));
+            }
         }
 
         private void OnDrawGizmos()
@@ -105,7 +126,7 @@ namespace World
                 foreach (var pos in loadedChunks.Keys)
                 {
                     if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
-                    
+
                     Gizmos.DrawWireCube(CalculateChunkCenter(pos.x, pos.y), new Vector3(chunkSize, chunkSize, chunkSize));
                 }
             }
