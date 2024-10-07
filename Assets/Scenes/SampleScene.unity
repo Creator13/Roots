@@ -622,7 +622,7 @@ MonoBehaviour:
   chunkPrefab: {fileID: 8303602572579912761, guid: 2a40133f115501442932cf24bb1994f1, type: 3}
   treePrefab: {fileID: 7769951754165564770, guid: 7d0ad4deee42d024799916352bd8bf6b, type: 3}
   chunkSize: 10
-  loadRadius: 8
+  loadRadius: 1
   player: {fileID: 1346896746}
   playerChunkX: 0
   playerChunkZ: 0
@@ -636,7 +636,7 @@ Transform:
   m_GameObject: {fileID: 2103447872}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.3133714, y: -3.925852, z: 2.947545}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
