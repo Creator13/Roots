@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -6,8 +5,11 @@ using Utils;
 
 public class InstancedDrawing : MonoBehaviour
 {
-    private static readonly int InstancePositionsPID = Shader.PropertyToID("_InstancePositions");
+    private static readonly int InstancePositionsSPID = Shader.PropertyToID("_InstancePositions");
+    private static readonly int PlayerPositionSPID = Shader.PropertyToID("_PlayerPosition");
 
+    [SerializeField] private Transform followObject;
+    
     [SerializeField] private float noiseScale = .1f;
     [SerializeField] private float noiseStrength = 3f;
     [SerializeField] private int size = 20;
@@ -40,6 +42,8 @@ public class InstancedDrawing : MonoBehaviour
 
     private void Update()
     {
+        var pos = followObject.transform.position;
+        rp.material.SetVector(PlayerPositionSPID, pos);
         Graphics.RenderMeshIndirect(rp, pointMesh, commandBuffer, commandCount);
     }
 
@@ -66,7 +70,7 @@ public class InstancedDrawing : MonoBehaviour
 
         rp = new RenderParams(material);
         rp.worldBounds = new Bounds(Vector3.zero, new Vector3(size * 2.1f, noiseStrength * 2, size * 2.1f));
-        rp.material.SetBuffer(InstancePositionsPID, pointDataBuffer);
+        rp.material.SetBuffer(InstancePositionsSPID, pointDataBuffer);
     }
 
     private void GeneratePoints()
