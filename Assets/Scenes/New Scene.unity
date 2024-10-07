@@ -304,55 +304,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!1 &665689574
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 665689576}
-  - component: {fileID: 665689577}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &665689576
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665689574}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &665689577
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 665689574}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 72c3016d425a6b849b6eedb6ed6ca029, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  noiseScale: 0.1
-  noiseStrength: 3
-  size: 20
-  pointMesh: {fileID: -5495902117074765545, guid: 4ea4a5ebf9ba09d498a0859077c9aaab, type: 3}
-  material: {fileID: 2100000, guid: a7e51412968c0e84f87d63360274ce1f, type: 2}
 --- !u!1 &777250424
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,7 +441,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &925961400
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -507,7 +458,7 @@ MonoBehaviour:
   noiseStrength: 10
   size: 100
   pointMesh: {fileID: -5495902117074765545, guid: 4ea4a5ebf9ba09d498a0859077c9aaab, type: 3}
-  material: {fileID: 2100000, guid: 028249316c9d3f344b57f3f604b0d3e9, type: 2}
+  material: {fileID: 2100000, guid: d08f17e1bd331b54fb5f6a592f02d60c, type: 2}
 --- !u!4 &925961401
 Transform:
   m_ObjectHideFlags: 0
@@ -531,4 +482,3 @@ SceneRoots:
   - {fileID: 777250426}
   - {fileID: 925961401}
   - {fileID: 70916938}
-  - {fileID: 665689576}

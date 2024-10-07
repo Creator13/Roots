@@ -1,9 +1,7 @@
-Shader "hidden/SuperSystems/Wireframe-Transparent-Culled-Global"
+Shader "hidden/SuperSystems/Wireframe-Transparent-Global"
 {
 	SubShader
 	{
-		// Each color represents a meter.
-
 		Tags {
             "IgnoreProjector"="True"
             "Queue"="Transparent"
@@ -14,7 +12,7 @@ Shader "hidden/SuperSystems/Wireframe-Transparent-Culled-Global"
 		{
 			Blend SrcAlpha OneMinusSrcAlpha
             ZWrite Off
-			Cull Back
+			Cull Off
 
 			// Wireframe shader based on the the following
 			// http://developer.download.nvidia.com/SDK/10/direct3d/Source/SolidWireframe/Doc/SolidWireframe.pdf
@@ -25,7 +23,7 @@ Shader "hidden/SuperSystems/Wireframe-Transparent-Culled-Global"
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-			#include "../Wireframe.cginc"
+			#include "Wireframe.cginc"
 
 			ENDCG
 		}

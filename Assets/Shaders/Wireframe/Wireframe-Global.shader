@@ -17,7 +17,7 @@ Shader "hidden/SuperSystems/Wireframe-Global"
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-			#include "../Wireframe.cginc"
+			#include "Wireframe.cginc"
 
 			ENDCG
 		}
