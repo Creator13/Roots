@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
 Shader "Indirect/IndirectPointShader"
 {
     Properties
@@ -17,8 +15,7 @@ Shader "Indirect/IndirectPointShader"
         Pass
         {
             CGPROGRAM
-// Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members dist)
-#pragma exclude_renderers d3d11
+            
             #pragma vertex vert
             #pragma fragment frag
             // make fog work
@@ -62,8 +59,8 @@ Shader "Indirect/IndirectPointShader"
 
             fixed4 frag(v2f i) : SV_Target
             {
-                // float4 col = _Color * (_Emission + clamp(3 / i.dist, 0, 3));
-                float4 col = lerp(float4(1, 0, 0, 1), float4(0, 0, 1, 1), 5 / i.dist)
+                float4 col = _Color * (_Emission + saturate(6 / i.dist) * 6);
+                // float4 col = lerp(float4(1, 0, 0, 1), float4(0, 0, 1, 1), 5 / i.dist)
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
