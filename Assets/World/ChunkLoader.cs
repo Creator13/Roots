@@ -19,6 +19,7 @@ namespace World
 
         [Space]
         [SerializeField] private float treeDensity;
+        [SerializeField] private PathNoiseGenerator noiseGenerator;
 
         private Vector3 playerPosition;
         private Dictionary<Vector2Int, Chunk> loadedChunks;
@@ -110,8 +111,12 @@ namespace World
             {
                 float x = Random.Range(0, chunkSize) - chunkSize * .5f;
                 float z = Random.Range(0, chunkSize) - chunkSize * .5f;
-                Transform treeInstance = Instantiate(treePrefab, chunkTransform, true);
-                treeInstance.SetLocalPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, Random.Range(-180, 180), 0));
+                float noise = noiseGenerator.GetNoise(chunkTransform.position.x + x, chunkTransform.position.z + z);
+                if (Random.value < noise)
+                {
+                    Transform treeInstance = Instantiate(treePrefab, chunkTransform, true);
+                    treeInstance.SetLocalPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, Random.Range(-180, 180), 0));
+                }
             }
         }
 
