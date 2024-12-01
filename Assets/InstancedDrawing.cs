@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Utils;
+using Util;
 
 public class InstancedDrawing : MonoBehaviour
 {

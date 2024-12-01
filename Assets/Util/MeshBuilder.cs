@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
+using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions;
 
-namespace Utils
+namespace Util
 {
     public enum FaceDirection
     {
@@ -14,6 +17,13 @@ namespace Utils
         public Vector3 position;
         public Vector3 normal;
         public Vector2 uv;
+
+        public Vertex(Vector3 position, Vector3 normal, Vector2 uv)
+        {
+            this.position = position;
+            this.normal = normal;
+            this.uv = uv;
+        }
     }
 
     public class MeshBuilder
@@ -45,11 +55,11 @@ namespace Utils
             return mesh;
         }
 
-        // public void TriangulateCircle(List<Vector3> circle, FaceDirection dir)
+        // public void TriangulateCircle(List<Vertex> circle, FaceDirection dir)
         // {
         //     // Create center point
         //     // TODO other triangulation methods don't necessarily need a center point
-        //     var center = new Vector3(0, circle[0].y, 0);
+        //     var center = new Vector3(0, circle[0].position.y, 0);
         //     var centerIndex = vertices.Count;
         //     vertices.Add(center);
         //
@@ -63,7 +73,7 @@ namespace Utils
         //         AddTriangle(centerIndex, vertexIndices[i], vertexIndices[(i + 1) % n], dir);
         //     }
         // }
-        //
+
         // public void BridgeEdgeLoopsSmooth(List<Vector3> c1, List<Vector3> c2)
         // {
         //     if (c1.Count != c2.Count)
@@ -116,12 +126,62 @@ namespace Utils
             return indices;
         }
 
+        public int CreateCircle(Vector3 center, float radius, int segments, Vector3 normal, bool fill = false)
+        {
+            Assert.IsTrue(segments > 2, "Cannot create circle with less than three vertices");
+            
+            Vector3[] positions = new Vector3[segments];
+
+            float angleStep = math.PI2 / segments;
+            Quaternion rot = Quaternion.FromToRotation(Vector3.back, normal);
+
+            for (int i = 0; i < segments; i++)
+            {
+                Vector3 pos = Vector3.zero;
+                math.sincos(angleStep * i, out pos.y, out pos.x);
+
+                pos *= radius;
+                pos = rot * pos;
+                pos += center;
+
+                positions[i] = pos;
+                
+            }
+
+            int startIndex = vertices.Count;
+            for (int i = 0; i < positions.Length; i++)
+            {
+                AddVertex(positions[i], normal, Vector2.zero);
+            }
+
+            if (fill)
+            {
+                int centerIndex = AddVertex(center, normal, Vector2.zero);
+                // regular triangles that connect edge vertices n and n + 1
+                for (int i = 0; i < segments - 1; i++)
+                {
+                    int vIndex1 = startIndex + i;
+                    int vIndex2 = startIndex + i + 1;
+                    AddTriangle(vIndex1, vIndex2, centerIndex, FaceDirection.CCW);
+                }
+                // final triangle that connects edge vertices n_max and 0
+                AddTriangle(startIndex + segments - 1, startIndex, centerIndex, FaceDirection.CCW);
+            }
+            
+            return startIndex;
+        }
+
+        public int AddVertex(Vector3 position, Vector3 normal, Vector2 uv)
+        {
+            vertices.Add(position);
+            uvs.Add(uv);
+            normals.Add(normal);
+            return vertices.Count - 1;
+        }
+
         public int AddVertex(Vertex vertex)
         {
-            vertices.Add(vertex.position);
-            uvs.Add(vertex.uv);
-            normals.Add(vertex.normal);
-            return vertices.Count - 1;
+            return AddVertex(vertex.position, vertex.normal, vertex.uv);
         }
 
         public void AddTriangle(int v1, int v2, int v3, FaceDirection dir = FaceDirection.CW)
