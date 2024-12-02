@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Unity.Mathematics;
-using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -129,7 +129,7 @@ namespace Util
         public int CreateCircle(Vector3 center, float radius, int segments, Vector3 normal, bool fill = false)
         {
             Assert.IsTrue(segments > 2, "Cannot create circle with less than three vertices");
-            
+
             Vector3[] positions = new Vector3[segments];
 
             float angleStep = math.PI2 / segments;
@@ -145,7 +145,6 @@ namespace Util
                 pos += center;
 
                 positions[i] = pos;
-                
             }
 
             int startIndex = vertices.Count;
@@ -156,18 +155,29 @@ namespace Util
 
             if (fill)
             {
-                int centerIndex = AddVertex(center, normal, Vector2.zero);
-                // regular triangles that connect edge vertices n and n + 1
-                for (int i = 0; i < segments - 1; i++)
+                // Only add a single triangle if the shape is a triangle
+                if (segments == 3)
                 {
-                    int vIndex1 = startIndex + i;
-                    int vIndex2 = startIndex + i + 1;
-                    AddTriangle(vIndex1, vIndex2, centerIndex, FaceDirection.CCW);
+                    AddTriangle(startIndex, startIndex + 1, startIndex + 2, FaceDirection.CCW);
                 }
-                // final triangle that connects edge vertices n_max and 0
-                AddTriangle(startIndex + segments - 1, startIndex, centerIndex, FaceDirection.CCW);
+                // Else: guaranteed that segments > 3 thanks to assertion at function start
+                else 
+                {
+                    // TODO: smarter triangulation
+                    int centerIndex = AddVertex(center, normal, Vector2.zero);
+                    // Regular fan triangles that connect edge vertices n and n + 1
+                    for (int i = 0; i < segments - 1; i++)
+                    {
+                        int vIndex1 = startIndex + i;
+                        int vIndex2 = startIndex + i + 1;
+                        AddTriangle(vIndex1, vIndex2, centerIndex, FaceDirection.CCW);
+                    }
+
+                    // Final fan triangle that connects edge vertices n_max and 0
+                    AddTriangle(startIndex + segments - 1, startIndex, centerIndex, FaceDirection.CCW);
+                }
             }
-            
+
             return startIndex;
         }
 

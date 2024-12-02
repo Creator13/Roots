@@ -6,7 +6,8 @@ using Util;
 public class MeshTester : MonoBehaviour
 {
     private MeshFilter meshFilter;
-    
+    [SerializeField] private Transform faceTransform;
+
     private void Awake()
     {
         meshFilter = GetComponent<MeshFilter>();
@@ -22,7 +23,9 @@ public class MeshTester : MonoBehaviour
     {
         MeshBuilder mb = new MeshBuilder();
 
-        mb.CreateCircle(new Vector3(1, 1, 0), 1.5f, 18, dir, true);
+        var dir = faceTransform.position - transform.position;
+        
+        mb.CreateCircle(new Vector3(1, 1, 0), 1.5f, 7, dir, true);
 
         meshFilter.sharedMesh = mb.GetMesh("Test mesh");
     }
