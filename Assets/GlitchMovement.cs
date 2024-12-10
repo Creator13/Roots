@@ -1,38 +1,45 @@
-using System;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 public class GlitchMovement : MonoBehaviour
 {
-    [SerializeField] private Vector3 centerPoint = Vector3.zero;
-    [SerializeField] private float orbitSpeed = 1f;
-    [SerializeField] private Vector3 orbitShape = Vector3.one; // Base orbit shape
-    [SerializeField] private float orbitSize = 1;
-    [SerializeField] private float noiseIntensity = 0.5f; // How much noise affects the orbit
-    [SerializeField] private float noiseSpeed = 1f; // Speed of noise evolution
+    [SerializeField] private Transform child;
+    [SerializeField] private float perlinSpeed = 1;
+    [SerializeField, Range(0, 1)] private float moveThreshold = 0.6f;
+    [SerializeField] private float moveStrength = 0.1f;
+    [SerializeField] private float attractStrength = 5;
+    [SerializeField, Range(0, 1)] private float damping = 0.95f; // Damping factor for velocity
 
-    private float orbitTime = 0f;
+    private Vector3 acceleration;
+    private Vector3 velocity;
 
     private void Update()
     {
-        orbitTime += Time.deltaTime * orbitSpeed;
+        // Random movement using Perlin noise
+        if (Mathf.PerlinNoise(Time.time * perlinSpeed + 2, 0) > moveThreshold)
+        {
+            acceleration += Random.insideUnitSphere * (Mathf.PerlinNoise(Time.time, 0) * moveStrength);
+        }
 
-        float noiseX = Mathf.PerlinNoise(Time.time * noiseSpeed, 0f) * noiseIntensity;
-        float noiseY = Mathf.PerlinNoise(0f, Time.time * noiseSpeed) * noiseIntensity;
-        float noiseZ = Mathf.PerlinNoise(Time.time * noiseSpeed, Time.time * noiseSpeed) * noiseIntensity;
+        ApplyPullBack();
 
-        orbitShape = new Vector3(
-            orbitShape.x + noiseX,
-            orbitShape.y + noiseY,
-            orbitShape.z + noiseZ
-        ).normalized;
+        // Update velocity with damping
+        velocity += acceleration * Time.deltaTime;
+        velocity *= damping; // Apply damping to reduce overshoot
 
-        Vector3 modulatedShape = orbitShape * orbitSize;
+        // Update position
+        child.position += velocity * Time.deltaTime;
 
-        float x = Mathf.Cos(orbitTime) * modulatedShape.x;
-        float y = Mathf.Sin(orbitTime * 1.5f) * modulatedShape.y;
-        float z = Mathf.Sin(orbitTime) * modulatedShape.z;
+        // Reset acceleration for the next frame
+        acceleration = Vector3.zero;
+    }
 
-        transform.position = centerPoint + new Vector3(x, y, z);
+    private void ApplyPullBack()
+    {
+        Vector3 direction = transform.position - child.position;
+        float dist = direction.magnitude;
+
+        // Pull force proportional to distance
+        Vector3 pullVector = direction.normalized * (dist * attractStrength);
+        acceleration += pullVector;
     }
 }
