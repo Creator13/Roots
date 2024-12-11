@@ -106,8 +106,7 @@ namespace World
         private void SpawnTrees(Transform chunkTransform)
         {
             float targetTreesPerChunk = chunkSize * chunkSize * treeDensity;
-            int treeCount = (int)Random.Range(targetTreesPerChunk * .8f, targetTreesPerChunk * 1.2f);
-            for (int i = 0; i < treeCount; i++)
+            for (int i = 0; i < targetTreesPerChunk; i++)
             {
                 float x = Random.Range(0, chunkSize) - chunkSize * .5f;
                 float z = Random.Range(0, chunkSize) - chunkSize * .5f;

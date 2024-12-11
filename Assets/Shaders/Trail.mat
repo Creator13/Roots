@@ -50,21 +50,22 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BlockScale: 2.18
+    - _BlockScale: 3.5
     - _FlickerDurationModifier: 1
-    - _FlickerDurationScale: 1.5
-    - _FlickerThreshold: 0.6
-    - _GlitchAmount: 0.033
-    - _GlitchNoiseScale: 85.67
+    - _FlickerDurationScale: 5
+    - _FlickerThreshold: 0.4
+    - _GlitchAmount: 0.015
+    - _GlitchNoiseScale: 150
     - _GlitchOffset: 0.05
     - _GlitchStrength: 0
     - _NoiseScale: 5000
-    - _NoiseStrength: 0.0083
+    - _NoiseStrength: 0.0167
+    - _OtherNoiseAmount: 0.6
     - _OtherNoiseStrength: 1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _SmoothAmount: 0.198
-    - _Speed: 1.13
+    - _Speed: 0.8
     - _Strength: 0
     m_Colors: []
   m_BuildTextureStacks: []

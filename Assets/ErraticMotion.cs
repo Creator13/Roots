@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEditor;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ErraticMotion : MonoBehaviour
 {
@@ -15,10 +18,11 @@ public class ErraticMotion : MonoBehaviour
 
     private Vector3 velocity = Vector3.zero;
 
-    private void Update()
+    private void FixedUpdate()
     {
-        float deltaTime = Time.deltaTime;
-
+        // float deltaTime = Mathf.Max(Time.deltaTime, .033f);
+        float deltaTime = Time.fixedDeltaTime;
+        
         var randomCenter = Random.insideUnitSphere * centerRandomization;
         Vector3 pullDirection = (randomCenter - target.localPosition).normalized;
         float distanceFromCenter = (randomCenter - target.localPosition).magnitude;
@@ -33,10 +37,10 @@ public class ErraticMotion : MonoBehaviour
         }
 
         // Apply velocity
-        target.localPosition += Vector3.ClampMagnitude(velocity, 5f * outwardForce) * deltaTime;
+        target.localPosition += velocity * deltaTime;
 
         // Rotate
-        target.Rotate(target.up, Time.deltaTime * rotateSpeed);
+        target.Rotate(target.up, deltaTime * rotateSpeed);
         if (velocity.sqrMagnitude > 0.01f)
         {
             target.rotation *= Quaternion.LookRotation(Vector3.forward, velocity.normalized);
