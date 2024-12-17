@@ -1,12 +1,10 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class GlitchMovement : MonoBehaviour
 {
     [SerializeField] private Transform target;
-    
+
     [SerializeField] private float outwardForce = 10f;
     [SerializeField] private float pullForce = 20f;
     [SerializeField] private float damping = 0.98f;
@@ -18,11 +16,12 @@ public class GlitchMovement : MonoBehaviour
 
     private Vector3 velocity = Vector3.zero;
 
+
     private void FixedUpdate()
     {
         // float deltaTime = Mathf.Max(Time.deltaTime, .033f);
         float deltaTime = Time.fixedDeltaTime;
-        
+
         var randomCenter = Random.insideUnitSphere * centerRandomization;
         Vector3 pullDirection = (randomCenter - target.localPosition).normalized;
         float distanceFromCenter = (randomCenter - target.localPosition).magnitude;

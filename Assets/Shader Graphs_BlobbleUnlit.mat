@@ -59,13 +59,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Color_multiplier: 0.43
-    - _HDR: 1.65
+    - _Color_multiplier: 1
+    - _HDR: 2
+    - _Hue_shift_amount: 0.1
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Scael: 0.38
     - _Speed: 0.12
-    - _Strength: 0.436
+    - _Strength: 0.55
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1

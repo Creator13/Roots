@@ -18,8 +18,8 @@ public class Growable : MonoBehaviour
 
     private void Awake()
     {
-        renderer = GetComponentInChildren<Renderer>(); 
-        player = FindFirstObjectByType<FirstPersonController>().transform;
+        renderer = GetComponentInChildren<Renderer>();
+        player = GameObject.FindWithTag("Player").transform;
     }
 
     private void Update()
