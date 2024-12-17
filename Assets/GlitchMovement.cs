@@ -1,45 +1,56 @@
+﻿using System;
+using UnityEditor;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class GlitchMovement : MonoBehaviour
 {
-    [SerializeField] private Transform child;
+    [SerializeField] private Transform target;
+    
+    [SerializeField] private float outwardForce = 10f;
+    [SerializeField] private float pullForce = 20f;
+    [SerializeField] private float damping = 0.98f;
+    [SerializeField, Range(0, 1)] private float burstChance = .2f;
+    [SerializeField, Range(0, 1)] private float perlinThreshold = .5f;
     [SerializeField] private float perlinSpeed = 1;
-    [SerializeField, Range(0, 1)] private float moveThreshold = 0.6f;
-    [SerializeField] private float moveStrength = 0.1f;
-    [SerializeField] private float attractStrength = 5;
-    [SerializeField, Range(0, 1)] private float damping = 0.95f; // Damping factor for velocity
+    [SerializeField] private float centerRandomization = .3f;
+    [SerializeField] private float rotateSpeed = 1;
 
-    private Vector3 acceleration;
-    private Vector3 velocity;
+    private Vector3 velocity = Vector3.zero;
 
-    private void Update()
+    private void FixedUpdate()
     {
-        // Random movement using Perlin noise
-        if (Mathf.PerlinNoise(Time.time * perlinSpeed + 2, 0) > moveThreshold)
+        // float deltaTime = Mathf.Max(Time.deltaTime, .033f);
+        float deltaTime = Time.fixedDeltaTime;
+        
+        var randomCenter = Random.insideUnitSphere * centerRandomization;
+        Vector3 pullDirection = (randomCenter - target.localPosition).normalized;
+        float distanceFromCenter = (randomCenter - target.localPosition).magnitude;
+        Vector3 pull = pullDirection * (pullForce * distanceFromCenter);
+
+        velocity += pull * deltaTime;
+        velocity *= damping;
+
+        if (Random.value < burstChance && Mathf.PerlinNoise1D((Time.time * perlinSpeed) % 500) > perlinThreshold)
         {
-            acceleration += Random.insideUnitSphere * (Mathf.PerlinNoise(Time.time, 0) * moveStrength);
+            ApplyRandomBurst();
         }
 
-        ApplyPullBack();
+        // Apply velocity
+        target.localPosition += velocity * deltaTime;
 
-        // Update velocity with damping
-        velocity += acceleration * Time.deltaTime;
-        velocity *= damping; // Apply damping to reduce overshoot
-
-        // Update position
-        child.position += velocity * Time.deltaTime;
-
-        // Reset acceleration for the next frame
-        acceleration = Vector3.zero;
+        // Rotate
+        target.Rotate(target.up, deltaTime * rotateSpeed);
+        if (velocity.sqrMagnitude > 0.01f)
+        {
+            target.rotation *= Quaternion.LookRotation(Vector3.forward, velocity.normalized);
+        }
     }
 
-    private void ApplyPullBack()
+    private void ApplyRandomBurst()
     {
-        Vector3 direction = transform.position - child.position;
-        float dist = direction.magnitude;
+        Vector3 randomDirection = Random.insideUnitSphere;
 
-        // Pull force proportional to distance
-        Vector3 pullVector = direction.normalized * (dist * attractStrength);
-        acceleration += pullVector;
+        velocity += randomDirection * outwardForce;
     }
 }
