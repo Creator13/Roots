@@ -546,6 +546,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02cb3a1e3b6b9414fb4744ae930a8b19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chargeTime: 1
   director: {fileID: 1210058626}
   cameraRoot: {fileID: 730422393}
   glitch: {fileID: 1176927583}
@@ -637,8 +638,19 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 2371867201160107398, guid: ab500e23116e29a4daebf9a593838433, type: 3}
+    - target: {fileID: 6589709609808930505, guid: ab500e23116e29a4daebf9a593838433, type: 3}
+      propertyPath: settings
+      value: 
+      objectReference: {fileID: 11400000, guid: 636b60dfb650cc042af9f79d5cb4d225, type: 2}
+    - target: {fileID: 6589709609808930505, guid: ab500e23116e29a4daebf9a593838433, type: 3}
+      propertyPath: lowEnergySettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 636b60dfb650cc042af9f79d5cb4d225, type: 2}
+    - target: {fileID: 6589709609808930505, guid: ab500e23116e29a4daebf9a593838433, type: 3}
+      propertyPath: highEnergySettings
+      value: 
+      objectReference: {fileID: 11400000, guid: 067a484b291e3a24a85c4e3dbf29f9d4, type: 2}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
