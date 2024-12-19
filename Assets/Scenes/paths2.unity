@@ -620,7 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d0e0ef878c4a1845b29002ea9c8d4a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkGenerator: {fileID: 11400000, guid: d3e46d3d15e624b49bdf12c60197703f, type: 2}
+  chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
   loadRadius: 10
   player: {fileID: 1346896746}
   playerChunkX: 0
