@@ -1,9 +1,7 @@
-﻿using Roots;
-using UnityEngine;
-using UnityEngine.Serialization;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Roots
+namespace Roots.Player
 {
     public class GlitchMovement : MonoBehaviour
     {

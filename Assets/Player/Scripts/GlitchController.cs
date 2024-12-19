@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
-namespace Roots
+namespace Roots.Player
 {
     public class GlitchController : MonoBehaviour
     {

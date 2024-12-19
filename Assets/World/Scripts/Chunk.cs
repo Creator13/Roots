@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace World
+namespace Roots.World
 {
     public class Chunk : MonoBehaviour
     {

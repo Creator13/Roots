@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace World
+namespace Roots.World
 {
     public class ChunkLoader : MonoBehaviour
     {

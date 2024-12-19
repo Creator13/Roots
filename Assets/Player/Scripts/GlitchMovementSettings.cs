@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Roots
+namespace Roots.Player
 {
     [CreateAssetMenu(fileName = "NewGlitchMovementSettings", menuName = "Roots/Glitch Movement Settings", order = 0)]
     public class GlitchMovementSettings : ScriptableObject

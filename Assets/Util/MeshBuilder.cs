@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Util
+namespace Roots.Util
 {
     public enum FaceDirection
     {

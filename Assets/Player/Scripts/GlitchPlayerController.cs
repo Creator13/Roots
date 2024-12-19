@@ -1,13 +1,11 @@
-﻿using System;
-using StarterAssets;
+﻿using StarterAssets;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Roots
+namespace Roots.Player
 {
     public class GlitchPlayerController : MonoBehaviour
     {
-        
         [SerializeField] private GameObject CameraTarget;
         [SerializeField] private float TopClamp = 70.0f;
         [SerializeField] private float BottomClamp = -30.0f;
@@ -15,11 +13,11 @@ namespace Roots
         [SerializeField] private float CameraAngleOverride = 0.0f;
         [Tooltip("For locking the camera position on all axis")]
         [SerializeField] private bool LockCameraPosition = false;
-        
+
         // cinemachine
         private float _cinemachineTargetYaw;
         private float _cinemachineTargetPitch;
-        
+
         private PlayerInput _playerInput;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
@@ -27,7 +25,7 @@ namespace Roots
         private const float _threshold = 0.01f;
 
         private bool IsCurrentDeviceMouse => _playerInput.currentControlScheme == "KeyboardMouse";
-        
+
         private void Awake()
         {
             if (_mainCamera == null)
@@ -39,7 +37,7 @@ namespace Roots
         private void Start()
         {
             _cinemachineTargetYaw = CameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _input = GetComponent<StarterAssetsInputs>();
             _playerInput = GetComponent<PlayerInput>();
         }
@@ -51,8 +49,6 @@ namespace Roots
 
         private void CameraRotation()
         {
-            
-            
             // if there is an input and camera position is not fixed
             if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
             {
@@ -70,7 +66,7 @@ namespace Roots
             // Cinemachine will follow this target
             CameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
         }
-        
+
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
         {
             if (lfAngle < -360f) lfAngle += 360f;

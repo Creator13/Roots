@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using Random = System.Random;
 
-namespace World
+namespace Roots.World
 {
     public class NoiseSpawner : MonoBehaviour
     {
@@ -15,7 +14,7 @@ namespace World
         [SerializeField] private float densityMultiplier = 1f; // Multiplier to control overall density
 
         private List<GameObject> objects = new List<GameObject>();
-        
+
         private bool SampleNoise(float x, float z, Random random)
         {
             float noiseValue = Mathf.PerlinNoise(x * noiseScale, z * noiseScale);
