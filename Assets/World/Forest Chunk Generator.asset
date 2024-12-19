@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62d82db474c94e77adb472f4479937b1, type: 3}
+  m_Name: Forest Chunk Generator
+  m_EditorClassIdentifier: 
+  <chunkSize>k__BackingField: 10
+  chunkPrefab: {fileID: 8303602572579912761, guid: 2a40133f115501442932cf24bb1994f1, type: 3}
+  treePrefab: {fileID: 7769951754165564770, guid: 7d0ad4deee42d024799916352bd8bf6b, type: 3}
+  treeDensity: 1
+  noiseGenerator: {fileID: 11400000, guid: ceed4d3a3729b964c8880931899e1d6d, type: 2}

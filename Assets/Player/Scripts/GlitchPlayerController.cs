@@ -1,77 +1,84 @@
-﻿using StarterAssets;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
 namespace Roots.Player
 {
     public class GlitchPlayerController : MonoBehaviour
     {
-        [SerializeField] private GameObject CameraTarget;
-        [SerializeField] private float TopClamp = 70.0f;
-        [SerializeField] private float BottomClamp = -30.0f;
-        [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
-        [SerializeField] private float CameraAngleOverride = 0.0f;
-        [Tooltip("For locking the camera position on all axis")]
-        [SerializeField] private bool LockCameraPosition = false;
+        [SerializeField] private float chargeTime = 1;
 
-        // cinemachine
-        private float _cinemachineTargetYaw;
-        private float _cinemachineTargetPitch;
+        [Header("References")]
+        [SerializeField] private GameObject director;
+        [SerializeField] private Transform cameraRoot;
+        [SerializeField] private Transform glitch;
+        [SerializeField] private GlitchMovement glitchMovement;
 
-        private PlayerInput _playerInput;
-        private StarterAssetsInputs _input;
-        private GameObject _mainCamera;
+        private Vector3 moveStartPosition;
+        private Vector3 moveTargetPosition;
+        private bool shouldMove = false;
 
-        private const float _threshold = 0.01f;
-
-        private bool IsCurrentDeviceMouse => _playerInput.currentControlScheme == "KeyboardMouse";
-
-        private void Awake()
-        {
-            if (_mainCamera == null)
-            {
-                _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-            }
-        }
+        private float lastChargeStartTime = 0;
+        private float lastMoveStartTime = 0;
 
         private void Start()
         {
-            _cinemachineTargetYaw = CameraTarget.transform.rotation.eulerAngles.y;
-
-            _input = GetComponent<StarterAssetsInputs>();
-            _playerInput = GetComponent<PlayerInput>();
+            director.SetActive(false);
         }
 
-        private void LateUpdate()
+        private void Update()
         {
-            CameraRotation();
-        }
-
-        private void CameraRotation()
-        {
-            // if there is an input and camera position is not fixed
-            if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
+            if (shouldMove)
             {
-                //Don't multiply mouse input by Time.deltaTime;
-                float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+                transform.position = Vector3.Lerp(transform.position, moveTargetPosition, Time.deltaTime * 3);
 
-                _cinemachineTargetYaw += _input.look.x * deltaTimeMultiplier;
-                _cinemachineTargetPitch += _input.look.y * deltaTimeMultiplier;
+                // Use fourth root of inverse movement progress to modulate the energy with a gentle start and a sharp dropoff towards the end 
+                // (input is 1 when the move has just started as moveStart and current position will be very close together, input is zero when
+                // movement nears the end because the distance between the current position and the target position will near one.)
+                glitchMovement.Energy = Mathf.Sqrt(Mathf.Sqrt((transform.position - moveTargetPosition).sqrMagnitude / (moveStartPosition - moveTargetPosition).sqrMagnitude));
+
+                shouldMove = (transform.position - moveTargetPosition).sqrMagnitude > .001f;
             }
 
-            // clamp our rotations so our values are limited 360 degrees
-            _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-            _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+            director.SetActive(Mouse.current.leftButton.isPressed);
 
-            // Cinemachine will follow this target
-            CameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
+            if (Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                lastChargeStartTime = Time.time;
+            }
+
+            if (Mouse.current.leftButton.isPressed)
+            {
+                float chargeProgress = GetCurrentChargeProgress();
+
+                glitchMovement.Energy = chargeProgress;
+
+                director.transform.localScale = new Vector3(1, 1, chargeProgress);
+                director.transform.localPosition = glitch.localPosition;
+                director.transform.localRotation = Quaternion.Euler(0, cameraRoot.localRotation.eulerAngles.y, 0);
+            }
+
+            if (Mouse.current.leftButton.wasReleasedThisFrame)
+            {
+                float chargeProgress = GetCurrentChargeProgress();
+
+                MoveTo(transform.position + Quaternion.Euler(0, cameraRoot.localRotation.eulerAngles.y, 0) * Vector3.forward * (chargeProgress * 6));
+            }
         }
 
-        private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+        private float GetCurrentChargeProgress()
         {
-            if (lfAngle < -360f) lfAngle += 360f;
-            if (lfAngle > 360f) lfAngle -= 360f;
-            return Mathf.Clamp(lfAngle, lfMin, lfMax);
+            Assert.IsTrue(chargeTime > 0);
+
+            float currentChargeTime = Time.time - lastChargeStartTime;
+            return Mathf.Clamp01(currentChargeTime / chargeTime);
+        }
+
+        public void MoveTo(Vector3 targetPosition)
+        {
+            moveStartPosition = transform.position;
+            moveTargetPosition = targetPosition;
+            shouldMove = true;
         }
     }
 }

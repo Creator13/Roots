@@ -42,7 +42,8 @@ RenderSettings:
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -522,8 +523,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   followObject: {fileID: 2097001991}
   noiseScale: 0.04
-  noiseStrength: 10
+  noiseStrength: 4
   size: 500
+  noiseGenerator: {fileID: 11400000, guid: ceed4d3a3729b964c8880931899e1d6d, type: 2}
   pointMesh: {fileID: -5495902117074765545, guid: 4ea4a5ebf9ba09d498a0859077c9aaab, type: 3}
   material: {fileID: 2100000, guid: d08f17e1bd331b54fb5f6a592f02d60c, type: 2}
 --- !u!4 &925961401
@@ -654,6 +656,10 @@ PrefabInstance:
       value: -22
       objectReference: {fileID: 0}
     - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228371, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: JumpHeight
       value: 1.4
       objectReference: {fileID: 0}
@@ -664,6 +670,10 @@ PrefabInstance:
     - target: {fileID: 8616685848737228372, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_Name
       value: PlayerCapsule
+      objectReference: {fileID: 0}
+    - target: {fileID: 8616685848737228382, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_RootOrder

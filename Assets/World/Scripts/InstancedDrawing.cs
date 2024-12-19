@@ -15,6 +15,7 @@ namespace Roots.World
         [SerializeField] private float noiseScale = .1f;
         [SerializeField] private float noiseStrength = 3f;
         [SerializeField] private int size = 20;
+        [SerializeField ]private PathNoiseGenerator noiseGenerator;
 
         [Space]
         [SerializeField] private Mesh pointMesh;
@@ -82,7 +83,7 @@ namespace Roots.World
             {
                 for (int z = 0; z < size; z++)
                 {
-                    points.Add(new Vector3(x, (Mathf.PerlinNoise(x * noiseScale, z * noiseScale) - .5f) * noiseStrength, z));
+                    points.Add(new Vector3(x, noiseGenerator.GetNoise(x, z) * noiseStrength, z));
                 }
             }
         }

@@ -601,7 +601,6 @@ GameObject:
   m_Component:
   - component: {fileID: 2103447874}
   - component: {fileID: 2103447873}
-  - component: {fileID: 2103447875}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -621,15 +620,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d0e0ef878c4a1845b29002ea9c8d4a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  chunkPrefab: {fileID: 8303602572579912761, guid: 2a40133f115501442932cf24bb1994f1, type: 3}
-  treePrefab: {fileID: 7769951754165564770, guid: 7d0ad4deee42d024799916352bd8bf6b, type: 3}
-  chunkSize: 10
+  chunkGenerator: {fileID: 11400000, guid: d3e46d3d15e624b49bdf12c60197703f, type: 2}
   loadRadius: 10
   player: {fileID: 1346896746}
   playerChunkX: 0
   playerChunkZ: 0
-  treeDensity: 0.2
-  noiseGenerator: {fileID: 2103447875}
 --- !u!4 &2103447874
 Transform:
   m_ObjectHideFlags: 0
@@ -645,26 +640,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2103447875
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2103447872}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d496d7e8a77f410e9f441fd316c58d91, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  seed: 0
-  frequencyModifier: 1
-  worleyFrequency: 0.02
-  gradientFrequency: 0.05
-  gradientWeight: -0.26
-  worleyStrengthMultiplier: 2.33
-  smoothstepLevel: 0.89
-  smoothstepWidth: 1.27
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

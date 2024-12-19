@@ -5,21 +5,13 @@ namespace Roots.World
 {
     public class ChunkLoader : MonoBehaviour
     {
-        [SerializeField] private Chunk chunkPrefab;
-        [SerializeField] private Transform treePrefab;
-
-        [Space]
-        [SerializeField] private float chunkSize = 10;
+        [SerializeField] private ChunkGenerator chunkGenerator;
         [SerializeField] private int loadRadius = 3;
 
         [Space]
         [SerializeField] private Transform player;
         [SerializeField] private int playerChunkX;
         [SerializeField] private int playerChunkZ;
-
-        [Space]
-        [SerializeField] private float treeDensity;
-        [SerializeField] private PathNoiseGenerator noiseGenerator;
 
         private Vector3 playerPosition;
         private Dictionary<Vector2Int, Chunk> loadedChunks;
@@ -62,7 +54,8 @@ namespace Roots.World
                     }
                     else
                     {
-                        newChunks.Add(key, CreateChunk(x + playerChunkX, z + playerChunkZ));
+                        Chunk newChunk = chunkGenerator.CreateChunk(x + playerChunkX, z + playerChunkZ, transform);
+                        newChunks.Add(key, newChunk);
                     }
                 }
             }
@@ -85,44 +78,19 @@ namespace Roots.World
             int originalChunkX = playerChunkX;
             int originalChunkZ = playerChunkZ;
 
-            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkSize);
-            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkSize);
+            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkGenerator.chunkSize);
+            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkGenerator.chunkSize);
 
             if (playerChunkX != originalChunkX || playerChunkZ != originalChunkZ)
             {
                 playerChunkChanged = true;
             }
         }
-
-        private Chunk CreateChunk(int x, int z)
-        {
-            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenter(x, z), Quaternion.identity, transform);
-            chunk.gameObject.name = $"Chunk ({x}, {z})";
-            chunk.LoadAt(x, z);
-            SpawnTrees(chunk.transform);
-            return chunk;
-        }
-
-        private void SpawnTrees(Transform chunkTransform)
-        {
-            float targetTreesPerChunk = chunkSize * chunkSize * treeDensity;
-            for (int i = 0; i < targetTreesPerChunk; i++)
-            {
-                float x = Random.Range(0, chunkSize) - chunkSize * .5f;
-                float z = Random.Range(0, chunkSize) - chunkSize * .5f;
-                float noise = noiseGenerator.GetNoise(chunkTransform.position.x + x, chunkTransform.position.z + z);
-                if (Random.value < noise)
-                {
-                    Transform treeInstance = Instantiate(treePrefab, chunkTransform, true);
-                    treeInstance.SetLocalPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, Random.Range(-180, 180), 0));
-                }
-            }
-        }
-
+        
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(CalculateChunkCenter(playerChunkX, playerChunkZ), new Vector3(chunkSize, chunkSize, chunkSize));
+            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(playerChunkX, playerChunkZ), Vector3.one * chunkGenerator.chunkSize);
 
             if (loadedChunks != null)
             {
@@ -131,14 +99,9 @@ namespace Roots.World
                 {
                     if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
 
-                    Gizmos.DrawWireCube(CalculateChunkCenter(pos.x, pos.y), new Vector3(chunkSize, chunkSize, chunkSize));
+                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(pos.x, pos.y), Vector3.one * chunkGenerator.chunkSize);
                 }
             }
-        }
-
-        private Vector3 CalculateChunkCenter(int x, int z)
-        {
-            return new Vector3(x * chunkSize + .5f * chunkSize, 0, z * chunkSize + .5f * chunkSize);
         }
     }
 }

@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace Roots.World
 {
-    public class PathNoiseGenerator : MonoBehaviour
+    
+    [CreateAssetMenu(menuName = "Roots/Noise Generator", fileName = "New Noise Generator", order = 0)]
+    public class PathNoiseGenerator : ScriptableObject
     {
         [SerializeField] private int seed;
         [SerializeField] private float frequencyModifier = 1;
@@ -22,6 +24,7 @@ namespace Roots.World
 
         private FastNoiseLite worleyGen;
         private FastNoiseLite gradientGen;
+        private FastNoiseLite otherGen;
 
         private bool isInitialized = false;
         public bool IsInitialized => isInitialized && !(worleyGen == null || gradientGen == null);
@@ -43,15 +46,24 @@ namespace Roots.World
             gradientGen = new FastNoiseLite(seed);
             gradientGen.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
             gradientGen.SetFrequency(gradientFrequency * frequencyModifier);
-
+            gradientGen.SetDomainWarpType(FastNoiseLite.DomainWarpType.BasicGrid);
+            gradientGen.SetDomainWarpAmp(1f);
+            gradientGen.SetFractalType(FastNoiseLite.FractalType.Ridged);
+            gradientGen.SetFractalOctaves(3);
+            gradientGen.SetFractalLacunarity(1.8f);
+            
             isInitialized = true;
+            
+            Debug.Log("Noise generator initialized", this);
         }
 
         public float GetNoise(float x, float z)
         {
             if (!IsInitialized) throw new InvalidOperationException("Noise generator is not initialized.");
 
-            float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(x, z));
+            float warpedX = x, warpedZ = z;
+            gradientGen.DomainWarp(ref warpedX, ref warpedZ);
+            float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(warpedX, warpedZ));
             float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
             float sample = gradientSample * gradientWeight + voronoiSample;
             sample *= worleyStrengthMultiplier;
@@ -64,23 +76,23 @@ namespace Roots.World
             Initialize();
         }
 
-        private void OnDrawGizmosSelected()
-        {
-            if (IsInitialized == false) Initialize();
-
-            const int n = 100;
-
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < n; j++)
-                {
-                    float sample = GetNoise(i, j);
-                    float x = i;
-                    float z = j;
-                    Gizmos.color = new Color(sample, sample, sample);
-                    Gizmos.DrawCube(new Vector3(x, 0, z), Vector3.one);
-                }
-            }
-        }
+        // private void OnDrawGizmosSelected()
+        // {
+        //     if (IsInitialized == false) Initialize();
+        //
+        //     const int n = 100;
+        //
+        //     for (int i = 0; i < n; i++)
+        //     {
+        //         for (int j = 0; j < n; j++)
+        //         {
+        //             float sample = GetNoise(i, j);
+        //             float x = i;
+        //             float z = j;
+        //             Gizmos.color = new Color(sample, sample, sample);
+        //             Gizmos.DrawCube(new Vector3(x, 0, z), Vector3.one);
+        //         }
+        //     }
+        // }
     }
 }
