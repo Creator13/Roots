@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace Roots
 {
-    public class ThirdPersonController : MonoBehaviour
+    public class GlitchPlayerController : MonoBehaviour
     {
         
         [SerializeField] private GameObject CameraTarget;

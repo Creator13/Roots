@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
@@ -32,8 +31,13 @@ namespace Roots
             if (shouldMove)
             {
                 transform.position = Vector3.Lerp(transform.position, moveTargetPosition, .04f);
-                shouldMove = (transform.position - moveTargetPosition).sqrMagnitude > .001f;
+
+                // Use fourth root of inverse movement progress to modulate the energy with a gentle start and a sharp dropoff towards the end 
+                // (input is 1 when the move has just started as moveStart and current position will be very close together, input is zero when
+                // movement nears the end because the distance between the current position and the target position will near one.)
                 glitchMovement.Energy = Mathf.Sqrt(Mathf.Sqrt((transform.position - moveTargetPosition).sqrMagnitude / (moveStartPosition - moveTargetPosition).sqrMagnitude));
+
+                shouldMove = (transform.position - moveTargetPosition).sqrMagnitude > .001f;
             }
 
             director.SetActive(Mouse.current.leftButton.isPressed);
