@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Roots.World
 {
@@ -30,6 +32,11 @@ namespace Roots.World
 
         private void Update()
         {
+            if (Keyboard.current[Key.G].wasPressedThisFrame)
+            {
+                RegenerateChunks();
+            }
+            
             playerChunkChanged = false;
             playerPosition = player.transform.position;
 
@@ -85,6 +92,21 @@ namespace Roots.World
             {
                 playerChunkChanged = true;
             }
+        }
+
+        [ContextMenu("Regenerate all")]
+        private void RegenerateChunks()
+        {
+            if (!EditorApplication.isPlaying) return;
+            
+            var newChunks = new Dictionary<Vector2Int, Chunk>(loadedChunks.Count);
+            foreach (var (chunkPos, chunk) in loadedChunks)
+            {
+                Chunk newChunk = chunkGenerator.CreateChunk(chunkPos.x + playerChunkX, chunkPos.y + playerChunkZ, transform);
+                Destroy(chunk.gameObject);
+                newChunks.Add(chunkPos, newChunk);
+            }
+            loadedChunks = newChunks;
         }
         
         private void OnDrawGizmos()

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gen_PathNoiseGenerator
   m_EditorClassIdentifier: 
   seed: 0
-  frequencyModifier: 1
+  frequencyModifier: 0.5
   worleyFrequency: 0.02
   gradientFrequency: 0.05
   gradientWeight: -0.26

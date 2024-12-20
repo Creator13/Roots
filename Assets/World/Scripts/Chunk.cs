@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using Roots.Util;
+using UnityEngine;
 
 namespace Roots.World
 {
     public class Chunk : MonoBehaviour
     {
         private int x, z;
-        private Vector3[] points;
+        private Vertex[] points;
 
         public void LoadAt(int x, int z)
         {
@@ -13,7 +14,7 @@ namespace Roots.World
             this.z = z;
         }
 
-        public void SetPoints(Vector3[] points)
+        public void SetPoints(Vertex[] points)
         {
             this.points = points;
         }

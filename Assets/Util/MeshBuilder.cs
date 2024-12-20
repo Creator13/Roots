@@ -240,5 +240,31 @@ namespace Roots.Util
             triangles.Add(vertexIndex + 3);
             triangles.Add(vertexIndex);
         }
+
+        public void AddQuadNew(Vertex v1, Vertex v2, Vertex v3, Vertex v4)
+        {
+            var vertexIndex = vertices.Count;
+            vertices.Add(v1.position);
+            vertices.Add(v2.position);
+            vertices.Add(v3.position);
+            vertices.Add(v4.position);
+            
+            normals.Add(v1.normal);
+            normals.Add(v2.normal);
+            normals.Add(v3.normal);
+            normals.Add(v4.normal);
+            
+            uvs.Add(v1.uv);
+            uvs.Add(v2.uv);
+            uvs.Add(v3.uv);
+            uvs.Add(v4.uv);
+            
+            triangles.Add(vertexIndex);
+            triangles.Add(vertexIndex + 1);
+            triangles.Add(vertexIndex + 2);
+            triangles.Add(vertexIndex + 2);
+            triangles.Add(vertexIndex + 3);
+            triangles.Add(vertexIndex);
+        }
     }
 }
