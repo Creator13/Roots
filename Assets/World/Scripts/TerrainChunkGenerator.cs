@@ -56,8 +56,13 @@ namespace Roots.World
         {
             float noise = noiseGenerator.GetNoise(x, z);
             noise *= noiseHeightMultiplier;
-            noise = math.pow(noise, terrainPower);
+            noise = Smootherstep(noise);
             return noise;
+        }
+
+        private static float Smootherstep(float x)
+        {
+            return 6 * x * x * x * x * x - 15 * x * x * x * x + 10 * x * x * x;
         }
         
         private Vertex[] GeneratePoints(int worldX, int worldZ)
