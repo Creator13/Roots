@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -18,7 +19,10 @@ namespace Roots.World
         private Vector3 playerPosition;
         private Dictionary<Vector2Int, Chunk> loadedChunks;
 
+        public int ChunkCount => (loadRadius * 2 + 1) * (loadRadius * 2 + 1);
+
         private bool playerChunkChanged;
+        public event Action LoadedChunksChanged;
 
         private void Awake()
         {
@@ -36,13 +40,18 @@ namespace Roots.World
             {
                 RegenerateChunks();
             }
-            
+
             playerChunkChanged = false;
             playerPosition = player.transform.position;
 
             UpdateCurrentChunk();
 
-            if (playerChunkChanged) UpdateVisibleChunks();
+            if (playerChunkChanged)
+            {
+                // Loading new chunks *ALWAYS* needs to happen before the event invocation
+                UpdateVisibleChunks();
+                LoadedChunksChanged?.Invoke();
+            }
         }
 
         private void UpdateVisibleChunks()
@@ -94,11 +103,38 @@ namespace Roots.World
             }
         }
 
+        public IEnumerable<Chunk> GetChunkEnumarable()
+        {
+            return loadedChunks.Values;
+        }
+
+        public Vector3[] GetCombinedPointData()
+        {
+            int chunkCount = ChunkCount;
+            int chunkVertexCount = chunkGenerator.ChunkVertexCount;
+            
+            // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
+            Vector3[] points = new Vector3[chunkCount * chunkVertexCount];
+            int iChunk = 0;
+            foreach (Chunk chunk in loadedChunks.Values)
+            {
+                for (int iPoint = 0; iPoint < chunkVertexCount; iPoint++)
+                {
+                    points[chunkVertexCount * iChunk + iPoint] = chunk.Points[iPoint].position + chunk.cachedWorldPosition;
+                }
+
+                iChunk++;
+            }
+
+            return points;
+        }
+
         [ContextMenu("Regenerate all")]
         private void RegenerateChunks()
         {
+            // TODO fix this method (it wonks out)
             if (!EditorApplication.isPlaying) return;
-            
+
             var newChunks = new Dictionary<Vector2Int, Chunk>(loadedChunks.Count);
             foreach (var (chunkPos, chunk) in loadedChunks)
             {
@@ -106,9 +142,10 @@ namespace Roots.World
                 Destroy(chunk.gameObject);
                 newChunks.Add(chunkPos, newChunk);
             }
+
             loadedChunks = newChunks;
         }
-        
+
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;

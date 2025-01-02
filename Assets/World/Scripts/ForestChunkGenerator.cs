@@ -3,7 +3,7 @@
 namespace Roots.World
 {
     [CreateAssetMenu(fileName = "Forest Chunk Generator", menuName = "Roots/Forest Chunk Generator", order = 50)]
-    public class ForestChunkGenerator : ChunkGenerator 
+    public class ForestChunkGenerator : ChunkGenerator
     {
         [SerializeField] private Chunk chunkPrefab;
         [SerializeField] private Transform treePrefab;
@@ -11,12 +11,14 @@ namespace Roots.World
         [Space]
         [SerializeField] private float treeDensity;
         [SerializeField] private PathNoiseGenerator noiseGenerator;
-        
+
+        public override int ChunkEdgeVertexCount => 100;
+
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
             Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenter(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
-            chunk.LoadAt(x, z);
+            chunk.InitAt(x, z);
             SpawnTrees(chunk.transform);
             return chunk;
         }

@@ -5,18 +5,29 @@ namespace Roots.World
 {
     public class Chunk : MonoBehaviour
     {
+        private MeshRenderer meshRenderer;
+        
         private int x, z;
-        private Vertex[] points;
+        public Vertex[] Points { get; private set; }
+        public Vector3 cachedWorldPosition { get; private set; }
 
-        public void LoadAt(int x, int z)
+        public void InitAt(int x, int z)
         {
             this.x = x;
             this.z = z;
+            
+            meshRenderer = GetComponent<MeshRenderer>();
+            cachedWorldPosition = transform.position;
         }
 
         public void SetPoints(Vertex[] points)
         {
-            this.points = points;
+            this.Points = points;
+        }
+
+        public void SetMeshRendererEnabled(bool enabled)
+        {
+            meshRenderer.enabled = enabled;
         }
     }
 }
