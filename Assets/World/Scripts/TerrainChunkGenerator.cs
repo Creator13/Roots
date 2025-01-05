@@ -1,7 +1,6 @@
 ﻿using Roots.Util;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 
 namespace Roots.World
 {
