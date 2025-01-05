@@ -4,7 +4,7 @@ namespace Roots.World
 {
     public abstract class ChunkGenerator : ScriptableObject
     {
-        [field: SerializeField] public float chunkSize { get; private set; }
+        [field: SerializeField] public float ChunkSize { get; private set; }
         
         public abstract int ChunkEdgeVertexCount { get; }
 
@@ -16,12 +16,23 @@ namespace Roots.World
                 return edgeCount * edgeCount;
             }
         }
+        
+        public abstract int ChunkEdgePointCount { get; }
+
+        public int ChunkPointCount
+        {
+            get
+            {
+                int edgeCount = ChunkEdgePointCount;
+                return edgeCount * edgeCount;
+            }
+        }
 
         public abstract Chunk CreateChunk(int x, int z, Transform parent = null);
         
         public Vector3 CalculateChunkCenter(int x, int z)
         {
-            return new Vector3(x * chunkSize - .5f * chunkSize, 0, z * chunkSize - .5f * chunkSize);
+            return new Vector3(x * ChunkSize + .5f * ChunkSize, 0, z * ChunkSize + .5f * ChunkSize);
         }
     }
 }

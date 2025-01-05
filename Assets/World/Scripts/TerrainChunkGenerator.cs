@@ -1,6 +1,7 @@
 ﻿using Roots.Util;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Serialization;
 
 namespace Roots.World
 {
@@ -8,18 +9,20 @@ namespace Roots.World
     public class TerrainChunkGenerator : ChunkGenerator
     {
         [SerializeField] private PathNoiseGenerator noiseGenerator;
-        [SerializeField] private int terrainMeshResolution = 0; // Subsamples per unit
+        [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
+        [SerializeField] private int pointCloudStepSize = 0;
         [SerializeField] private float height = 4f;
-        [SerializeField] private float terrainPower = 1;
-        [SerializeField] private float noiseHeightMultiplier = 1.25f;
+        [SerializeField] private float noisePremultiplier = 1.25f;
         [SerializeField] private Material terrainMaterial;
 
-        public override int ChunkEdgeVertexCount => Mathf.FloorToInt(chunkSize) * (terrainMeshResolution + 1) + 1;
-        
+        public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
+        public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
+
         private void OnValidate()
         {
-            Assert.IsTrue(terrainMeshResolution > 0);
-            Assert.IsTrue(terrainPower > 0);
+            Assert.IsTrue(pointCloudStepSize > 0);
+            Assert.IsTrue(terrainMeshSubdivisions > 0);
+            Assert.IsTrue(ChunkSize > 0);
         }
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
@@ -32,16 +35,17 @@ namespace Roots.World
                 chunk.transform.SetParent(parent, true);
             }
 
-            Assert.IsTrue(terrainMeshResolution >= 0);
+            Assert.IsTrue(terrainMeshSubdivisions >= 0);
 
-            Vertex[] points = GeneratePoints(x, z);
-            chunk.SetPoints(points);
+            Vertex[] vertices = GeneratePoints(x, z);
+            Vector3[] points = GeneratePointCloudFromVertices(vertices);
+            chunk.SetVertices(vertices, points);
 
             chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
             MeshFilter meshFilter = chunk.gameObject.AddComponent<MeshFilter>();
             MeshCollider meshCollider = chunk.gameObject.AddComponent<MeshCollider>();
 
-            Mesh terrainMesh = TerrainMeshFromPoints(points);
+            Mesh terrainMesh = TerrainMeshFromVertices(vertices);
             terrainMesh.name = $"Terrain Mesh ({x}, {z})";
             meshFilter.sharedMesh = terrainMesh;
             meshCollider.sharedMesh = terrainMesh;
@@ -50,10 +54,30 @@ namespace Roots.World
             return chunk;
         }
 
+        private Vector3[] GeneratePointCloudFromVertices(Vertex[] vertices)
+        {
+            int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgePointCount = ChunkEdgePointCount;
+            
+            Vector3[] points = new Vector3[edgePointCount * edgePointCount];
+            for (int xi = 0, i = 0, j = 0; xi < edgeVertexCount; xi++)
+            {
+                for (int zi = 0; zi < edgeVertexCount; zi++, i++)
+                {
+                    if (xi % pointCloudStepSize == 0 && xi != edgeVertexCount - 1 && zi % pointCloudStepSize == 0 && zi != edgeVertexCount - 1)
+                    {
+                        points[j] = vertices[i].position;
+                        j++;
+                    }
+                }
+            }
+            return points;
+        }
+
         private float GetTerrainModifiedNoise(float x, float z)
         {
             float noise = noiseGenerator.GetNoise(x, z);
-            noise *= noiseHeightMultiplier;
+            noise *= noisePremultiplier;
             noise = Smootherstep(noise);
             return noise;
         }
@@ -65,24 +89,24 @@ namespace Roots.World
 
         private Vertex[] GeneratePoints(int worldX, int worldZ)
         {
-            int vertexCount = ChunkEdgeVertexCount;
-            float stepSize = 1.0f / (terrainMeshResolution + 1);
+            int edgeVertexCount = ChunkEdgeVertexCount;
+            float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
-            Vertex[] vertices = new Vertex[vertexCount * vertexCount];
-            for (int xi = 0, i = 0; xi < vertexCount; xi++)
+            Vertex[] vertices = new Vertex[edgeVertexCount * edgeVertexCount];
+            for (int xi = 0, i = 0; xi < edgeVertexCount; xi++)
             {
-                for (int zi = 0; zi < vertexCount; zi++, i++)
+                for (int zi = 0; zi < edgeVertexCount; zi++, i++)
                 {
                     // Position
                     float x = xi * stepSize, z = zi * stepSize;
-                    vertices[i].position = new Vector3(x, GetTerrainModifiedNoise(x + worldX * chunkSize, z + worldZ * chunkSize) * height, z);
+                    vertices[i].position = new Vector3(x, GetTerrainModifiedNoise(x + worldX * ChunkSize, z + worldZ * ChunkSize) * height, z) - new Vector3(ChunkSize * 0.5f, 0, ChunkSize * 0.5f);
 
                     // TODO: optimization- cache noise samples in a structure that can be sampled similarly to the noise generator itself (save nearly 80% of the noise samples).
                     // Normal
-                    float heightL = GetTerrainModifiedNoise(x - stepSize + worldX * chunkSize, z + worldZ * chunkSize) * height;
-                    float heightR = GetTerrainModifiedNoise(x + stepSize + worldX * chunkSize, z + worldZ * chunkSize) * height;
-                    float heightD = GetTerrainModifiedNoise(x + worldX * chunkSize, z - stepSize + worldZ * chunkSize) * height;
-                    float heightU = GetTerrainModifiedNoise(x + worldX * chunkSize, z + stepSize + worldZ * chunkSize) * height;
+                    float heightL = GetTerrainModifiedNoise(x - stepSize + worldX * ChunkSize, z + worldZ * ChunkSize) * height;
+                    float heightR = GetTerrainModifiedNoise(x + stepSize + worldX * ChunkSize, z + worldZ * ChunkSize) * height;
+                    float heightD = GetTerrainModifiedNoise(x + worldX * ChunkSize, z - stepSize + worldZ * ChunkSize) * height;
+                    float heightU = GetTerrainModifiedNoise(x + worldX * ChunkSize, z + stepSize + worldZ * ChunkSize) * height;
 
                     Vector3 gradientX = new Vector3(1, heightR - heightL, 0);
                     Vector3 gradientZ = new Vector3(0, heightU - heightD, 1);
@@ -97,7 +121,7 @@ namespace Roots.World
             return vertices;
         }
 
-        private Mesh TerrainMeshFromPoints(Vertex[] vertices)
+        private Mesh TerrainMeshFromVertices(Vertex[] vertices)
         {
             int vertexCount = ChunkEdgeVertexCount;
 

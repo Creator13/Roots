@@ -50,7 +50,6 @@ namespace Roots.World
             {
                 // Loading new chunks *ALWAYS* needs to happen before the event invocation
                 UpdateVisibleChunks();
-                LoadedChunksChanged?.Invoke();
             }
         }
 
@@ -87,6 +86,7 @@ namespace Roots.World
 
             // Update loaded chunks
             loadedChunks = newChunks;
+            LoadedChunksChanged?.Invoke();
         }
 
         private void UpdateCurrentChunk()
@@ -94,8 +94,8 @@ namespace Roots.World
             int originalChunkX = playerChunkX;
             int originalChunkZ = playerChunkZ;
 
-            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkGenerator.chunkSize);
-            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkGenerator.chunkSize);
+            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkGenerator.ChunkSize);
+            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkGenerator.ChunkSize);
 
             if (playerChunkX != originalChunkX || playerChunkZ != originalChunkZ)
             {
@@ -111,16 +111,16 @@ namespace Roots.World
         public Vector3[] GetCombinedPointData()
         {
             int chunkCount = ChunkCount;
-            int chunkVertexCount = chunkGenerator.ChunkVertexCount;
+            int chunkPointCount = chunkGenerator.ChunkPointCount;
             
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
-            Vector3[] points = new Vector3[chunkCount * chunkVertexCount];
+            Vector3[] points = new Vector3[chunkCount * chunkPointCount];
             int iChunk = 0;
             foreach (Chunk chunk in loadedChunks.Values)
             {
-                for (int iPoint = 0; iPoint < chunkVertexCount; iPoint++)
+                for (int iPoint = 0; iPoint < chunkPointCount; iPoint++)
                 {
-                    points[chunkVertexCount * iChunk + iPoint] = chunk.Points[iPoint].position + chunk.cachedWorldPosition;
+                    points[chunkPointCount * iChunk + iPoint] = chunk.Points[iPoint] + chunk.cachedWorldPosition;
                 }
 
                 iChunk++;
@@ -144,12 +144,13 @@ namespace Roots.World
             }
 
             loadedChunks = newChunks;
+            LoadedChunksChanged?.Invoke();
         }
 
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(playerChunkX, playerChunkZ), Vector3.one * chunkGenerator.chunkSize);
+            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(playerChunkX, playerChunkZ), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
 
             if (loadedChunks != null)
             {
@@ -157,10 +158,17 @@ namespace Roots.World
                 foreach (var pos in loadedChunks.Keys)
                 {
                     if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
-
-                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(pos.x, pos.y), Vector3.one * chunkGenerator.chunkSize);
+            
+                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(pos.x, pos.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
+        }
+
+        public Bounds GetCurrentBounds()
+        {
+            float edgeSize = (loadRadius * 2 + 3) *chunkGenerator.ChunkSize;
+            
+            return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
         }
     }
 }

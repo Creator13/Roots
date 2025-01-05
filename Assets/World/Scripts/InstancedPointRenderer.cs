@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Roots.World
@@ -9,13 +10,8 @@ namespace Roots.World
 
         [SerializeField] private Transform followObject;
 
-        [SerializeField] private float noiseScale = .1f;
-        [SerializeField] private float noiseStrength = 3f;
-        [SerializeField] private int size = 20;
-        // [SerializeField] private PathNoiseGenerator noiseGenerator;
-
         [Space]
-        [SerializeField] private InstancedPointProvider pointProvider;
+        [SerializeField] private PointProvider pointProvider;
         [SerializeField] private Mesh pointMesh;
         [SerializeField] private Material material;
 
@@ -29,11 +25,6 @@ namespace Roots.World
 
         private Vector3[] points;
 
-        private void Awake()
-        {
-            // floorCollider = GetComponent<MeshCollider>();
-        }
-
         private void OnEnable()
         {
             pointProvider.PointDataChanged += Regenerate;
@@ -44,6 +35,7 @@ namespace Roots.World
         private void OnDisable()
         {
             pointProvider.PointDataChanged -= Regenerate;
+            ReleaseBuffers();
         }
 
         private void Update()
@@ -55,10 +47,8 @@ namespace Roots.World
 
         private void Regenerate()
         {
-            // GeneratePoints();
             points = pointProvider.GetPointData();
             UpdateBuffers();
-            // GenerateMesh();
         }
 
         private void UpdateBuffers()
@@ -76,35 +66,9 @@ namespace Roots.World
             pointDataBuffer.SetData(points);
 
             rp = new RenderParams(material);
-            rp.worldBounds = new Bounds(Vector3.zero, new Vector3(size * 2.1f, noiseStrength * 2, size * 2.1f));
+            rp.worldBounds = new Bounds(Vector3.zero, Vector3.one * float.MaxValue);
             rp.material.SetBuffer(InstancePositionsSPID, pointDataBuffer);
         }
-
-        // private void GeneratePoints()
-        // {
-        //     points = new List<Vector3>();
-        //     for (int x = 0; x < size; x++)
-        //     {
-        //         for (int z = 0; z < size; z++)
-        //         {
-        //             points.Add(new Vector3(x, noiseGenerator.GetNoise(x, z) * noiseStrength, z));
-        //         }
-        //     }
-        // }
-
-        // private void GenerateMesh()
-        // {
-        //     MeshBuilder mb = new MeshBuilder();
-        //     for (int x = 0; x < size - 1; x++)
-        //     {
-        //         for (int z = 0; z < size - 1; z++)
-        //         {
-        //             mb.AddQuadNew(points[z + size * x], points[z + 1 + size * x], points[z + 1 + size * (x + 1)], points[z + size * (x + 1)]);
-        //         }
-        //     }
-        //
-        //     floorCollider.sharedMesh = mb.GetMesh();
-        // }
 
         private void ReleaseBuffers()
         {
@@ -114,33 +78,5 @@ namespace Roots.World
             pointDataBuffer?.Release();
             pointDataBuffer = null;
         }
-//
-// #if UNITY_EDITOR
-//         private void OnEnable()
-//         {
-//             Undo.undoRedoEvent += Editor_OnUndoRedo;
-//         }
-//
-//         private void Editor_OnUndoRedo(in UndoRedoInfo undo)
-//         {
-//             UpdateBuffers();
-//         }
-//
-//         private void OnValidate()
-//         {
-//             if (EditorApplication.isPlaying)
-//             {
-//                 Regenerate();
-//             }
-//         }
-// #endif
-//
-//         private void OnDisable()
-//         {
-// #if UNITY_EDITOR
-//             Undo.undoRedoEvent -= Editor_OnUndoRedo;
-// #endif
-//             ReleaseBuffers();
-//         }
     }
 }

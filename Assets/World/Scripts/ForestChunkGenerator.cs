@@ -12,7 +12,8 @@ namespace Roots.World
         [SerializeField] private float treeDensity;
         [SerializeField] private PathNoiseGenerator noiseGenerator;
 
-        public override int ChunkEdgeVertexCount => 100;
+        public override int ChunkEdgeVertexCount => 11;
+        public override int ChunkEdgePointCount => 11;
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
@@ -25,11 +26,11 @@ namespace Roots.World
 
         private void SpawnTrees(Transform chunkTransform)
         {
-            float targetTreesPerChunk = chunkSize * chunkSize * treeDensity;
+            float targetTreesPerChunk = ChunkSize * ChunkSize * treeDensity;
             for (int i = 0; i < targetTreesPerChunk; i++)
             {
-                float x = Random.Range(0, chunkSize) - chunkSize * .5f;
-                float z = Random.Range(0, chunkSize) - chunkSize * .5f;
+                float x = Random.Range(0, ChunkSize) - ChunkSize * .5f;
+                float z = Random.Range(0, ChunkSize) - ChunkSize * .5f;
                 float noise = noiseGenerator.GetNoise(chunkTransform.position.x + x, chunkTransform.position.z + z);
                 if (Random.value < noise)
                 {

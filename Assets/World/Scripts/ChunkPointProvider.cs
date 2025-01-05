@@ -2,28 +2,28 @@
 
 namespace Roots.World
 {
-    public class ChunkInstancedPointProvider : InstancedPointProvider
+    public class ChunkPointProvider : PointProvider
     {
         [SerializeField] private ChunkLoader chunkLoader;
 
         private void OnEnable()
         {
-            chunkLoader.LoadedChunksChanged += OnLoadedChunksChanged;
+            chunkLoader.LoadedChunksChanged += OnPointDataChanged;
         }
 
         private void OnDisable()
         {
-            chunkLoader.LoadedChunksChanged -= OnLoadedChunksChanged;
-        }
-
-        private void OnLoadedChunksChanged()
-        {
-            OnPointDataChanged();
+            chunkLoader.LoadedChunksChanged -= OnPointDataChanged;
         }
         
         public override Vector3[] GetPointData()
         { 
             return chunkLoader.GetCombinedPointData();
+        }
+
+        public override Bounds GetBounds()
+        {
+            return chunkLoader.GetCurrentBounds();
         }
     }
 }

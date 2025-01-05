@@ -11,23 +11,33 @@ namespace Roots.World
         [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private InstancedPointRenderer instancedRenderer;
 
-        private WorldType currentWorldType = WorldType.Mesh;
+        [SerializeField] private WorldType currentWorldType = WorldType.Mesh;
+
+        private void OnEnable()
+        {
+            chunkLoader.LoadedChunksChanged += UpdateEnabledRenderers;
+        }
+
+        private void OnDisable()
+        {
+            chunkLoader.LoadedChunksChanged -= UpdateEnabledRenderers;
+        }
 
         private void Start()
         {
-            UpdateComponents();
+            UpdateEnabledRenderers();
         }
 
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.T))
             {
-                RotateWorldVisualization();
-                UpdateComponents();
+                RotateWorldVisualizationType();
+                UpdateEnabledRenderers();
             }
         }
 
-        private void UpdateComponents()
+        private void UpdateEnabledRenderers()
         {
             Assert.IsNotNull(chunkLoader);
             Assert.IsNotNull(instancedRenderer);
@@ -42,7 +52,7 @@ namespace Roots.World
             instancedRenderer.enabled = instancedRendererEnabled;
         }
         
-        private void RotateWorldVisualization()
+        private void RotateWorldVisualizationType()
         {
             currentWorldType = (WorldType)(((int)currentWorldType + 1) % Enum.GetValues(typeof(WorldType)).Length);
         }

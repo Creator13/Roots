@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Roots.World
 {
-    public abstract class InstancedPointProvider : MonoBehaviour
+    public abstract class PointProvider : MonoBehaviour
     {
         public event Action PointDataChanged;
 
@@ -13,5 +13,7 @@ namespace Roots.World
         {
             PointDataChanged?.Invoke();
         }
+
+        public abstract Bounds GetBounds();
     }
 }
