@@ -501,7 +501,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
-  loadRadius: 2
+  loadRadius: 7
   player: {fileID: 1289735941}
   playerChunkX: 0
   playerChunkZ: 0
@@ -563,7 +563,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chunkLoader: {fileID: 1158956743}
   instancedRenderer: {fileID: 1158956746}
-  currentWorldType: 1
+  currentWorldType: 0
 --- !u!4 &1289735941 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}

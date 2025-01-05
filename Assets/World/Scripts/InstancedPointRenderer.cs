@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 namespace Roots.World
 {
@@ -23,6 +25,13 @@ namespace Roots.World
         private GraphicsBuffer pointDataBuffer;
 
         private Vector3[] points;
+
+        private CustomSampler bufferSampler;
+
+        private void Awake()
+        {
+            bufferSampler = CustomSampler.Create("Instancing buffer updates");
+        }
 
         private void OnEnable()
         {
@@ -52,6 +61,7 @@ namespace Roots.World
 
         private void UpdateBuffers()
         {
+            bufferSampler.Begin();
             ReleaseBuffers();
 
             commandBuffer = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, commandCount, GraphicsBuffer.IndirectDrawIndexedArgs.size);
@@ -67,6 +77,7 @@ namespace Roots.World
             rp = new RenderParams(material);
             rp.worldBounds = new Bounds(Vector3.zero, Vector3.one * float.MaxValue);
             rp.material.SetBuffer(InstancePositionsSPID, pointDataBuffer);
+            bufferSampler.End();
         }
 
         private void ReleaseBuffers()

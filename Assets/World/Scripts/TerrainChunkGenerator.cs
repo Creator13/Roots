@@ -1,6 +1,7 @@
 ﻿using Roots.Util;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Profiling;
 
 namespace Roots.World
 {
@@ -8,14 +9,25 @@ namespace Roots.World
     public class TerrainChunkGenerator : ChunkGenerator
     {
         [SerializeField] private PathNoiseGenerator noiseGenerator;
+        [SerializeField] private Material terrainMaterial;
+        
+        [Header("Detail")]
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
-        [SerializeField] private int pointCloudStepSize = 0;
+        [SerializeField] private int pointCloudStepSize = 0; // Subsample step size of mesh edge
+        
+        [Header("Terrain settings")]
         [SerializeField] private float height = 4f;
         [SerializeField] private float noisePremultiplier = 1.25f;
-        [SerializeField] private Material terrainMaterial;
 
         public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
         public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
+
+        private CustomSampler generatorSampler;
+
+        private void Awake()
+        {
+            generatorSampler = CustomSampler.Create("Chunk generation");
+        }
 
         private void OnValidate()
         {
@@ -55,6 +67,7 @@ namespace Roots.World
 
         private Vector3[] GeneratePointCloudFromVertices(Vertex[] vertices)
         {
+            generatorSampler.Begin();
             int edgeVertexCount = ChunkEdgeVertexCount;
             int edgePointCount = ChunkEdgePointCount;
             
@@ -70,6 +83,8 @@ namespace Roots.World
                     }
                 }
             }
+            
+            generatorSampler.End();
             return points;
         }
 
@@ -88,6 +103,7 @@ namespace Roots.World
 
         private Vertex[] GeneratePoints(int worldX, int worldZ)
         {
+            generatorSampler.Begin();
             int edgeVertexCount = ChunkEdgeVertexCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
@@ -116,12 +132,14 @@ namespace Roots.World
                     vertices[i].uv = new Vector2(xi * stepSize, zi * stepSize);
                 }
             }
+            generatorSampler.End();
 
             return vertices;
         }
 
         private Mesh TerrainMeshFromVertices(Vertex[] vertices)
         {
+            generatorSampler.Begin();
             int vertexCount = ChunkEdgeVertexCount;
 
             MeshBuilder mb = new MeshBuilder();
@@ -139,6 +157,7 @@ namespace Roots.World
             }
 
             Mesh mesh = mb.GetMesh();
+            generatorSampler.End();
             return mesh;
         }
     }

@@ -112,7 +112,7 @@ namespace Roots.World
         {
             int chunkCount = ChunkCount;
             int chunkPointCount = chunkGenerator.ChunkPointCount;
-            
+
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
             Vector3[] points = new Vector3[chunkCount * chunkPointCount];
             int iChunk = 0;
@@ -129,11 +129,20 @@ namespace Roots.World
             return points;
         }
 
+        public Bounds GetCurrentBounds()
+        {
+            float edgeSize = (loadRadius * 2 + 3) * chunkGenerator.ChunkSize;
+
+            return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
+        }
+
         [ContextMenu("Regenerate all")]
         private void RegenerateChunks()
         {
-            // TODO fix this method (it wonks out)
+            // TODO fix this method (it wonks out when not at chunk 0,0)
+#if UNITY_EDITOR
             if (!EditorApplication.isPlaying) return;
+#endif
 
             var newChunks = new Dictionary<Vector2Int, Chunk>(loadedChunks.Count);
             foreach (var (chunkPos, chunk) in loadedChunks)
@@ -158,17 +167,10 @@ namespace Roots.World
                 foreach (var pos in loadedChunks.Keys)
                 {
                     if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
-            
+
                     Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(pos.x, pos.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
-        }
-
-        public Bounds GetCurrentBounds()
-        {
-            float edgeSize = (loadRadius * 2 + 3) *chunkGenerator.ChunkSize;
-            
-            return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
         }
     }
 }
