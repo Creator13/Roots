@@ -26,6 +26,8 @@ namespace Roots.World
 
         private Vector3[] points;
 
+        public int PointCount => points.Length;
+        
         private CustomSampler bufferSampler;
 
         private void Awake()

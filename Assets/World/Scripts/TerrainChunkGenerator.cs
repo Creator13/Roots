@@ -1,7 +1,6 @@
 ﻿using Roots.Util;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Profiling;
 
 namespace Roots.World
 {
@@ -21,13 +20,6 @@ namespace Roots.World
 
         public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
         public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
-
-        private CustomSampler generatorSampler;
-
-        private void Awake()
-        {
-            generatorSampler = CustomSampler.Create("Chunk generation");
-        }
 
         private void OnValidate()
         {
@@ -67,8 +59,8 @@ namespace Roots.World
 
         private Vector3[] GeneratePointCloudFromVertices(Vertex[] vertices)
         {
-            generatorSampler.Begin();
             int edgeVertexCount = ChunkEdgeVertexCount;
+            // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
             int edgePointCount = ChunkEdgePointCount;
             
             Vector3[] points = new Vector3[edgePointCount * edgePointCount];
@@ -84,7 +76,6 @@ namespace Roots.World
                 }
             }
             
-            generatorSampler.End();
             return points;
         }
 
@@ -103,7 +94,6 @@ namespace Roots.World
 
         private Vertex[] GeneratePoints(int worldX, int worldZ)
         {
-            generatorSampler.Begin();
             int edgeVertexCount = ChunkEdgeVertexCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
@@ -132,14 +122,12 @@ namespace Roots.World
                     vertices[i].uv = new Vector2(xi * stepSize, zi * stepSize);
                 }
             }
-            generatorSampler.End();
 
             return vertices;
         }
 
         private Mesh TerrainMeshFromVertices(Vertex[] vertices)
         {
-            generatorSampler.Begin();
             int vertexCount = ChunkEdgeVertexCount;
 
             MeshBuilder mb = new MeshBuilder();
@@ -157,7 +145,6 @@ namespace Roots.World
             }
 
             Mesh mesh = mb.GetMesh();
-            generatorSampler.End();
             return mesh;
         }
     }
