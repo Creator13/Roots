@@ -1,5 +1,5 @@
 ﻿using System;
-using FastNoise;
+using FastNoise_LITE;
 using Unity.Mathematics;
 using UnityEngine;
 

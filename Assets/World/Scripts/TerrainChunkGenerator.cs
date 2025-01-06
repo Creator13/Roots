@@ -40,7 +40,7 @@ namespace Roots.World
 
             Assert.IsTrue(terrainMeshSubdivisions >= 0);
 
-            Vertex[] vertices = GeneratePoints(x, z);
+            Vertex[] vertices = GenerateVertices(x, z);
             Vector3[] points = GeneratePointCloudFromVertices(vertices);
             chunk.SetVertices(vertices, points);
 
@@ -92,7 +92,7 @@ namespace Roots.World
             return 6 * x * x * x * x * x - 15 * x * x * x * x + 10 * x * x * x;
         }
 
-        private Vertex[] GeneratePoints(int worldX, int worldZ)
+        private Vertex[] GenerateVertices(int worldX, int worldZ)
         {
             int edgeVertexCount = ChunkEdgeVertexCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);

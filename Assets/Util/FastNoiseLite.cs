@@ -54,7 +54,7 @@ using System.Runtime.CompilerServices;
 using FNLfloat = System.Single;
 //using FNLfloat = System.Double;
 
-namespace FastNoise
+namespace FastNoise_LITE
 {
 public class FastNoiseLite
 {

@@ -1,11 +1,43 @@
 using System;
 using System.Collections.Generic;
+using Roots.Util;
+using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Roots.World
 {
+    public struct GenerateChunkJob : IJobParallelFor
+    {
+        public struct ChunkData
+        {
+            public Vector2Int worldLocation;
+            [NativeDisableContainerSafetyRestriction] public NativeArray<Vertex> vertices;
+            [NativeDisableContainerSafetyRestriction] public NativeArray<Vector3> points;
+        }
+    
+        [NativeDisableUnsafePtrRestriction] public FastNoise noise;
+        public NativeArray<ChunkData> chunkData;
+        
+        private int edgeVertexCount, edgePointCount;
+
+        public void Execute(int index)
+        {
+            const int size = 4;
+            var chunk = chunkData[index];
+            var noiseData = new float[size * size];
+            noise.GenUniformGrid2D(noiseData, chunk.worldLocation.x, chunk.worldLocation.y, size, size, 0.02f, 1337);
+            
+            for (int i = 0; i < size * size; i++)
+            {
+                chunk.points[i] = new Vector3(chunk.worldLocation.x, noiseData[i], chunk.worldLocation.y);
+            }
+        }
+    }
+    
     public class ChunkLoader : MonoBehaviour
     {
         [SerializeField] private ChunkGenerator chunkGenerator;
@@ -32,6 +64,29 @@ namespace Roots.World
         private void Start()
         {
             UpdateVisibleChunks();
+            FastNoise noise = FastNoise.FromEncodedNodeTree("DQAFAAAAAAAAQAgAAAAAAD8AAAAAAA==");
+            var data = new NativeArray<GenerateChunkJob.ChunkData>(4, Allocator.TempJob);
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = new GenerateChunkJob.ChunkData()
+                {
+                    worldLocation = new Vector2Int(i, i),
+                    points = new NativeArray<Vector3>(16, Allocator.TempJob),
+                    vertices = default,
+                };
+            }
+
+            var generateChunkJob = new GenerateChunkJob
+            {
+                noise = noise,
+                chunkData = data
+            };
+            JobHandle handle = generateChunkJob.Schedule(4, 1);
+            handle.Complete();
+            
+            Debug.Log("break here");
+            
+            data.Dispose();
         }
 
         private void Update()
@@ -40,7 +95,7 @@ namespace Roots.World
             {
                 RegenerateChunks();
             }
-
+            
             playerChunkChanged = false;
             playerPosition = player.transform.position;
 
