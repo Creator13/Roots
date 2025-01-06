@@ -103,7 +103,7 @@ namespace Roots.World
             }
         }
 
-        public IEnumerable<Chunk> GetChunkEnumarable()
+        public IEnumerable<Chunk> GetChunkEnumerable()
         {
             return loadedChunks.Values;
         }
@@ -139,7 +139,7 @@ namespace Roots.World
         [ContextMenu("Regenerate all")]
         private void RegenerateChunks()
         {
-            // TODO fix this method (it wonks out when not at chunk 0,0)
+            // TODO fix this method (it wonks out when run and not at chunk 0,0)
 #if UNITY_EDITOR
             if (!EditorApplication.isPlaying) return;
 #endif

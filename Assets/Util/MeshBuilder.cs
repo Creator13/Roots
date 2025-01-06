@@ -31,13 +31,15 @@ namespace Roots.Util
         private readonly List<Vector3> normals;
         private readonly List<Vector2> uvs;
 
-        private readonly List<int> triangles = new();
+        private readonly List<int> triangles;
 
-        public MeshBuilder(int capacity = 0)
+        public MeshBuilder(int capacity = 0, int triangleCapacity = 0)
         {
             vertices = capacity > 0 ? new List<Vector3>(capacity) : new List<Vector3>();
             normals = capacity > 0 ? new List<Vector3>(capacity) : new List<Vector3>();
             uvs = capacity > 0 ? new List<Vector2>(capacity) : new List<Vector2>();
+            
+            triangles = triangleCapacity > 0 ? new List<int>(triangleCapacity) : new List<int>();
         }
 
         public Mesh GetMesh(string name = "")

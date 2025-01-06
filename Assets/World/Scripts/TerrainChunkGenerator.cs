@@ -130,7 +130,7 @@ namespace Roots.World
         {
             int vertexCount = ChunkEdgeVertexCount;
 
-            MeshBuilder mb = new MeshBuilder();
+            MeshBuilder mb = new MeshBuilder(vertices.Length * 4, vertices.Length * 6);
             for (int x = 0; x < vertexCount - 1; x++)
             {
                 for (int z = 0; z < vertexCount - 1; z++)
