@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Indirect_IndirectPointShader
+  m_Name: Mat_IndirectPointsEmission
   m_Shader: {fileID: 4800000, guid: 338d861289a9cb145b980cf3467e4bf6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
