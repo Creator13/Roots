@@ -1,43 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Roots.Util;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.Jobs;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace Roots.World
 {
-    public struct GenerateChunkJob : IJobParallelFor
-    {
-        public struct ChunkData
-        {
-            public Vector2Int worldLocation;
-            [NativeDisableContainerSafetyRestriction] public NativeArray<Vertex> vertices;
-            [NativeDisableContainerSafetyRestriction] public NativeArray<Vector3> points;
-        }
-    
-        [NativeDisableUnsafePtrRestriction] public FastNoise noise;
-        public NativeArray<ChunkData> chunkData;
-        
-        private int edgeVertexCount, edgePointCount;
 
-        public void Execute(int index)
-        {
-            const int size = 4;
-            var chunk = chunkData[index];
-            var noiseData = new float[size * size];
-            noise.GenUniformGrid2D(noiseData, chunk.worldLocation.x, chunk.worldLocation.y, size, size, 0.02f, 1337);
-            
-            for (int i = 0; i < size * size; i++)
-            {
-                chunk.points[i] = new Vector3(chunk.worldLocation.x, noiseData[i], chunk.worldLocation.y);
-            }
-        }
-    }
-    
     public class ChunkLoader : MonoBehaviour
     {
         [SerializeField] private ChunkGenerator chunkGenerator;
@@ -49,44 +19,18 @@ namespace Roots.World
         [SerializeField] private int playerChunkZ;
 
         private Vector3 playerPosition;
-        private Dictionary<Vector2Int, Chunk> loadedChunks;
+        private Dictionary<Vector2Int, Chunk> loadedChunks = new();
 
         public int ChunkCount => (loadRadius * 2 + 1) * (loadRadius * 2 + 1);
+        public int InitializedChunkCount => loadedChunks.Values.Count(chunk => chunk.IsInitialized);
+        public int ActiveChunkGenJobCount => chunkGenerator.ActiveChunkGenJobCount;
 
         private bool playerChunkChanged;
         public event Action LoadedChunksChanged;
 
-        private void Awake()
-        {
-            loadedChunks = new Dictionary<Vector2Int, Chunk>();
-        }
-
         private void Start()
         {
             UpdateVisibleChunks();
-            FastNoise noise = FastNoise.FromEncodedNodeTree("DQAFAAAAAAAAQAgAAAAAAD8AAAAAAA==");
-            var data = new NativeArray<GenerateChunkJob.ChunkData>(4, Allocator.TempJob);
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = new GenerateChunkJob.ChunkData()
-                {
-                    worldLocation = new Vector2Int(i, i),
-                    points = new NativeArray<Vector3>(16, Allocator.TempJob),
-                    vertices = default,
-                };
-            }
-
-            var generateChunkJob = new GenerateChunkJob
-            {
-                noise = noise,
-                chunkData = data
-            };
-            JobHandle handle = generateChunkJob.Schedule(4, 1);
-            handle.Complete();
-            
-            Debug.Log("break here");
-            
-            data.Dispose();
         }
 
         private void Update()
@@ -95,7 +39,7 @@ namespace Roots.World
             {
                 RegenerateChunks();
             }
-            
+
             playerChunkChanged = false;
             playerPosition = player.transform.position;
 
@@ -108,23 +52,33 @@ namespace Roots.World
             }
         }
 
+        private void LateUpdate()
+        {
+            int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
+
+            if (finishedJobs > 0)
+            {
+                LoadedChunksChanged?.Invoke();
+            }
+        }
+
         private void UpdateVisibleChunks()
         {
-            Dictionary<Vector2Int, Chunk> newChunks = new();
+            Dictionary<Vector2Int, Chunk> newChunks = new(loadedChunks.Count);
 
             // Create new chunks
-            for (int x = -loadRadius; x < loadRadius + 1; x++)
+            for (int xRel = -loadRadius; xRel < loadRadius + 1; xRel++)
             {
-                for (int z = -loadRadius; z < loadRadius + 1; z++)
+                for (int zRel = -loadRadius; zRel < loadRadius + 1; zRel++)
                 {
-                    Vector2Int key = new Vector2Int(x + playerChunkX, z + playerChunkZ);
+                    Vector2Int key = new Vector2Int(xRel + playerChunkX, zRel + playerChunkZ);
                     if (loadedChunks.TryGetValue(key, out var chunk))
                     {
                         newChunks.Add(key, chunk);
                     }
                     else
                     {
-                        Chunk newChunk = chunkGenerator.CreateChunk(x + playerChunkX, z + playerChunkZ, transform);
+                        Chunk newChunk = chunkGenerator.CreateChunkAsync(key, transform);
                         newChunks.Add(key, newChunk);
                     }
                 }
@@ -141,7 +95,6 @@ namespace Roots.World
 
             // Update loaded chunks
             loadedChunks = newChunks;
-            LoadedChunksChanged?.Invoke();
         }
 
         private void UpdateCurrentChunk()
@@ -165,7 +118,7 @@ namespace Roots.World
 
         public Vector3[] GetCombinedPointData()
         {
-            int chunkCount = ChunkCount;
+            int chunkCount = InitializedChunkCount;
             int chunkPointCount = chunkGenerator.ChunkPointCount;
 
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
@@ -173,6 +126,8 @@ namespace Roots.World
             int iChunk = 0;
             foreach (Chunk chunk in loadedChunks.Values)
             {
+                if (!chunk.IsInitialized) continue;
+                
                 for (int iPoint = 0; iPoint < chunkPointCount; iPoint++)
                 {
                     points[chunkPointCount * iChunk + iPoint] = chunk.Points[iPoint] + chunk.cachedWorldPosition;
@@ -214,7 +169,7 @@ namespace Roots.World
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(playerChunkX, playerChunkZ), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
+            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(playerChunkX, playerChunkZ), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
 
             if (loadedChunks != null)
             {
@@ -223,7 +178,7 @@ namespace Roots.World
                 {
                     if (pos.x == playerChunkX && pos.y == playerChunkZ) continue;
 
-                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenter(pos.x, pos.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
+                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(pos.x, pos.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
         }

@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Roots.World
 {
@@ -15,13 +18,24 @@ namespace Roots.World
         public override int ChunkEdgeVertexCount => 11;
         public override int ChunkEdgePointCount => 11;
 
+        public override int ActiveChunkGenJobCount => throw new NotImplementedException();
+
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
-            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenter(x, z), Quaternion.identity, parent);
+            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenterPosition(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
             chunk.InitAt(x, z);
             SpawnTrees(chunk.transform);
             return chunk;
+        }
+
+        public override int UpdateChunkGenerationJobs()
+        {
+            throw new System.NotImplementedException();
+        }
+        public override Chunk CreateChunkAsync(Vector2Int position, Transform transform)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void SpawnTrees(Transform chunkTransform)

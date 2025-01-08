@@ -12,6 +12,8 @@ namespace Roots.World
 
         private MeshRenderer meshRenderer;
 
+        public bool IsInitialized { get; private set; }
+        
         public void InitAt(int x, int z)
         {
             this.x = x;
@@ -19,6 +21,7 @@ namespace Roots.World
             
             meshRenderer = GetComponent<MeshRenderer>();
             cachedWorldPosition = transform.position;
+            IsInitialized = true;
         }
 
         public void SetVertices(Vertex[] vertices, Vector3[] points)
@@ -29,6 +32,8 @@ namespace Roots.World
 
         public void SetMeshRendererEnabled(bool enabled)
         {
+            if (!IsInitialized) return;
+            
             meshRenderer.enabled = enabled;
         }
     }

@@ -58,7 +58,10 @@ namespace Roots.World
         private void Regenerate()
         {
             points = pointProvider.GetPointData();
-            UpdateBuffers();
+            if (points.Length > 0)
+            {
+                UpdateBuffers();
+            }
         }
 
         private void UpdateBuffers()

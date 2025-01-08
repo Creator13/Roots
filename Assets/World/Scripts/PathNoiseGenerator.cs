@@ -1,11 +1,55 @@
-﻿using System;
-using FastNoise_LITE;
+﻿using FastNoise;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Assertions;
+using Math = Roots.Util.Math;
 
 namespace Roots.World
 {
-    
+    [BurstCompile]
+    public struct GenerateTerrainNoisePointJob : IJobParallelFor
+    {
+        public Vector2 offset;
+        public int edgePointCount;
+        public float stepSize;
+        public NativeArray<float> heightData;
+
+        public FastNoiseLite worleyGen;
+        public FastNoiseLite gradientGen;
+
+        public float height;
+        public float gradientWeight;
+        public float worleyStrengthMultiplier;
+        public float smoothstepLevel;
+        public float smoothstepWidth;
+        public float noisePremultiplier;
+
+        public void Execute(int index)
+        {
+            int xi = index / edgePointCount; // point x index
+            int zi = index % edgePointCount; // point z index
+            float x = xi * stepSize + offset.x; // point x world position
+            float z = zi * stepSize + offset.y; // point z world position
+
+            float warpedX = x, warpedZ = z;
+            gradientGen.DomainWarp(ref warpedX, ref warpedZ);
+            float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(warpedX, warpedZ));
+            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
+            float sample = gradientSample * gradientWeight + voronoiSample;
+
+            sample *= worleyStrengthMultiplier;
+            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
+
+            sample *= noisePremultiplier;
+            sample = Math.Smootherstep(sample);
+
+            heightData[index] = sample * height;
+        }
+    }
+
     [CreateAssetMenu(menuName = "Roots/Noise Generator", fileName = "New Noise Generator", order = 0)]
     public class PathNoiseGenerator : ScriptableObject
     {
@@ -21,18 +65,22 @@ namespace Roots.World
         [Space]
         [SerializeField] private float smoothstepLevel = .89f;
         [SerializeField] private float smoothstepWidth = 1.27f;
+        
+        [Space]
+        [SerializeField] private float noisePremultiplier = 1.1f;
+        [SerializeField] private float height = 4f;
 
         private FastNoiseLite worleyGen;
         private FastNoiseLite gradientGen;
-        private FastNoiseLite otherGen;
 
         private bool isInitialized = false;
-        public bool IsInitialized => isInitialized && !(worleyGen == null || gradientGen == null);
+        public bool IsInitialized => isInitialized;
+        // public bool IsInitialized => isInitialized && !(worleyGen == null || gradientGen == null);
 
-        private void Awake()
-        {
-            Initialize();
-        }
+        // private void Awake()
+        // {
+        // Initialize();
+        // }
 
         private void Initialize()
         {
@@ -51,15 +99,15 @@ namespace Roots.World
             gradientGen.SetFractalType(FastNoiseLite.FractalType.Ridged);
             gradientGen.SetFractalOctaves(3);
             gradientGen.SetFractalLacunarity(1.8f);
-            
+
             isInitialized = true;
-            
+
             Debug.Log("Noise generator initialized", this);
         }
 
         public float GetNoise(float x, float z)
         {
-            if (!IsInitialized) throw new InvalidOperationException("Noise generator is not initialized.");
+            Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
 
             float warpedX = x, warpedZ = z;
             gradientGen.DomainWarp(ref warpedX, ref warpedZ);
@@ -71,28 +119,31 @@ namespace Roots.World
             return sample;
         }
 
+        public GenerateTerrainNoisePointJob CreateNoiseGenJob(int edgePointCount, float stepSize, Vector2 chunkOffset, NativeArray<float> heightDataArray)
+        {
+            Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
+            
+            return new GenerateTerrainNoisePointJob
+            {
+                gradientGen = gradientGen,
+                worleyGen = worleyGen,
+                edgePointCount = edgePointCount,
+                heightData = heightDataArray,
+                stepSize = stepSize,
+                offset = chunkOffset,
+                
+                gradientWeight = gradientWeight,
+                worleyStrengthMultiplier = worleyStrengthMultiplier,
+                smoothstepWidth = smoothstepWidth,
+                smoothstepLevel = smoothstepLevel,
+                noisePremultiplier = noisePremultiplier,
+                height = height
+            };
+        }
+
         private void OnValidate()
         {
             Initialize();
         }
-
-        // private void OnDrawGizmosSelected()
-        // {
-        //     if (IsInitialized == false) Initialize();
-        //
-        //     const int n = 100;
-        //
-        //     for (int i = 0; i < n; i++)
-        //     {
-        //         for (int j = 0; j < n; j++)
-        //         {
-        //             float sample = GetNoise(i, j);
-        //             float x = i;
-        //             float z = j;
-        //             Gizmos.color = new Color(sample, sample, sample);
-        //             Gizmos.DrawCube(new Vector3(x, 0, z), Vector3.one);
-        //         }
-        //     }
-        // }
     }
 }

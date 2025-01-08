@@ -33,11 +33,11 @@ namespace Roots.Util
 
         private readonly List<int> triangles;
 
-        public MeshBuilder(int capacity = 0, int triangleCapacity = 0)
+        public MeshBuilder(int vertexCapacity = 0, int triangleCapacity = 0)
         {
-            vertices = capacity > 0 ? new List<Vector3>(capacity) : new List<Vector3>();
-            normals = capacity > 0 ? new List<Vector3>(capacity) : new List<Vector3>();
-            uvs = capacity > 0 ? new List<Vector2>(capacity) : new List<Vector2>();
+            vertices = vertexCapacity > 0 ? new List<Vector3>(vertexCapacity) : new List<Vector3>();
+            normals = vertexCapacity > 0 ? new List<Vector3>(vertexCapacity) : new List<Vector3>();
+            uvs = vertexCapacity > 0 ? new List<Vector2>(vertexCapacity) : new List<Vector2>();
             
             triangles = triangleCapacity > 0 ? new List<int>(triangleCapacity) : new List<int>();
         }
