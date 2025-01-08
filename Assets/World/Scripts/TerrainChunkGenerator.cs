@@ -118,17 +118,19 @@ namespace Roots.World
                 chunk.transform.SetParent(parent, true);
             }
             
-            int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgeVertexCount = ChunkEdgeVertexCount + 2; // Generate 1 extra vertex in each direction of the grid
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
+
+            int totalPointCount = edgeVertexCount * edgeVertexCount;
             
             GenerationJobData jobData = new()
             {
                 chunkPosition = chunkPosition,
-                heightData = new NativeArray<float>(edgeVertexCount * edgeVertexCount, Allocator.Persistent),
+                heightData = new NativeArray<float>(totalPointCount, Allocator.Persistent),
                 chunk = chunk
             };
             var job = noiseGenerator.CreateNoiseGenJob(edgeVertexCount, stepSize, (Vector2)chunkPosition * ChunkSize, jobData.heightData);
-            jobData.jobHandle = job.Schedule(edgeVertexCount * edgeVertexCount, 3);
+            jobData.jobHandle = job.Schedule(totalPointCount, 3);
             activeJobs.Add(jobData);
 
             return chunk;
@@ -232,22 +234,36 @@ namespace Roots.World
         private Vertex[] GenerateVerticesFromHeightData(NativeArray<float> heights)
         {
             int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
             
-            Vertex[] vertices = new Vertex[heights.Length];
+            Vertex[] vertices = new Vertex[edgeVertexCount * edgeVertexCount];
             for (int xi = 0, i = 0; xi < edgeVertexCount; xi++)
             {
                 for (int zi = 0; zi < edgeVertexCount; zi++, i++)
                 {
+                    // Calculate the indexer into the heights array using larger width of the sample grid
+                    int heightsIndexer = (xi + 1) * edgeSampleCount + zi + 1;
+                    
+                    float xPos = xi * stepSize;
+                    float zPos = zi * stepSize;
+                    
                     // Position
-                    vertices[i].position = new Vector3(xi * stepSize, heights[i], zi * stepSize);
+                    vertices[i].position = new Vector3(xPos, heights[heightsIndexer], zPos);
                     
                     // Normal
-                    // TODO: CALC NORMAL
-                    vertices[i].normal = Vector3.up;
+                    float heightL = heights[heightsIndexer - edgeSampleCount]; // x - 1
+                    float heightR = heights[heightsIndexer + edgeSampleCount]; // x + 1
+                    float heightD = heights[heightsIndexer - 1]; // z - 1
+                    float heightU = heights[heightsIndexer + 1]; // z + 1
+                    
+                    Vector3 gradientX = new Vector3(1, heightR - heightL, 0);
+                    Vector3 gradientZ = new Vector3(0, heightU - heightD, 1);
+                    
+                    vertices[i].normal = Vector3.Cross(gradientZ, gradientX).normalized;
                     
                     // Uv
-                    vertices[i].uv = new Vector2(xi * stepSize, zi * stepSize);
+                    vertices[i].uv = new Vector2(xPos, zPos);
                 }
             }
 
@@ -257,18 +273,20 @@ namespace Roots.World
         private Vector3[] GeneratePointCloudFromHeightData(NativeArray<float> heights)
         {
             int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
             int edgePointCount = ChunkEdgePointCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
             
             Vector3[] points = new Vector3[edgePointCount * edgePointCount];
-            for (int xi = 0, i = 0, j = 0; xi < edgeVertexCount; xi++)
+            for (int xi = 0, j = 0; xi < edgeVertexCount; xi++)
             {
-                for (int zi = 0; zi < edgeVertexCount; zi++, i++)
+                for (int zi = 0; zi < edgeVertexCount; zi++)
                 {
                     if (xi % pointCloudStepSize == 0 && xi != edgeVertexCount - 1 && zi % pointCloudStepSize == 0 && zi != edgeVertexCount - 1)
                     {
-                        points[j] = new Vector3(xi * stepSize, heights[i], zi * stepSize);
+                        int heightsIndexer = (xi + 1) * edgeSampleCount + zi + 1;
+                        points[j] = new Vector3(xi * stepSize, heights[heightsIndexer], zi * stepSize);
                         j++;
                     }
                 }

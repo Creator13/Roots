@@ -31,8 +31,10 @@ namespace Roots.World
         {
             int xi = index / edgePointCount; // point x index
             int zi = index % edgePointCount; // point z index
-            float x = xi * stepSize + offset.x; // point x world position
-            float z = zi * stepSize + offset.y; // point z world position
+            
+            // Offset x and z with 1x -stepsize to generate border of heights used for normal calculation
+            float x = xi * stepSize + offset.x - stepSize; // point x world position
+            float z = zi * stepSize + offset.y - stepSize; // point z world position
 
             float warpedX = x, warpedZ = z;
             gradientGen.DomainWarp(ref warpedX, ref warpedZ);

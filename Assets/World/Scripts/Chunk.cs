@@ -20,6 +20,7 @@ namespace Roots.World
             this.z = z;
             
             meshRenderer = GetComponent<MeshRenderer>();
+            meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             cachedWorldPosition = transform.position;
             IsInitialized = true;
         }
