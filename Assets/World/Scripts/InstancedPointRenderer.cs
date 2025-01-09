@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -39,7 +38,6 @@ namespace Roots.World
         {
             pointProvider.PointDataChanged += Regenerate;
             Regenerate();
-
         }
 
         private void OnDisable()

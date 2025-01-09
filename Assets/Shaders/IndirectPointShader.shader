@@ -59,8 +59,10 @@ Shader "Indirect/IndirectPointShader"
 
             fixed4 frag(v2f i) : SV_Target
             {
-                float4 col = _Color * (_Emission + saturate(6 / i.dist) * 6);
-                // float4 col = lerp(float4(1, 0, 0, 1), float4(0, 0, 1, 1), 5 / i.dist)
+                // float distance_effect = saturate(6 / i.dist) * 6;
+                
+                // float4 col = _Color * (_Emission + saturate(6 / i.dist) * 6);
+                float4 col = lerp(float4(0, 1, 0, 1), float4(0, 1, 1, 1), 5 / i.dist) + (_Emission - 1);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
