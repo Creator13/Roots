@@ -39,6 +39,13 @@ namespace Roots.World
             {
                 RegenerateChunks();
             }
+            
+            int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
+
+            if (finishedJobs > 0)
+            {
+                LoadedChunksChanged?.Invoke();
+            }
 
             playerChunkChanged = false;
             playerPosition = player.transform.position;
@@ -49,16 +56,6 @@ namespace Roots.World
             {
                 // Loading new chunks *ALWAYS* needs to happen before the event invocation
                 UpdateVisibleChunks();
-            }
-        }
-
-        private void LateUpdate()
-        {
-            int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
-
-            if (finishedJobs > 0)
-            {
-                LoadedChunksChanged?.Invoke();
             }
         }
 
