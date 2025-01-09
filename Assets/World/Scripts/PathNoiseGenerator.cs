@@ -79,10 +79,10 @@ namespace Roots.World
         public bool IsInitialized => isInitialized;
         // public bool IsInitialized => isInitialized && !(worleyGen == null || gradientGen == null);
 
-        // private void Awake()
-        // {
-        // Initialize();
-        // }
+        private void Awake()
+        {
+            Initialize();
+        }
 
         private void Initialize()
         {

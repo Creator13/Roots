@@ -2,6 +2,7 @@
 using Roots.Util;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -13,24 +14,23 @@ namespace Roots.World
         public JobHandle jobHandle;
         public NativeArray<float> heightData;
         public Chunk chunk;
-    } 
+    }
 
     [CreateAssetMenu(fileName = "Terrain Chunk Generator", menuName = "Roots/Terrain Chunk Generator", order = 50)]
     public class TerrainChunkGenerator : ChunkGenerator
     {
         [SerializeField] private PathNoiseGenerator noiseGenerator;
         [SerializeField] private Material terrainMaterial;
-        
+
         [Header("Detail")]
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
         [SerializeField] private int pointCloudStepSize = 0; // Subsample step size of mesh edge
-        
+
         [Header("Terrain settings")]
         // [SerializeField] private float height = 4f;
         // [SerializeField] private float noisePremultiplier = 1.25f;
-        
         private List<GenerationJobData> activeJobs = new();
-        
+
         public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
         public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
 
@@ -47,7 +47,7 @@ namespace Roots.World
             if (ActiveChunkGenJobCount == 0) return 0;
 
             List<GenerationJobData> toRemove = new List<GenerationJobData>(activeJobs.Count);
-            
+
             foreach (GenerationJobData jobData in activeJobs)
             {
                 if (jobData.jobHandle.IsCompleted)
@@ -63,7 +63,7 @@ namespace Roots.World
             {
                 activeJobs.Remove(jobData);
             }
-            
+
             return toRemove.Count;
         }
 
@@ -76,11 +76,14 @@ namespace Roots.World
             jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
             MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
             MeshCollider meshCollider = jobData.chunk.gameObject.AddComponent<MeshCollider>();
+            meshCollider.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.UseFastMidphase;
 
             Mesh terrainMesh = TerrainMeshFromVertices(vertices);
             terrainMesh.name = $"Terrain Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
             meshFilter.sharedMesh = terrainMesh;
-            meshCollider.sharedMesh = terrainMesh;
+            Mesh colliderMesh = ColliderMeshFromVertices(vertices);
+            colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
+            meshCollider.sharedMesh = colliderMesh;
 
             jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y);
         }
@@ -117,12 +120,12 @@ namespace Roots.World
             {
                 chunk.transform.SetParent(parent, true);
             }
-            
+
             int edgeVertexCount = ChunkEdgeVertexCount + 2; // Generate 1 extra vertex in each direction of the grid
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
             int totalPointCount = edgeVertexCount * edgeVertexCount;
-            
+
             GenerationJobData jobData = new()
             {
                 chunkPosition = chunkPosition,
@@ -138,30 +141,33 @@ namespace Roots.World
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
-            Assert.IsTrue(terrainMeshSubdivisions >= 0);
-            Chunk chunk = new GameObject($"Chunk ({x}, {z})").AddComponent<Chunk>();
-            chunk.transform.position = CalculateChunkCenterPosition(x, z);
-            chunk.transform.localRotation = Quaternion.identity;
-            if (parent)
-            {
-                chunk.transform.SetParent(parent, true);
-            }
-
-            Vertex[] vertices = GenerateVertices(x, z);
-            Vector3[] points = GeneratePointCloudFromVertices(vertices);
-            chunk.SetVertices(vertices, points);
-
-            chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
-            MeshFilter meshFilter = chunk.gameObject.AddComponent<MeshFilter>();
-            MeshCollider meshCollider = chunk.gameObject.AddComponent<MeshCollider>();
-
-            Mesh terrainMesh = TerrainMeshFromVertices(vertices);
-            terrainMesh.name = $"Terrain Mesh ({x}, {z})";
-            meshFilter.sharedMesh = terrainMesh;
-            meshCollider.sharedMesh = terrainMesh;
-
-            chunk.InitAt(x, z);
-            return chunk;
+            // Assert.IsTrue(terrainMeshSubdivisions >= 0);
+            // Chunk chunk = new GameObject($"Chunk ({x}, {z})").AddComponent<Chunk>();
+            // chunk.transform.position = CalculateChunkCenterPosition(x, z);
+            // chunk.transform.localRotation = Quaternion.identity;
+            // if (parent)
+            // {
+            //     chunk.transform.SetParent(parent, true);
+            // }
+            //
+            // Vertex[] vertices = GenerateVertices(x, z);
+            // Vector3[] points = GeneratePointCloudFromVertices(vertices);
+            // chunk.SetVertices(vertices, points);
+            //
+            // chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
+            // MeshFilter meshFilter = chunk.gameObject.AddComponent<MeshFilter>();
+            // MeshCollider meshCollider = chunk.gameObject.AddComponent<MeshCollider>();
+            //
+            // Mesh terrainMesh = TerrainMeshFromVertices(vertices);
+            // terrainMesh.name = $"Terrain Mesh ({x}, {z})";
+            // meshFilter.sharedMesh = terrainMesh;
+            // Mesh colliderMesh = ColliderMeshFromVertices(vertices);
+            // colliderMesh.name = $"ColliderMesh ({x}, {z})";
+            // meshCollider.sharedMesh = colliderMesh;
+            //
+            // chunk.InitAt(x, z);
+            // return chunk;
+            throw new System.NotImplementedException();
         }
 
         private Vector3[] GeneratePointCloudFromVertices(Vertex[] vertices)
@@ -169,7 +175,7 @@ namespace Roots.World
             int edgeVertexCount = ChunkEdgeVertexCount;
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
             int edgePointCount = ChunkEdgePointCount;
-            
+
             Vector3[] points = new Vector3[edgePointCount * edgePointCount];
             for (int xi = 0, i = 0, j = 0; xi < edgeVertexCount; xi++)
             {
@@ -182,7 +188,7 @@ namespace Roots.World
                     }
                 }
             }
-            
+
             return points;
         }
 
@@ -236,7 +242,7 @@ namespace Roots.World
             int edgeVertexCount = ChunkEdgeVertexCount;
             int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
-            
+
             Vertex[] vertices = new Vertex[edgeVertexCount * edgeVertexCount];
             for (int xi = 0, i = 0; xi < edgeVertexCount; xi++)
             {
@@ -244,32 +250,32 @@ namespace Roots.World
                 {
                     // Calculate the indexer into the heights array using larger width of the sample grid
                     int heightsIndexer = (xi + 1) * edgeSampleCount + zi + 1;
-                    
+
                     float xPos = xi * stepSize;
                     float zPos = zi * stepSize;
-                    
+
                     // Position
                     vertices[i].position = new Vector3(xPos, heights[heightsIndexer], zPos);
-                    
+
                     // Normal
                     float heightL = heights[heightsIndexer - edgeSampleCount]; // x - 1
                     float heightR = heights[heightsIndexer + edgeSampleCount]; // x + 1
                     float heightD = heights[heightsIndexer - 1]; // z - 1
                     float heightU = heights[heightsIndexer + 1]; // z + 1
-                    
+
                     Vector3 gradientX = new Vector3(1, heightR - heightL, 0);
                     Vector3 gradientZ = new Vector3(0, heightU - heightD, 1);
-                    
+
                     vertices[i].normal = Vector3.Cross(gradientZ, gradientX).normalized;
-                    
+
                     // Uv
                     vertices[i].uv = new Vector2(xPos, zPos);
                 }
             }
 
             return vertices;
-        }        
-        
+        }
+
         private Vector3[] GeneratePointCloudFromHeightData(NativeArray<float> heights)
         {
             int edgeVertexCount = ChunkEdgeVertexCount;
@@ -277,7 +283,7 @@ namespace Roots.World
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
             int edgePointCount = ChunkEdgePointCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
-            
+
             Vector3[] points = new Vector3[edgePointCount * edgePointCount];
             for (int xi = 0, j = 0; xi < edgeVertexCount; xi++)
             {
@@ -291,8 +297,48 @@ namespace Roots.World
                     }
                 }
             }
-            
+
             return points;
+        }
+
+        private Mesh ColliderMeshFromVertices(Vertex[] vertices)
+        {
+            int edgeVertexCount = ChunkEdgeVertexCount;
+            // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
+            int colliderMeshEdgeVertexCount = (int)ChunkSize + 1;
+
+            Vector3[] colliderVerts = new Vector3[colliderMeshEdgeVertexCount * colliderMeshEdgeVertexCount];
+            for (int xi = 0, i = 0, j = 0; xi < edgeVertexCount; xi++)
+            {
+                for (int zi = 0; zi < edgeVertexCount; zi++, i++)
+                {
+                    if (xi % (terrainMeshSubdivisions + 1) == 0 && zi % (terrainMeshSubdivisions + 1) == 0)
+                    {
+                        colliderVerts[j] = vertices[i].position;
+                        j++;
+                    }
+                }
+            }
+
+            var tris = new int[(colliderVerts.Length - colliderMeshEdgeVertexCount) * 6];
+            for (int vertIndex = 0, triIndex = 0; vertIndex < colliderVerts.Length - colliderMeshEdgeVertexCount; vertIndex++, triIndex += 6)
+            {
+                if ((vertIndex + 1) % colliderMeshEdgeVertexCount == 0) continue;
+                
+                // tri 1
+                tris[triIndex] = vertIndex;
+                tris[triIndex + 1] = vertIndex + 1;
+                tris[triIndex + 2] = vertIndex + colliderMeshEdgeVertexCount;
+                // tri 2
+                tris[triIndex + 3] = vertIndex + 1;
+                tris[triIndex + 4] = vertIndex + colliderMeshEdgeVertexCount + 1;
+                tris[triIndex + 5] = vertIndex + colliderMeshEdgeVertexCount;
+            }
+
+            var mesh = new Mesh();
+            mesh.SetVertices(colliderVerts);
+            mesh.SetTriangles(tris, 0);
+            return mesh;
         }
 
         private Mesh TerrainMeshFromVertices(Vertex[] vertices)
