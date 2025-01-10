@@ -29,10 +29,13 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _Emission: 1
+    - _Distance: 1
+    - _Emission: 3
+    - _Falloff: 3.4
     - _Intensity: 1
     - _Strength: 1
     m_Colors:
-    - _Color: {r: 0.25, g: 0.6666667, b: 1, a: 1}
+    - _CloseColor: {r: 1, g: 0.32691488, b: 0.28235292, a: 1}
+    - _Color: {r: 0.227, g: 0.84494734, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

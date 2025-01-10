@@ -8,10 +8,14 @@ namespace Roots.World
     {
         private enum WorldType { Mesh, Instanced }
 
+        [SerializeField] private WorldType currentWorldType = WorldType.Mesh;
+        
+        [Space]
         [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private InstancedPointRenderer instancedRenderer;
-
-        [SerializeField] private WorldType currentWorldType = WorldType.Mesh;
+        // [SerializeField] private Camera camera;
+        [SerializeField] private Material skyBox;
+        [SerializeField] private Material skyBox2;
 
         private void OnEnable()
         {
@@ -25,7 +29,7 @@ namespace Roots.World
 
         private void Start()
         {
-            UpdateEnabledRenderers();
+            UpdateAll();
         }
 
         private void Update()
@@ -33,10 +37,35 @@ namespace Roots.World
             if (Input.GetKeyDown(KeyCode.T))
             {
                 RotateWorldVisualizationType();
-                UpdateEnabledRenderers();
+                UpdateAll();
             }
         }
 
+        private void UpdateAll()
+        {
+            UpdateEnabledRenderers();
+            UpdateCameraSettings();
+        }
+
+        private void UpdateCameraSettings()
+        {
+            // CameraClearFlags clearFlags = currentWorldType switch
+            // {
+            //     WorldType.Instanced => CameraClearFlags.SolidColor,
+            //     WorldType.Mesh => CameraClearFlags.Skybox,
+            //     _ => throw new ArgumentOutOfRangeException()
+            // };
+            // camera.clearFlags = clearFlags;
+            Material skyBoxMaterial = currentWorldType switch
+            {
+                WorldType.Mesh => skyBox,
+                WorldType.Instanced => skyBox2,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            RenderSettings.skybox = skyBoxMaterial;
+            // fog night color : 23272F, pow 0.015
+        }
+        
         private void UpdateEnabledRenderers()
         {
             Assert.IsNotNull(chunkLoader);

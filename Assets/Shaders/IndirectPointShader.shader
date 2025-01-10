@@ -2,8 +2,10 @@ Shader "Indirect/IndirectPointShader"
 {
     Properties
     {
-        _Color ("Color", Color) = (0, 0, 0, 1)
-        _Emission ("Emissive strength", float) = 1
+        _Color ("Color", Color) = (0, 0, 1, 1)
+        _CloseColor ("Close color", Color) = (1, 0, 0, 1)
+        _Falloff ("Falloff distance", Float) = 1
+        _Emission ("Emissive strength", Float) = 1
     }
     SubShader
     {
@@ -38,6 +40,8 @@ Shader "Indirect/IndirectPointShader"
             };
 
             float4 _Color;
+            float4 _CloseColor;
+            float _Falloff;
             float _Emission;
             float4 _PlayerPosition;
             StructuredBuffer<float3> _InstancePositions;
@@ -49,20 +53,21 @@ Shader "Indirect/IndirectPointShader"
 
                 v2f o;
                 float3 instance_pos = _InstancePositions[instance_id];
+                float3 distance_vec = _PlayerPosition - instance_pos;
+                o.dist = length(distance_vec.xz);
+                    
                 o.vertex = UnityObjectToClipPos(v.vertex.xyz + instance_pos);
+                
                 UNITY_TRANSFER_FOG(o, o.vertex);
-
-                o.dist = distance(_PlayerPosition.xz, instance_pos.xz);
                 
                 return o;
             }
 
             fixed4 frag(v2f i) : SV_Target
             {
-                // float distance_effect = saturate(6 / i.dist) * 6;
+                float4 col = lerp(_Color, _CloseColor, saturate(_Falloff / i.dist));
+                col *= _Emission + clamp(_Falloff / i.dist, 0, _Falloff);
                 
-                // float4 col = _Color * (_Emission + saturate(6 / i.dist) * 6);
-                float4 col = lerp(float4(0, 1, 0, 1), float4(0, 1, 1, 1), 5 / i.dist) + (_Emission - 1);
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
