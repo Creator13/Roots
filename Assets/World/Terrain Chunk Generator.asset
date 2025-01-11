@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   <ChunkSize>k__BackingField: 10
   noiseGenerator: {fileID: 11400000, guid: ceed4d3a3729b964c8880931899e1d6d, type: 2}
-  terrainMaterial: {fileID: 2100000, guid: ff188f58422043f489060e28a5e4e0c0, type: 2}
+  terrainMaterial: {fileID: 2100000, guid: 944115af641cb234ab83f148597d1dae, type: 2}
   terrainMeshSubdivisions: 2
   pointCloudStepSize: 2

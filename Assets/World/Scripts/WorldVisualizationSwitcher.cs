@@ -6,6 +6,13 @@ namespace Roots.World
 {
     public class WorldVisualizationSwitcher : MonoBehaviour
     {
+        [Serializable]
+        private struct WorldTypeSettings
+        {
+            public Material skybox;
+            public Color fogColor;
+        }
+        
         private enum WorldType { Mesh, Instanced }
 
         [SerializeField] private WorldType currentWorldType = WorldType.Mesh;
@@ -13,9 +20,10 @@ namespace Roots.World
         [Space]
         [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private InstancedPointRenderer instancedRenderer;
-        // [SerializeField] private Camera camera;
-        [SerializeField] private Material skyBox;
-        [SerializeField] private Material skyBox2;
+        
+        [Space]
+        [SerializeField] private WorldTypeSettings meshSettings;
+        [SerializeField] private WorldTypeSettings instancedSettings;
 
         private void OnEnable()
         {
@@ -44,26 +52,20 @@ namespace Roots.World
         private void UpdateAll()
         {
             UpdateEnabledRenderers();
-            UpdateCameraSettings();
+            UpdateRenderingSettings();
         }
 
-        private void UpdateCameraSettings()
+        private void UpdateRenderingSettings()
         {
-            // CameraClearFlags clearFlags = currentWorldType switch
-            // {
-            //     WorldType.Instanced => CameraClearFlags.SolidColor,
-            //     WorldType.Mesh => CameraClearFlags.Skybox,
-            //     _ => throw new ArgumentOutOfRangeException()
-            // };
-            // camera.clearFlags = clearFlags;
-            Material skyBoxMaterial = currentWorldType switch
+            WorldTypeSettings settings = currentWorldType switch
             {
-                WorldType.Mesh => skyBox,
-                WorldType.Instanced => skyBox2,
+                WorldType.Mesh => meshSettings,
+                WorldType.Instanced => instancedSettings,
                 _ => throw new ArgumentOutOfRangeException()
             };
-            RenderSettings.skybox = skyBoxMaterial;
-            // fog night color : 23272F, pow 0.015
+            
+            RenderSettings.skybox = settings.skybox;
+            RenderSettings.fogColor = settings.fogColor;
         }
         
         private void UpdateEnabledRenderers()

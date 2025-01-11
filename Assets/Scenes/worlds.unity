@@ -15,7 +15,7 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.8509804, g: 0.91764706, b: 0.9254902, a: 1}
+  m_FogColor: {r: 0.7254902, g: 0.6862745, b: 0.58431375, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.008
   m_LinearFogStart: 0
@@ -24,15 +24,15 @@ RenderSettings:
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
-  m_AmbientMode: 0
+  m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 57cf3c84f2332494d8c187d0fe5d7552, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
   m_HaloTexture: {fileID: 0}
   m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
-  m_DefaultReflectionMode: 0
+  m_DefaultReflectionMode: 1
   m_DefaultReflectionResolution: 128
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
@@ -1172,7 +1172,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
-  loadRadius: 15
+  loadRadius: 30
   player: {fileID: 1289735941}
   playerChunkX: 0
   playerChunkZ: 0
@@ -1235,8 +1235,12 @@ MonoBehaviour:
   currentWorldType: 0
   chunkLoader: {fileID: 1158956743}
   instancedRenderer: {fileID: 1158956746}
-  skyBox: {fileID: -876546973899608171, guid: 81bd80dd2e376184da3e672a32653f5b, type: 3}
-  skyBox2: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
+  meshSettings:
+    skybox: {fileID: 2100000, guid: 57cf3c84f2332494d8c187d0fe5d7552, type: 2}
+    fogColor: {r: 0.7725491, g: 0.73333335, b: 0.63529414, a: 1}
+  instancedSettings:
+    skybox: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
+    fogColor: {r: 0.13725491, g: 0.15294118, b: 0.18431373, a: 1}
 --- !u!4 &1289735941 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
