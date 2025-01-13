@@ -15,9 +15,9 @@ RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
   m_Fog: 1
-  m_FogColor: {r: 0.8509804, g: 0.91764706, b: 0.9254902, a: 1}
+  m_FogColor: {r: 0.6627451, g: 0.81960785, b: 0.81960785, a: 1}
   m_FogMode: 3
-  m_FogDensity: 0.008
+  m_FogDensity: 0.007
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: aeab33f69c199e54794f516d31450ec4, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1235,7 +1235,7 @@ MonoBehaviour:
   currentWorldType: 0
   chunkLoader: {fileID: 1158956743}
   instancedRenderer: {fileID: 1158956746}
-  skyBox: {fileID: -876546973899608171, guid: 81bd80dd2e376184da3e672a32653f5b, type: 3}
+  skyBox: {fileID: 2100000, guid: aeab33f69c199e54794f516d31450ec4, type: 2}
   skyBox2: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
 --- !u!4 &1289735941 stripped
 Transform:
