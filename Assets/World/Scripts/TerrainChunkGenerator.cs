@@ -24,10 +24,8 @@ namespace Roots.World
         [Header("Detail")]
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
         [SerializeField] private int pointCloudStepSize = 0; // Subsample step size of mesh edge
-
-        [Header("Terrain settings")]
-        // [SerializeField] private float height = 4f;
-        // [SerializeField] private float noisePremultiplier = 1.25f;
+        [SerializeField] private float uvScale = 1;
+        
         private List<GenerationJobData> activeJobs = new();
 
         public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
@@ -268,7 +266,7 @@ namespace Roots.World
                     vertices[i].normal = Vector3.Cross(gradientZ, gradientX).normalized;
 
                     // Uv
-                    vertices[i].uv = new Vector2(xPos, zPos);
+                    vertices[i].uv = new Vector2(xPos, zPos) * uvScale;
                 }
             }
 
