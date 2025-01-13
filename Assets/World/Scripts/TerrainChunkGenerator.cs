@@ -28,6 +28,8 @@ namespace Roots.World
         
         private List<GenerationJobData> activeJobs = new();
 
+        public Vector3 center;
+        
         public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
         public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
 
@@ -84,7 +86,7 @@ namespace Roots.World
 
             jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y);
         }
-
+        
         // public List<GenerationJobData> ScheduleChunkGenerationJobs(Vector2Int[] positions, Transform parent = null)
         // {
         //     List<GenerationJobData> generationJobData =  new List<GenerationJobData>(positions.Length);
