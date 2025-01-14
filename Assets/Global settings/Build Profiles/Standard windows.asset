@@ -21,8 +21,6 @@ MonoBehaviour:
   m_OverrideGlobalSceneList: 1
   m_Scenes:
   - m_enabled: 1
-    m_path: Assets/Scenes/Structural/Loader.unity
-  - m_enabled: 1
     m_path: Assets/Scenes/Structural/Menu.unity
   - m_enabled: 1
     m_path: Assets/Scenes/worlds.unity
