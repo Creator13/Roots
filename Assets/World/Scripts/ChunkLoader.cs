@@ -54,7 +54,6 @@ namespace Roots.World
 
             if (playerChunkChanged)
             {
-                // Loading new chunks *ALWAYS* needs to happen before the event invocation
                 UpdateVisibleChunks();
             }
         }
@@ -99,8 +98,9 @@ namespace Roots.World
             int originalChunkX = playerChunkX;
             int originalChunkZ = playerChunkZ;
 
-            playerChunkX = Mathf.FloorToInt(playerPosition.x / chunkGenerator.ChunkSize);
-            playerChunkZ = Mathf.FloorToInt(playerPosition.z / chunkGenerator.ChunkSize);
+            Vector2Int currentChunk = chunkGenerator.WorldPositionToChunkCoordinates(playerPosition);
+            playerChunkX = currentChunk.x;
+            playerChunkZ = currentChunk.y;
 
             if (playerChunkX != originalChunkX || playerChunkZ != originalChunkZ)
             {
@@ -141,6 +141,11 @@ namespace Roots.World
             float edgeSize = (loadRadius * 2 + 3) * chunkGenerator.ChunkSize;
 
             return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
+        }
+
+        public float GetGroundHeightAt(Vector3 position)
+        {
+            return chunkGenerator.GetTerrainHeightAt(position);
         }
 
         [ContextMenu("Regenerate all")]

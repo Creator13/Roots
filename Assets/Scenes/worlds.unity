@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 0}
+  m_Sun: {fileID: 120914874}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -1251,11 +1251,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
-  minDistanceFromStart: 300
-  maxDistanceFromStart: 450
+  minDistanceFromStart: 200
+  maxDistanceFromStart: 250
   deviationModifier: 1
   startPosition: {x: 0, y: 0, z: 0}
+  chunkLoader: {fileID: 1158956743}
   endGoalPrefab: {fileID: 7010121436081711362, guid: dbe4c397ce4c2ad44bac1073e425a522, type: 3}
+  lightPrefab: {fileID: 9221426766405867889, guid: ec3d3882705e406429a42db32beff023, type: 3}
 --- !u!4 &1289735941 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}

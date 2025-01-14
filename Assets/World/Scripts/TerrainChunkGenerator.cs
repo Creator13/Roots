@@ -86,34 +86,11 @@ namespace Roots.World
 
             jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y);
         }
-        
-        // public List<GenerationJobData> ScheduleChunkGenerationJobs(Vector2Int[] positions, Transform parent = null)
-        // {
-        //     List<GenerationJobData> generationJobData =  new List<GenerationJobData>(positions.Length);
-        //     
-        //     int edgeVertexCount = ChunkEdgeVertexCount;
-        //     float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
-        //     
-        //     for (int i = 0; i < positions.Length; i++)
-        //     {
-        //         GenerationJobData jobData = new()
-        //         {
-        //             chunkPosition = positions[i],
-        //             heightData = new NativeArray<float>(edgeVertexCount * edgeVertexCount, Allocator.TempJob),
-        //             chunk = new GameObject($"Chunk ({positions[i].x}, {positions[i].y})").AddComponent<Chunk>()
-        //         };
-        //         var job = noiseGenerator.CreateNoiseGenJob(edgeVertexCount, stepSize, positions[i].x, positions[i].y, jobData.heightData);
-        //         jobData.jobHandle = job.Schedule(edgeVertexCount * edgeVertexCount, 6);
-        //         generationJobData[i] = jobData;
-        //     }
-        //
-        //     return generationJobData;
-        // }
 
         public override Chunk CreateChunkAsync(Vector2Int chunkPosition, Transform parent = null)
         {
             Chunk chunk = new GameObject($"Chunk ({chunkPosition.x}, {chunkPosition.y})").AddComponent<Chunk>();
-            chunk.transform.position = CalculateChunkCenterPosition(chunkPosition.x, chunkPosition.y);
+            chunk.transform.position = CalculateChunkOrigin(chunkPosition.x, chunkPosition.y);
             chunk.transform.localRotation = Quaternion.identity;
             if (parent)
             {
@@ -140,32 +117,6 @@ namespace Roots.World
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
-            // Assert.IsTrue(terrainMeshSubdivisions >= 0);
-            // Chunk chunk = new GameObject($"Chunk ({x}, {z})").AddComponent<Chunk>();
-            // chunk.transform.position = CalculateChunkCenterPosition(x, z);
-            // chunk.transform.localRotation = Quaternion.identity;
-            // if (parent)
-            // {
-            //     chunk.transform.SetParent(parent, true);
-            // }
-            //
-            // Vertex[] vertices = GenerateVertices(x, z);
-            // Vector3[] points = GeneratePointCloudFromVertices(vertices);
-            // chunk.SetVertices(vertices, points);
-            //
-            // chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
-            // MeshFilter meshFilter = chunk.gameObject.AddComponent<MeshFilter>();
-            // MeshCollider meshCollider = chunk.gameObject.AddComponent<MeshCollider>();
-            //
-            // Mesh terrainMesh = TerrainMeshFromVertices(vertices);
-            // terrainMesh.name = $"Terrain Mesh ({x}, {z})";
-            // meshFilter.sharedMesh = terrainMesh;
-            // Mesh colliderMesh = ColliderMeshFromVertices(vertices);
-            // colliderMesh.name = $"ColliderMesh ({x}, {z})";
-            // meshCollider.sharedMesh = colliderMesh;
-            //
-            // chunk.InitAt(x, z);
-            // return chunk;
             throw new System.NotImplementedException();
         }
 
@@ -189,51 +140,6 @@ namespace Roots.World
             }
 
             return points;
-        }
-
-        // private float GetTerrainModifiedNoise(float x, float z)
-        // {
-        //     float noise = noiseGenerator.GetNoise(x, z);
-        //     return noise;
-        // }
-        //
-        // private static float Smootherstep(float x)
-        // {
-        //     return 6 * x * x * x * x * x - 15 * x * x * x * x + 10 * x * x * x;
-        // }
-
-        private Vertex[] GenerateVertices(int worldX, int worldZ)
-        {
-            int edgeVertexCount = ChunkEdgeVertexCount;
-            float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
-
-            Vertex[] vertices = new Vertex[edgeVertexCount * edgeVertexCount];
-            // for (int xi = 0, i = 0; xi < edgeVertexCount; xi++)
-            // {
-            //     for (int zi = 0; zi < edgeVertexCount; zi++, i++)
-            //     {
-            //         // Position
-            //         float x = xi * stepSize, z = zi * stepSize;
-            //         vertices[i].position = new Vector3(x, GetTerrainModifiedNoise(x + worldX * ChunkSize, z + worldZ * ChunkSize) * height, z) - new Vector3(ChunkSize * 0.5f, 0, ChunkSize * 0.5f);
-            //
-            //         // TODO: optimization- cache noise samples in a structure that can be sampled similarly to the noise generator itself (save nearly 80% of the noise samples).
-            //         // Normal
-            //         float heightL = GetTerrainModifiedNoise(x - stepSize + worldX * ChunkSize, z + worldZ * ChunkSize) * height;
-            //         float heightR = GetTerrainModifiedNoise(x + stepSize + worldX * ChunkSize, z + worldZ * ChunkSize) * height;
-            //         float heightD = GetTerrainModifiedNoise(x + worldX * ChunkSize, z - stepSize + worldZ * ChunkSize) * height;
-            //         float heightU = GetTerrainModifiedNoise(x + worldX * ChunkSize, z + stepSize + worldZ * ChunkSize) * height;
-            //
-            //         Vector3 gradientX = new Vector3(1, heightR - heightL, 0);
-            //         Vector3 gradientZ = new Vector3(0, heightU - heightD, 1);
-            //
-            //         vertices[i].normal = Vector3.Cross(gradientZ, gradientX).normalized;
-            //
-            //         // Uv
-            //         vertices[i].uv = new Vector2(xi * stepSize, zi * stepSize);
-            //     }
-            // }
-
-            return vertices;
         }
 
         private Vertex[] GenerateVerticesFromHeightData(NativeArray<float> heights)
@@ -360,6 +266,11 @@ namespace Roots.World
 
             Mesh mesh = mb.GetMesh();
             return mesh;
+        }
+
+        public override float GetTerrainHeightAt(Vector3 worldPosition)
+        {
+            return noiseGenerator.GetNoise(worldPosition.x, worldPosition.z);
         }
     }
 }

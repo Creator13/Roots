@@ -117,9 +117,13 @@ namespace Roots.World
             float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(warpedX, warpedZ));
             float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
             float sample = gradientSample * gradientWeight + voronoiSample;
+
             sample *= worleyStrengthMultiplier;
             sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
-            return sample;
+
+            sample *= noisePremultiplier;
+            sample = Math.Smootherstep(sample);
+            return sample * height;
         }
 
         public GenerateTerrainNoisePointJob CreateNoiseGenJob(int edgePointCount, float stepSize, Vector2 chunkOffset, NativeArray<float> heightDataArray)

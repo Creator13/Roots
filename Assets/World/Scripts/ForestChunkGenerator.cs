@@ -21,7 +21,7 @@ namespace Roots.World
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
-            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkCenterPosition(x, z), Quaternion.identity, parent);
+            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
             chunk.InitAt(x, z);
             SpawnTrees(chunk.transform);
@@ -51,6 +51,11 @@ namespace Roots.World
                     treeInstance.SetLocalPositionAndRotation(new Vector3(x, 0, z), Quaternion.Euler(0, Random.Range(-180, 180), 0));
                 }
             }
+        }
+
+        public override float GetTerrainHeightAt(Vector3 worldPosition)
+        {
+            return 0;
         }
     }
 }

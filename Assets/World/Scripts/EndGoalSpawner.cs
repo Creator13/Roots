@@ -12,7 +12,9 @@ namespace Roots.World
         
         [Space]
         [SerializeField] private Vector3 startPosition;
+        [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private Transform endGoalPrefab;
+        [SerializeField] private Light lightPrefab;
         
         private void Start()
         {
@@ -21,6 +23,10 @@ namespace Roots.World
             randomPosition.y = endGoalPrefab.localScale.y / 2;
             
             Transform endGoal = Instantiate(endGoalPrefab, randomPosition, Quaternion.identity, transform);
+            
+            Vector3 lightPos = randomPosition;
+            lightPos.y = chunkLoader.GetGroundHeightAt(randomPosition) + 0.1f;
+            Instantiate(lightPrefab, lightPos, Quaternion.identity);
         }
     }
 }
