@@ -55,7 +55,9 @@ namespace Roots.World
     [CreateAssetMenu(menuName = "Roots/Noise Generator", fileName = "New Noise Generator", order = 0)]
     public class PathNoiseGenerator : ScriptableObject
     {
-        [SerializeField] private int seed;
+        [SerializeField] private SeedProvider seedProvider;
+        
+        [Space]
         [SerializeField] private float frequencyModifier = 1;
         [SerializeField] private float worleyFrequency = .02f;
         [SerializeField] private float gradientFrequency = .05f;
@@ -77,7 +79,6 @@ namespace Roots.World
 
         private bool isInitialized = false;
         public bool IsInitialized => isInitialized;
-        // public bool IsInitialized => isInitialized && !(worleyGen == null || gradientGen == null);
 
         private void Awake()
         {
@@ -86,14 +87,14 @@ namespace Roots.World
 
         private void Initialize()
         {
-            worleyGen = new FastNoiseLite(seed);
+            worleyGen = new FastNoiseLite(seedProvider.Seed);
             worleyGen.SetNoiseType(FastNoiseLite.NoiseType.Cellular);
             worleyGen.SetCellularDistanceFunction(FastNoiseLite.CellularDistanceFunction.Euclidean);
             worleyGen.SetCellularJitter(.88f);
             worleyGen.SetCellularReturnType(FastNoiseLite.CellularReturnType.Distance2Div);
             worleyGen.SetFrequency(worleyFrequency * frequencyModifier);
 
-            gradientGen = new FastNoiseLite(seed);
+            gradientGen = new FastNoiseLite(seedProvider.Seed);
             gradientGen.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
             gradientGen.SetFrequency(gradientFrequency * frequencyModifier);
             gradientGen.SetDomainWarpType(FastNoiseLite.DomainWarpType.BasicGrid);

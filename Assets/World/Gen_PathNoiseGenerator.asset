@@ -7,12 +7,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d496d7e8a77f410e9f441fd316c58d91, type: 3}
   m_Name: Gen_PathNoiseGenerator
   m_EditorClassIdentifier: 
-  seed: 0
+  seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
   frequencyModifier: 0.5
   worleyFrequency: 0.02
   gradientFrequency: 0.05
