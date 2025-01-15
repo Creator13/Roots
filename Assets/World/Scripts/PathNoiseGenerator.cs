@@ -18,11 +18,13 @@ namespace Roots.World
         public NativeArray<float> heightData;
 
         public FastNoiseLite worleyGen;
-        public FastNoiseLite gradientGen;
+        public FastNoiseLite ridgeGen;
+        public FastNoiseLite fbmGen;
 
         public float height;
         public float gradientWeight;
         public float worleyStrengthMultiplier;
+        public float fbmGenStrength;
         public float smoothstepLevel;
         public float smoothstepWidth;
         public float noisePremultiplier;
@@ -36,18 +38,26 @@ namespace Roots.World
             float x = xi * stepSize + offset.x - stepSize; // point x world position
             float z = zi * stepSize + offset.y - stepSize; // point z world position
 
-            float warpedX = x, warpedZ = z;
-            gradientGen.DomainWarp(ref warpedX, ref warpedZ);
-            float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(warpedX, warpedZ));
-            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
+            float ridgeWarpedX = x, ridgeWarpedZ = z;
+            ridgeGen.DomainWarp(ref ridgeWarpedX, ref ridgeWarpedZ);
+            float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(ridgeWarpedX, ridgeWarpedZ));
+            
+            float worleyWarpedX = x, worleyWarpedZ = z;
+            worleyGen.DomainWarp(ref worleyWarpedX, ref worleyWarpedZ, 1.86f);
+            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(worleyWarpedX, worleyWarpedZ));
+            
             float sample = gradientSample * gradientWeight + voronoiSample;
-
+            
             sample *= worleyStrengthMultiplier;
-            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
 
+            sample += math.remap(-1, 1, 0, 1, fbmGen.GetNoise(x, z)) * fbmGenStrength;
+            sample *= .5f;
+            
+            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
+            
             sample *= noisePremultiplier;
             sample = Math.Smootherstep(sample);
-
+            
             heightData[index] = sample * height;
         }
     }
@@ -61,10 +71,12 @@ namespace Roots.World
         [SerializeField] private float frequencyModifier = 1;
         [SerializeField] private float worleyFrequency = .02f;
         [SerializeField] private float gradientFrequency = .05f;
+        [SerializeField] private float fbmFrequency = .1f;
 
         [Space]
         [SerializeField] private float gradientWeight = -.26f;
         [SerializeField] private float worleyStrengthMultiplier = 2.33f;
+        [SerializeField] private float fbmStrength = .2f;
 
         [Space]
         [SerializeField] private float smoothstepLevel = .89f;
@@ -75,7 +87,8 @@ namespace Roots.World
         [SerializeField] private float height = 4f;
 
         private FastNoiseLite worleyGen;
-        private FastNoiseLite gradientGen;
+        private FastNoiseLite ridgeGen;
+        private FastNoiseLite fbmGen;
 
         private bool isInitialized = false;
         public bool IsInitialized => isInitialized;
@@ -92,16 +105,27 @@ namespace Roots.World
             worleyGen.SetCellularDistanceFunction(FastNoiseLite.CellularDistanceFunction.Euclidean);
             worleyGen.SetCellularJitter(.88f);
             worleyGen.SetCellularReturnType(FastNoiseLite.CellularReturnType.Distance2Div);
+            worleyGen.SetDomainWarpType(FastNoiseLite.DomainWarpType.BasicGrid);
+            worleyGen.SetDomainWarpAmp(.36f);
             worleyGen.SetFrequency(worleyFrequency * frequencyModifier);
 
-            gradientGen = new FastNoiseLite(seedProvider.Seed);
-            gradientGen.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
-            gradientGen.SetFrequency(gradientFrequency * frequencyModifier);
-            gradientGen.SetDomainWarpType(FastNoiseLite.DomainWarpType.BasicGrid);
-            gradientGen.SetDomainWarpAmp(1f);
-            gradientGen.SetFractalType(FastNoiseLite.FractalType.Ridged);
-            gradientGen.SetFractalOctaves(3);
-            gradientGen.SetFractalLacunarity(1.8f);
+            ridgeGen = new FastNoiseLite(seedProvider.Seed);
+            ridgeGen.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2S);
+            ridgeGen.SetFrequency(gradientFrequency * frequencyModifier);
+            ridgeGen.SetDomainWarpType(FastNoiseLite.DomainWarpType.BasicGrid);
+            ridgeGen.SetDomainWarpAmp(1f);
+            ridgeGen.SetFractalType(FastNoiseLite.FractalType.Ridged);
+            ridgeGen.SetFractalOctaves(3);
+            ridgeGen.SetFractalLacunarity(1.8f);
+            
+            fbmGen = new FastNoiseLite(seedProvider.Seed);
+            fbmGen.SetNoiseType(FastNoiseLite.NoiseType.Perlin);
+            fbmGen.SetFrequency(fbmFrequency * frequencyModifier);
+            fbmGen.SetFractalType(FastNoiseLite.FractalType.FBm);
+            fbmGen.SetFractalOctaves(6);
+            fbmGen.SetFractalWeightedStrength(0.8f);
+            fbmGen.SetFractalGain(0.5f);
+            fbmGen.SetFractalLacunarity(2.2f);
 
             isInitialized = true;
 
@@ -113,8 +137,8 @@ namespace Roots.World
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
 
             float warpedX = x, warpedZ = z;
-            gradientGen.DomainWarp(ref warpedX, ref warpedZ);
-            float gradientSample = math.remap(-1f, 1f, 0, 1f, gradientGen.GetNoise(warpedX, warpedZ));
+            ridgeGen.DomainWarp(ref warpedX, ref warpedZ);
+            float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(warpedX, warpedZ));
             float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
             float sample = gradientSample * gradientWeight + voronoiSample;
 
@@ -132,8 +156,9 @@ namespace Roots.World
             
             return new GenerateTerrainNoisePointJob
             {
-                gradientGen = gradientGen,
+                ridgeGen = ridgeGen,
                 worleyGen = worleyGen,
+                fbmGen = fbmGen,
                 edgePointCount = edgePointCount,
                 heightData = heightDataArray,
                 stepSize = stepSize,
@@ -141,6 +166,7 @@ namespace Roots.World
                 
                 gradientWeight = gradientWeight,
                 worleyStrengthMultiplier = worleyStrengthMultiplier,
+                fbmGenStrength = fbmStrength,
                 smoothstepWidth = smoothstepWidth,
                 smoothstepLevel = smoothstepLevel,
                 noisePremultiplier = noisePremultiplier,

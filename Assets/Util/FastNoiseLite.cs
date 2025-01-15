@@ -393,6 +393,13 @@ public struct FastNoiseLite
                 break;
         }
     }
+    
+
+    [MethodImpl(OPTIMISE)]
+    public void DomainWarp(ref FNLfloat x, ref FNLfloat y, FNLfloat freq)
+    {
+        DomainWarpSingle(ref x, ref y, freq);
+    }
 
     /// <summary>
     /// 3D warps the input position using current domain warp settings
@@ -2081,6 +2088,18 @@ public struct FastNoiseLite
         int seed = mSeed;
         float amp = mDomainWarpAmp * mFractalBounding;
         float freq = mFrequency;
+
+        FNLfloat xs = x;
+        FNLfloat ys = y;
+        TransformDomainWarpCoordinate(ref xs, ref ys);
+
+        DoSingleDomainWarp(seed, amp, freq, xs, ys, ref x, ref y);
+    }
+    
+    private void DomainWarpSingle(ref FNLfloat x, ref FNLfloat y, float freq)
+    {
+        int seed = mSeed;
+        float amp = mDomainWarpAmp * mFractalBounding;
 
         FNLfloat xs = x;
         FNLfloat ys = y;

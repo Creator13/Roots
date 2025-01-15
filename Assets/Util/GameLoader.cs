@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
-namespace Roots
+namespace Roots.Util
 {
     public class GameLoader : MonoBehaviour
     {

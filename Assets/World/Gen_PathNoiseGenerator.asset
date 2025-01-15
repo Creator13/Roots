@@ -16,9 +16,11 @@ MonoBehaviour:
   frequencyModifier: 0.5
   worleyFrequency: 0.02
   gradientFrequency: 0.05
+  fbmFrequency: 0.2
   gradientWeight: -0.26
-  worleyStrengthMultiplier: 2.33
+  worleyStrengthMultiplier: 2.5
+  fbmStrength: 1
   smoothstepLevel: 0.89
   smoothstepWidth: 1.27
-  noisePremultiplier: 1.1
-  height: 3
+  noisePremultiplier: 1.2
+  height: 6
