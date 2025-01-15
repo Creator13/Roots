@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Serialization;
 #if ENABLE_INPUT_SYSTEM
@@ -23,6 +24,11 @@ namespace StarterAssets
         public bool cursorInputForLook = true;
 
         private bool cursorLockedRightNow = false;
+
+        private void Start()
+        {
+            SetCursorLocked(true);
+        }
 
 #if ENABLE_INPUT_SYSTEM
         public void OnMove(InputValue value)

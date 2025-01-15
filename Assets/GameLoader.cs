@@ -31,6 +31,11 @@ namespace Roots
             {
                 LoadGame();
             }
+
+            if (Keyboard.current.ctrlKey.isPressed && Keyboard.current.qKey.wasPressedThisFrame)
+            {
+                Application.Quit();
+            }
         }
 
         private IEnumerator LoadMenuCoroutine()
