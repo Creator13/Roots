@@ -56,7 +56,7 @@ namespace StarterAssets
 
         public void OnUnlockCursor(InputValue value)
         {
-            SetCursorLocked(false);
+            SetCursorLocked(!cursorLockedRightNow);
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.ExecuteMenuItem("Window/General/Inspector");
 #endif

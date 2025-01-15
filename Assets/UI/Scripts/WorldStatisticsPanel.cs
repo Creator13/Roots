@@ -1,9 +1,7 @@
-﻿using System;
-using Roots.World;
+﻿using Roots.World;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 namespace Roots.UI
 {
