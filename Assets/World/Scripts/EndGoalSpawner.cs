@@ -19,8 +19,9 @@ namespace Roots.World
         private void Start()
         {
             float randomDistance = Math.RandomNormalDistribution(minDistanceFromStart, maxDistanceFromStart, deviationModifier);
-            Vector3 randomPosition = Random.insideUnitSphere * randomDistance;
-            randomPosition.y = endGoalPrefab.localScale.y / 2;
+            
+            Vector2 randomXZ = Random.insideUnitCircle.normalized * randomDistance;
+            Vector3 randomPosition = new Vector3(randomXZ.x, endGoalPrefab.localScale.y / 2, randomXZ.y);
             
             Transform endGoal = Instantiate(endGoalPrefab, randomPosition, Quaternion.identity, transform);
             

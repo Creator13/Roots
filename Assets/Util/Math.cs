@@ -26,5 +26,21 @@ namespace Roots.Util
             float distance = center + z * standardDeviation;
             return math.clamp(distance, min, max);
         }
+        
+        // deviationMultiplier: Smaller values cluster the random distance towards the center of the spread.
+        public static float RandomNormalDistribution(Random random, float min, float max, float deviationMultiplier = 1)
+        {
+            float center = (min + max) / 2f;
+            float range = max - min;
+            float standardDeviation = (range / 6f) * deviationMultiplier; 
+
+            // Box-muller
+            float u1 = random.NextFloat(); 
+            float u2 = random.NextFloat(); 
+            float z = math.sqrt(-2.0f * math.log(u1)) * math.cos(2.0f * math.PI * u2);
+
+            float distance = center + z * standardDeviation;
+            return math.clamp(distance, min, max);
+        }
     }
 }
