@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Serialization;
 using Math = Roots.Util.Math;
 
 namespace Roots.World
@@ -76,7 +77,7 @@ namespace Roots.World
         [Space]
         [SerializeField] private float gradientWeight = -.26f;
         [SerializeField] private float worleyStrengthMultiplier = 2.33f;
-        [SerializeField] private float fbmStrength = .2f;
+        [FormerlySerializedAs("fbmStrength")] [SerializeField] private float fbmGenStrength = .2f;
 
         [Space]
         [SerializeField] private float smoothstepLevel = .89f;
@@ -136,17 +137,26 @@ namespace Roots.World
         {
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
 
-            float warpedX = x, warpedZ = z;
-            ridgeGen.DomainWarp(ref warpedX, ref warpedZ);
-            float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(warpedX, warpedZ));
-            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(x, z));
+            float ridgeWarpedX = x, ridgeWarpedZ = z;
+            ridgeGen.DomainWarp(ref ridgeWarpedX, ref ridgeWarpedZ);
+            float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(ridgeWarpedX, ridgeWarpedZ));
+            
+            float worleyWarpedX = x, worleyWarpedZ = z;
+            worleyGen.DomainWarp(ref worleyWarpedX, ref worleyWarpedZ, 1.86f);
+            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(worleyWarpedX, worleyWarpedZ));
+            
             float sample = gradientSample * gradientWeight + voronoiSample;
-
+            
             sample *= worleyStrengthMultiplier;
-            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
 
+            sample += math.remap(-1, 1, 0, 1, fbmGen.GetNoise(x, z)) * fbmGenStrength;
+            sample *= .5f;
+            
+            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
+            
             sample *= noisePremultiplier;
             sample = Math.Smootherstep(sample);
+            
             return sample * height;
         }
 
@@ -166,7 +176,7 @@ namespace Roots.World
                 
                 gradientWeight = gradientWeight,
                 worleyStrengthMultiplier = worleyStrengthMultiplier,
-                fbmGenStrength = fbmStrength,
+                fbmGenStrength = fbmGenStrength,
                 smoothstepWidth = smoothstepWidth,
                 smoothstepLevel = smoothstepLevel,
                 noisePremultiplier = noisePremultiplier,
