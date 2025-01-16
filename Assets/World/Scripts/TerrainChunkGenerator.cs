@@ -2,6 +2,7 @@
 using Roots.Util;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -70,7 +71,6 @@ namespace Roots.World
         {
             Vertex[] vertices = GenerateVerticesFromHeightData(jobData.heightData);
             Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
-            jobData.chunk.SetVertices(vertices, points);
 
             jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
             MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
@@ -84,7 +84,7 @@ namespace Roots.World
             colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
             meshCollider.sharedMesh = colliderMesh;
 
-            jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y);
+            jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, vertices, points);
         }
 
         public override Chunk CreateChunkAsync(Vector2Int chunkPosition, Transform parent = null)

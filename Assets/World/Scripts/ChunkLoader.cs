@@ -1,15 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.InputSystem;
 
 namespace Roots.World
 {
-
     public class ChunkLoader : MonoBehaviour
     {
+        private static readonly Vector2Int[] NeighborDirections =
+        {
+            new(1, 0),
+            new(-1, 0),
+            new(0, 1),
+            new(0, -1),
+            new(1, 1),
+            new(1, -1),
+            new(-1, 1),
+            new(-1, -1)
+        };
+
         [SerializeField] private ChunkGenerator chunkGenerator;
         [SerializeField] private int loadRadius = 3;
 
@@ -26,11 +39,15 @@ namespace Roots.World
         public int ActiveChunkGenJobCount => chunkGenerator.ActiveChunkGenJobCount;
 
         private bool playerChunkChanged;
+        private bool initialChunksLoaded;
         public event Action LoadedChunksChanged;
+        public event Action InitialChunksLoaded;
 
         private void Start()
         {
             UpdateVisibleChunks();
+            Assert.IsTrue(chunkGenerator.ActiveChunkGenJobCount > 0);
+            initialChunksLoaded = false;
         }
 
         private void Update()
@@ -39,12 +56,21 @@ namespace Roots.World
             {
                 RegenerateChunks();
             }
-            
+
             int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
 
             if (finishedJobs > 0)
             {
                 LoadedChunksChanged?.Invoke();
+
+                if (!initialChunksLoaded)
+                {
+                    if (chunkGenerator.ActiveChunkGenJobCount == 0)
+                    {
+                        initialChunksLoaded = true;
+                        InitialChunksLoaded?.Invoke();
+                    }
+                }
             }
 
             playerChunkChanged = false;
@@ -124,10 +150,10 @@ namespace Roots.World
             foreach (Chunk chunk in loadedChunks.Values)
             {
                 if (!chunk.IsInitialized) continue;
-                
+
                 for (int iPoint = 0; iPoint < chunkPointCount; iPoint++)
                 {
-                    points[chunkPointCount * iChunk + iPoint] = chunk.Points[iPoint] + chunk.cachedWorldPosition;
+                    points[chunkPointCount * iChunk + iPoint] = chunk.Points[iPoint] + chunk.CachedWorldPosition;
                 }
 
                 iChunk++;
@@ -146,6 +172,50 @@ namespace Roots.World
         public float GetGroundHeightAt(Vector3 position)
         {
             return chunkGenerator.GetTerrainHeightAt(position);
+        }
+
+        public Vector3 FindLowestPointNearChunk(Vector2Int startChunkPos, float threshold = 0.05f, int maxRadius = 1)
+        {
+            Assert.IsTrue(loadedChunks.TryGetValue(startChunkPos, out var startChunk) && startChunk.IsInitialized, 
+                $"Called on a start chunk that is not loaded or initialized: {startChunkPos}.");
+            
+            Queue<Vector2Int> frontier = new Queue<Vector2Int>();
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+            Vector3 bestPoint = Vector3.zero;
+            bestPoint.y = float.MaxValue;
+
+            frontier.Enqueue(startChunkPos);
+            visited.Add(startChunkPos);
+
+            while (frontier.Count > 0)
+            {
+                Vector2Int current = frontier.Dequeue();
+                if (!loadedChunks.TryGetValue(current, out var currentChunk)) continue;
+
+                Vector3 chunkLowestPoint = currentChunk.LowestPoint + currentChunk.CachedWorldPosition;
+                
+                if (chunkLowestPoint.y < threshold)
+                {
+                    return chunkLowestPoint;
+                }
+
+                if (chunkLowestPoint.y < bestPoint.y)
+                {
+                    bestPoint = chunkLowestPoint;
+                }
+
+                foreach (var dir in NeighborDirections)
+                {
+                    Vector2Int neighbor = current + dir;
+                    if (!visited.Contains(neighbor) && math.abs(startChunkPos.x - neighbor.x) <= maxRadius && math.abs(startChunkPos.y - neighbor.y) <= maxRadius)
+                    {
+                        frontier.Enqueue(neighbor);
+                        visited.Add(neighbor);
+                    }
+                }
+            }
+            
+            return bestPoint;
         }
 
         [ContextMenu("Regenerate all")]

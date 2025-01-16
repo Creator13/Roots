@@ -23,7 +23,7 @@ namespace Roots.World
         {
             Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
-            chunk.InitAt(x, z);
+            chunk.InitAt(x, z, null, null);
             SpawnTrees(chunk.transform);
             return chunk;
         }

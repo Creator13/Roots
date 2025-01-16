@@ -15,7 +15,7 @@ MonoBehaviour:
   <ChunkSize>k__BackingField: 10
   noiseGenerator: {fileID: 11400000, guid: ceed4d3a3729b964c8880931899e1d6d, type: 2}
   terrainMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
-  terrainMeshSubdivisions: 3
+  terrainMeshSubdivisions: 2
   pointCloudStepSize: 2
   uvScale: 1
   center: {x: 0, y: 0, z: 0}

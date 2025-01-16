@@ -13,10 +13,11 @@ namespace Roots.World
     [BurstCompile]
     public struct GenerateTerrainNoisePointJob : IJobParallelFor
     {
+        public NativeArray<float> heightData;
+
         public Vector2 offset;
         public int edgePointCount;
         public float stepSize;
-        public NativeArray<float> heightData;
 
         public FastNoiseLite worleyGen;
         public FastNoiseLite ridgeGen;

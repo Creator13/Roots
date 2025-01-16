@@ -1,4 +1,5 @@
 ﻿using Roots.Util;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Roots.World
@@ -8,27 +9,42 @@ namespace Roots.World
         private int x, z;
         public Vertex[] Vertices { get; private set; }
         public Vector3[] Points { get; private set; }
-        public Vector3 cachedWorldPosition { get; private set; }
+        public Vector3 CachedWorldPosition { get; private set; }
+        public Vector3 LowestPoint { get; private set; }
 
         private MeshRenderer meshRenderer;
 
         public bool IsInitialized { get; private set; }
         
-        public void InitAt(int x, int z)
+        public void InitAt(int x, int z, Vertex[] vertices, Vector3[] points)
         {
             this.x = x;
             this.z = z;
             
+            this.Vertices = vertices;
+            this.Points = points;
+
+            if (vertices != null)
+            {
+                FindLowestPoint();
+            }
+
             meshRenderer = GetComponent<MeshRenderer>();
             meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            cachedWorldPosition = transform.position;
+            CachedWorldPosition = transform.position;
             IsInitialized = true;
         }
 
-        public void SetVertices(Vertex[] vertices, Vector3[] points)
+        private void FindLowestPoint()
         {
-            this.Vertices = vertices;
-            this.Points = points;
+            LowestPoint = Vector3.positiveInfinity;
+            foreach (Vertex vertex in Vertices)
+            {
+                if (vertex.position.y < LowestPoint.y)
+                {
+                    LowestPoint = vertex.position;
+                }
+            }
         }
 
         public void SetMeshRendererEnabled(bool enabled)
