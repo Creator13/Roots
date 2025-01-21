@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a9a7abf8a8d4faf86d90f13139f751d, type: 3}
   m_Name: Terrain Chunk Generator
   m_EditorClassIdentifier: 
-  <ChunkSize>k__BackingField: 10
+  <ChunkSize>k__BackingField: 40
   noiseGenerator: {fileID: 11400000, guid: ceed4d3a3729b964c8880931899e1d6d, type: 2}
   terrainMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
   terrainMeshSubdivisions: 2

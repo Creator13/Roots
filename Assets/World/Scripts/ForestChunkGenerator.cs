@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Roots.World
@@ -17,7 +16,7 @@ namespace Roots.World
         public override int ChunkEdgeVertexCount => 11;
         public override int ChunkEdgePointCount => 11;
 
-        public override int ActiveChunkGenJobCount => throw new NotImplementedException();
+        public override int ActiveChunkGenJobCount => throw new System.NotImplementedException();
 
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {

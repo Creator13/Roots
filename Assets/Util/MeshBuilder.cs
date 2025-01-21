@@ -5,11 +5,7 @@ using UnityEngine.Assertions;
 
 namespace Roots.Util
 {
-    public enum FaceDirection
-    {
-        CW,
-        CCW
-    }
+    public enum FaceDirection { CW, CCW }
 
     public struct Vertex
     {
@@ -38,20 +34,19 @@ namespace Roots.Util
             vertices = vertexCapacity > 0 ? new List<Vector3>(vertexCapacity) : new List<Vector3>();
             normals = vertexCapacity > 0 ? new List<Vector3>(vertexCapacity) : new List<Vector3>();
             uvs = vertexCapacity > 0 ? new List<Vector2>(vertexCapacity) : new List<Vector2>();
-            
+
             triangles = triangleCapacity > 0 ? new List<int>(triangleCapacity) : new List<int>();
         }
 
         public Mesh GetMesh(string name = "")
         {
-            var mesh = new Mesh
-            {
-                name = name,
-                vertices = vertices.ToArray(),
-                normals = normals.ToArray(),
-                uv = uvs.ToArray(),
-                triangles = triangles.ToArray()
-            };
+            var mesh = new Mesh();
+            mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+            mesh.name = name;
+            mesh.vertices = vertices.ToArray();
+            mesh.normals = normals.ToArray();
+            mesh.uv = uvs.ToArray();
+            mesh.triangles = triangles.ToArray();
 
             return mesh;
         }
@@ -162,7 +157,7 @@ namespace Roots.Util
                     AddTriangle(startIndex, startIndex + 1, startIndex + 2, FaceDirection.CCW);
                 }
                 // Else: guaranteed that segments > 3 thanks to assertion at function start
-                else 
+                else
                 {
                     // TODO: smarter triangulation
                     int centerIndex = AddVertex(center, normal, Vector2.zero);
@@ -249,17 +244,17 @@ namespace Roots.Util
             vertices.Add(v2.position);
             vertices.Add(v3.position);
             vertices.Add(v4.position);
-            
+
             normals.Add(v1.normal);
             normals.Add(v2.normal);
             normals.Add(v3.normal);
             normals.Add(v4.normal);
-            
+
             uvs.Add(v1.uv);
             uvs.Add(v2.uv);
             uvs.Add(v3.uv);
             uvs.Add(v4.uv);
-            
+
             triangles.Add(vertexIndex);
             triangles.Add(vertexIndex + 1);
             triangles.Add(vertexIndex + 2);
