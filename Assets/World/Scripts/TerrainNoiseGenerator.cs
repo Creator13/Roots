@@ -5,7 +5,6 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.Serialization;
 using Math = Roots.Util.Math;
 
 namespace Roots.World
@@ -36,9 +35,8 @@ namespace Roots.World
             int xi = index / edgePointCount; // point x index
             int zi = index % edgePointCount; // point z index
             
-            // Offset x and z with 1x -stepsize to generate border of heights used for normal calculation
-            float x = xi * stepSize + offset.x - stepSize; // point x world position
-            float z = zi * stepSize + offset.y - stepSize; // point z world position
+            float x = xi * stepSize + offset.x; // point x world position
+            float z = zi * stepSize + offset.y; // point z world position
 
             float ridgeWarpedX = x, ridgeWarpedZ = z;
             ridgeGen.DomainWarp(ref ridgeWarpedX, ref ridgeWarpedZ);
@@ -163,7 +161,7 @@ namespace Roots.World
         }
 
         // TODO further generalize this api, especially the part where it magically adds a border around the area that is being requested.
-        public GenerateTerrainNoisePointsJob CreateNoiseGenJob(int edgePointCount, float stepSize, Vector2 chunkOffset, NativeArray<float> heightDataArray)
+        public GenerateTerrainNoisePointsJob CreateNoiseGenJob(int edgePointCount, Vector2 startPosition, float stepSize, NativeArray<float> heightDataArray)
         {
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
             
@@ -175,7 +173,7 @@ namespace Roots.World
                 edgePointCount = edgePointCount,
                 heightData = heightDataArray,
                 stepSize = stepSize,
-                offset = chunkOffset,
+                offset = startPosition,
                 
                 gradientWeight = gradientWeight,
                 worleyStrengthMultiplier = worleyStrengthMultiplier,

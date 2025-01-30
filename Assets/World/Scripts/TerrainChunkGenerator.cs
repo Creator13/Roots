@@ -99,8 +99,9 @@ namespace Roots.World
 
             int edgeVertexCount = ChunkEdgeVertexCount + 2; // Generate 1 extra vertex in each direction of the grid
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
-
             int totalPointCount = edgeVertexCount * edgeVertexCount;
+            
+            Vector2 chunkWorldPosition = ((Vector2)chunkPosition * ChunkSize) - Vector2.one * stepSize;
 
             GenerationJobData jobData = new()
             {
@@ -108,7 +109,7 @@ namespace Roots.World
                 heightData = new NativeArray<float>(totalPointCount, Allocator.Persistent),
                 chunk = chunk
             };
-            var job = noiseGenerator.CreateNoiseGenJob(edgeVertexCount, stepSize, (Vector2)chunkPosition * ChunkSize, jobData.heightData);
+            var job = noiseGenerator.CreateNoiseGenJob(edgeVertexCount, chunkWorldPosition, stepSize, jobData.heightData);
             jobData.jobHandle = job.Schedule(totalPointCount, 3);
             activeJobs.Add(jobData);
 
