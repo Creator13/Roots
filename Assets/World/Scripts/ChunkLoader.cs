@@ -38,7 +38,7 @@ namespace Roots.World
         public int InitializedChunkCount => loadedChunks.Values.Count(chunk => chunk.IsInitialized);
         public int ActiveChunkGenJobCount => chunkGenerator.ActiveChunkGenJobCount;
 
-        private bool playerChunkChanged;
+        private bool playerChunkChangedInFrame;
         private bool initialChunksLoaded;
         public event Action LoadedChunksChanged;
         public event Action InitialChunksLoaded;
@@ -46,7 +46,9 @@ namespace Roots.World
         private void Start()
         {
             UpdateVisibleChunks();
-            Assert.IsTrue(chunkGenerator.ActiveChunkGenJobCount > 0);
+            // This assertion verifies that the UpdateVisibleChunks method orders all the chunks it needs to
+            // (this won't assert false because the jobs can't complete until at least one UpdateChunkGenerationJobs() has been called)
+            Assert.IsTrue(chunkGenerator.ActiveChunkGenJobCount == ChunkCount); 
             initialChunksLoaded = false;
         }
 
@@ -73,12 +75,12 @@ namespace Roots.World
                 }
             }
 
-            playerChunkChanged = false;
+            playerChunkChangedInFrame = false;
             playerPosition = player.transform.position;
 
             UpdateCurrentChunk();
 
-            if (playerChunkChanged)
+            if (playerChunkChangedInFrame)
             {
                 UpdateVisibleChunks();
             }
@@ -130,7 +132,7 @@ namespace Roots.World
 
             if (playerChunkX != originalChunkX || playerChunkZ != originalChunkZ)
             {
-                playerChunkChanged = true;
+                playerChunkChangedInFrame = true;
             }
         }
 
@@ -164,6 +166,7 @@ namespace Roots.World
 
         public Bounds GetCurrentBounds()
         {
+            // TODO fix this method (and bound calculation in general)
             float edgeSize = (loadRadius * 2 + 3) * chunkGenerator.ChunkSize;
 
             return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));

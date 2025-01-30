@@ -11,7 +11,7 @@ namespace Roots.World
         
         [Space]
         [SerializeField] private float treeDensity;
-        [SerializeField] private PathNoiseGenerator noiseGenerator;
+        [SerializeField] private TerrainNoiseGenerator noiseGenerator;
 
         public override int ChunkEdgeVertexCount => 11;
         public override int ChunkEdgePointCount => 11;

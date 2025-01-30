@@ -11,7 +11,7 @@ using Math = Roots.Util.Math;
 namespace Roots.World
 {
     [BurstCompile]
-    public struct GenerateTerrainNoisePointJob : IJobParallelFor
+    public struct GenerateTerrainNoisePointsJob : IJobParallelFor
     {
         public NativeArray<float> heightData;
 
@@ -66,7 +66,7 @@ namespace Roots.World
     }
 
     [CreateAssetMenu(menuName = "Roots/Noise Generator", fileName = "New Noise Generator", order = 0)]
-    public class PathNoiseGenerator : ScriptableObject
+    public class TerrainNoiseGenerator : ScriptableObject
     {
         [SerializeField] private SeedProvider seedProvider;
         
@@ -79,7 +79,7 @@ namespace Roots.World
         [Space]
         [SerializeField] private float gradientWeight = -.26f;
         [SerializeField] private float worleyStrengthMultiplier = 2.33f;
-        [FormerlySerializedAs("fbmStrength")] [SerializeField] private float fbmGenStrength = .2f;
+        [SerializeField] private float fbmGenStrength = .2f;
 
         [Space]
         [SerializeField] private float smoothstepLevel = .89f;
@@ -162,11 +162,12 @@ namespace Roots.World
             return sample * height;
         }
 
-        public GenerateTerrainNoisePointJob CreateNoiseGenJob(int edgePointCount, float stepSize, Vector2 chunkOffset, NativeArray<float> heightDataArray)
+        // TODO further generalize this api, especially the part where it magically adds a border around the area that is being requested.
+        public GenerateTerrainNoisePointsJob CreateNoiseGenJob(int edgePointCount, float stepSize, Vector2 chunkOffset, NativeArray<float> heightDataArray)
         {
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
             
-            return new GenerateTerrainNoisePointJob
+            return new GenerateTerrainNoisePointsJob
             {
                 ridgeGen = ridgeGen,
                 worleyGen = worleyGen,
