@@ -19,7 +19,7 @@ MonoBehaviour:
   fbmFrequency: 0.2
   gradientWeight: -0.26
   worleyStrengthMultiplier: 2.5
-  fbmStrength: 1
+  fbmGenStrength: 1
   smoothstepLevel: 0.89
   smoothstepWidth: 1.27
   noisePremultiplier: 1.2
