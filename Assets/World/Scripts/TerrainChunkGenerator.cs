@@ -6,6 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Rendering;
 
 namespace Roots.World
 {
@@ -16,8 +17,9 @@ namespace Roots.World
         public int edgeVertexCount;
         public int edgeSampleCount;
         public float uvScale;
+        
         [ReadOnly] public NativeArray<float> heights;
-        public NativeArray<Vertex> vertices;
+        [WriteOnly] public NativeArray<Vertex> vertices;
 
         public void Execute(int index)
         {
@@ -56,20 +58,54 @@ namespace Roots.World
         }
     }
 
-    public class CreateMeshJob : IJob
+    [BurstCompile]
+    public struct CreateMeshJob : IJob
     {
+        public int edgeVertexCount;
+        
+        [WriteOnly] public Mesh.MeshData meshData;
+        
+        [ReadOnly] public NativeArray<Vertex> vertices;
+        
         public void Execute()
         {
-            throw new System.NotImplementedException();
+            meshData.SetIndexBufferParams((vertices.Length - edgeVertexCount) * 6, IndexFormat.UInt32);
+            
+            var attributes = new NativeArray<VertexAttributeDescriptor>(3, Allocator.Temp);
+            attributes[0] = new VertexAttributeDescriptor(VertexAttribute.Position, dimension: 3);
+            attributes[1] = new VertexAttributeDescriptor(VertexAttribute.Normal, dimension: 3);
+            attributes[2] = new VertexAttributeDescriptor(VertexAttribute.TexCoord0, dimension: 2);
+            meshData.SetVertexBufferParams(vertices.Length, attributes);
+
+            var vertexData = meshData.GetVertexData<Vertex>();
+            vertexData.CopyFrom(vertices);
+            
+            var indexData = meshData.GetIndexData<uint>();
+            for (int vertIndex = 0, triIndex = 0; vertIndex < vertices.Length - edgeVertexCount; vertIndex++, triIndex += 6)
+            {
+                if ((vertIndex + 1) % edgeVertexCount == 0) continue;
+
+                // tri 1
+                indexData[triIndex] = (uint)vertIndex;
+                indexData[triIndex + 1] = (uint)(vertIndex + 1);
+                indexData[triIndex + 2] = (uint)(vertIndex + edgeVertexCount);
+                // tri 2
+                indexData[triIndex + 3] = (uint)(vertIndex + 1);
+                indexData[triIndex + 4] = (uint)(vertIndex + edgeVertexCount + 1);
+                indexData[triIndex + 5] = (uint)(vertIndex + edgeVertexCount);
+            }
         }
     }
 
     public class GenerationJobData
     {
+        public int indicesCount;
         public Vector2Int chunkPosition;
+        
         public JobHandle jobHandle;
         public NativeArray<float> heightData;
         public NativeArray<Vertex> vertexData;
+        public Mesh.MeshDataArray meshData;
         public Chunk chunk;
     }
 
@@ -129,7 +165,6 @@ namespace Roots.World
 
         private void FinalizeChunkJob(GenerationJobData jobData)
         {
-            // Vertex[] vertices = GenerateVerticesFromHeightData(jobData.heightData);
             Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
 
             jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
@@ -138,9 +173,18 @@ namespace Roots.World
             MeshCollider meshCollider = jobData.chunk.gameObject.AddComponent<MeshCollider>();
             meshCollider.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.UseFastMidphase;
 
-            Mesh terrainMesh = TerrainMeshFromVertices(jobData.vertexData);
+            const MeshUpdateFlags noCalcMeshUpdateFlags = MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontNotifyMeshUsers | MeshUpdateFlags.DontResetBoneBounds;
+            
+            // Mesh terrainMesh = TerrainMeshFromVertices(jobData.vertexData);
+            var terrainMeshData = jobData.meshData[0]; 
+            terrainMeshData.subMeshCount = 1;
+            terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), noCalcMeshUpdateFlags);
+            
+            var terrainMesh = new Mesh();
             terrainMesh.name = $"Terrain Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
-            meshFilter.sharedMesh = terrainMesh;
+            terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
+            Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, noCalcMeshUpdateFlags);
+            meshFilter.mesh = terrainMesh;
 
             Mesh colliderMesh = ColliderMeshFromVertices(jobData.vertexData);
             colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
@@ -171,16 +215,21 @@ namespace Roots.World
 
             GenerationJobData jobData = new()
             {
+                indicesCount = (totalVertexCount - edgeVertexCount) * 6,
                 chunkPosition = chunkPosition,
                 heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
                 vertexData = new NativeArray<Vertex>(totalVertexCount, Allocator.Persistent),
+                meshData = Mesh.AllocateWritableMeshData(1),
                 chunk = chunk
             };
             
-            var noiseSampleJob = noiseGenerator.CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, stepSize, jobData.heightData);
-            var noiseGenHandle = noiseSampleJob.Schedule(totalSamplePointCount, 3);
+            // Noise gen job
+            var noiseJobHandle = noiseGenerator
+                .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, stepSize, jobData.heightData)
+                .Schedule(totalSamplePointCount, 3);
 
-            var createVertexJob = new CreateVerticesJob
+            // Vertex position/normal/uv job
+            var vertexJobHandle = new CreateVerticesJob
             {
                 heights = jobData.heightData,
                 vertices = jobData.vertexData,
@@ -188,9 +237,17 @@ namespace Roots.World
                 edgeVertexCount = edgeVertexCount,
                 edgeSampleCount = edgeSamplePointCount,
                 uvScale = uvScale,
-            };
+            }.Schedule(totalVertexCount, 3, noiseJobHandle);
 
-            jobData.jobHandle = createVertexJob.Schedule(totalVertexCount, 3, noiseGenHandle);
+            // Mesh data job
+            var meshJobHandle = new CreateMeshJob
+            {
+                meshData = jobData.meshData[0],
+                vertices = jobData.vertexData,
+                edgeVertexCount = edgeVertexCount,
+            }.Schedule(vertexJobHandle);
+            
+            jobData.jobHandle = meshJobHandle;
             
             activeJobs.Add(jobData);
 

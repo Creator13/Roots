@@ -12,7 +12,7 @@ namespace Roots.World
     [BurstCompile]
     public struct GenerateTerrainNoisePointsJob : IJobParallelFor
     {
-        public NativeArray<float> heightData;
+        [WriteOnly] public NativeArray<float> heightData;
 
         public Vector2 offset;
         public int edgePointCount;
@@ -85,7 +85,7 @@ namespace Roots.World
         
         [Space]
         [SerializeField] private float noisePremultiplier = 1.1f;
-        [SerializeField] private float height = 4f;
+        [SerializeField] public float height = 4f;
 
         private FastNoiseLite worleyGen;
         private FastNoiseLite ridgeGen;

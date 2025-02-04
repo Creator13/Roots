@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -7,6 +8,7 @@ namespace Roots.Util
 {
     public enum FaceDirection { CW, CCW }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct Vertex
     {
         public Vector3 position;
