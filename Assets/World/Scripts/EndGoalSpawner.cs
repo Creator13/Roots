@@ -36,7 +36,7 @@ namespace Roots.World
             Transform endGoal = Instantiate(endGoalPrefab, randomPosition, Quaternion.identity, transform);
             
             float3 lightPos = randomPosition;
-            lightPos.y = chunkLoader.GetGroundHeightAt(randomPosition) + 0.1f;
+            lightPos.y = chunkLoader.GetExactGroundHeightAt(randomPosition) + 0.1f;
             Instantiate(lightPrefab, lightPos, Quaternion.identity);
         }
     }

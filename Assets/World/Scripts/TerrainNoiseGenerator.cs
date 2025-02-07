@@ -142,14 +142,15 @@ namespace Roots.World
             float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(ridgeWarpedX, ridgeWarpedZ));
             
             float worleyWarpedX = x, worleyWarpedZ = z;
-            worleyGen.DomainWarp(ref worleyWarpedX, ref worleyWarpedZ, 1.86f);
+            worleyGen.DomainWarp(ref worleyWarpedX, ref worleyWarpedZ, .06f);
             float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(worleyWarpedX, worleyWarpedZ));
             
             float sample = gradientSample * gradientWeight + voronoiSample;
             
             sample *= worleyStrengthMultiplier;
 
-            sample += math.remap(-1, 1, 0, 1, fbmGen.GetNoise(x, z)) * fbmGenStrength;
+            float fbmSample = math.remap(-1, 1, 0, 1, fbmGen.GetNoise(x, z)) * fbmGenStrength;
+            sample += fbmSample;
             sample *= .5f;
             
             sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);

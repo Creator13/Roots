@@ -144,7 +144,7 @@ namespace Roots.World
         public Vector3[] GetCombinedPointData()
         {
             int chunkCount = InitializedChunkCount;
-            int chunkPointCount = chunkGenerator.ChunkPointCount;
+            int chunkPointCount = chunkGenerator.PointGridDescriptor.totalPoints;
 
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
             Vector3[] points = new Vector3[chunkCount * chunkPointCount];
@@ -172,9 +172,14 @@ namespace Roots.World
             return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
         }
 
-        public float GetGroundHeightAt(Vector3 position)
+        public float GetExactGroundHeightAt(Vector3 position)
         {
             return chunkGenerator.GetTerrainHeightAt(position);
+        }
+
+        public float GetInterpolatedGroundHeightAt(Vector3 position)
+        {
+            return loadedChunks[GetChunkIndexForPosition(position)].GetHeightAt(position);
         }
 
         public Vector3 FindLowestPointNearChunk(Vector2Int startChunkPos, float threshold = 0.05f, int maxRadius = 1)
@@ -219,6 +224,16 @@ namespace Roots.World
             }
             
             return bestPoint;
+        }
+
+        public Vector2Int GetChunkIndexForPosition(Vector3 worldPosition)
+        {
+            Vector2Int chunkIndex = new()
+            {
+                x = (int)math.floor(worldPosition.x / chunkGenerator.ChunkSize),
+                y = (int)math.floor(worldPosition.z / chunkGenerator.ChunkSize),
+            };
+            return chunkIndex;
         }
 
         [ContextMenu("Regenerate all")]

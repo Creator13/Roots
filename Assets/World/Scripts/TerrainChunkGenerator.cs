@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Roots.Util;
 using Unity.Burst;
 using Unity.Collections;
@@ -112,6 +113,12 @@ namespace Roots.World
     [CreateAssetMenu(fileName = "Terrain Chunk Generator", menuName = "Roots/Terrain Chunk Generator", order = 50)]
     public class TerrainChunkGenerator : ChunkGenerator
     {
+        private const MeshUpdateFlags NoCalcMeshUpdateFlags = 
+            MeshUpdateFlags.DontRecalculateBounds 
+            | MeshUpdateFlags.DontValidateIndices 
+            | MeshUpdateFlags.DontNotifyMeshUsers 
+            | MeshUpdateFlags.DontResetBoneBounds;
+        
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
         [SerializeField] private Material terrainMaterial;
 
@@ -119,20 +126,37 @@ namespace Roots.World
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
         [SerializeField] private int pointCloudStepSize = 0; // Subsample step size of mesh edge
         [SerializeField] private float uvScale = 1;
+        
+        // public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
+        // public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
 
+        // Grids
+        private GridInfo vertexGridInfo;
+        private GridInfo pointGridDescriptor;
+        public override GridInfo VertexGridInfo => vertexGridInfo;
+        public override GridInfo PointGridDescriptor => pointGridDescriptor;
+        
+        // Jobs
         private List<GenerationJobData> activeJobs = new();
-
-        public Vector3 center;
-
-        public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
-        public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
-
         public override int ActiveChunkGenJobCount => activeJobs.Count;
 
         private void OnValidate()
         {
             Assert.IsTrue(pointCloudStepSize > 0);
             Assert.IsTrue(ChunkSize > 0);
+            
+            CalculateGridDescriptors();
+        }
+
+        private void Awake()
+        {
+            CalculateGridDescriptors();
+        }
+
+        private void CalculateGridDescriptors()
+        {
+            vertexGridInfo = GridInfo.FromSubdivisionsPerUnit(Mathf.FloorToInt(ChunkSize), terrainMeshSubdivisions);
+            pointGridDescriptor = GridInfo.FromEdgeCount(ChunkSize, vertexGridInfo.edgeCount / pointCloudStepSize);
         }
 
         public override int UpdateChunkGenerationJobs()
@@ -149,7 +173,6 @@ namespace Roots.World
                     FinalizeChunkJob(jobData);
                     
                     jobData.heightData.Dispose();
-                    jobData.vertexData.Dispose();
                     
                     toRemove.Add(jobData);
                 }
@@ -163,36 +186,6 @@ namespace Roots.World
             return toRemove.Count;
         }
 
-        private void FinalizeChunkJob(GenerationJobData jobData)
-        {
-            Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
-
-            jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
-
-            MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
-            MeshCollider meshCollider = jobData.chunk.gameObject.AddComponent<MeshCollider>();
-            meshCollider.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.UseFastMidphase;
-
-            const MeshUpdateFlags noCalcMeshUpdateFlags = MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices | MeshUpdateFlags.DontNotifyMeshUsers | MeshUpdateFlags.DontResetBoneBounds;
-            
-            // Mesh terrainMesh = TerrainMeshFromVertices(jobData.vertexData);
-            var terrainMeshData = jobData.meshData[0]; 
-            terrainMeshData.subMeshCount = 1;
-            terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), noCalcMeshUpdateFlags);
-            
-            var terrainMesh = new Mesh();
-            terrainMesh.name = $"Terrain Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
-            terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
-            Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, noCalcMeshUpdateFlags);
-            meshFilter.mesh = terrainMesh;
-
-            Mesh colliderMesh = ColliderMeshFromVertices(jobData.vertexData);
-            colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
-            meshCollider.sharedMesh = colliderMesh;
-            
-            jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, jobData.vertexData.ToArray(), points);
-        }
-
         public override Chunk CreateChunkAsync(Vector2Int chunkPosition, Transform parent = null)
         {
             Chunk chunk = new GameObject($"Chunk ({chunkPosition.x}, {chunkPosition.y})").AddComponent<Chunk>();
@@ -202,30 +195,25 @@ namespace Roots.World
             {
                 chunk.transform.SetParent(parent, true);
             }
-
-            int edgeVertexCount = ChunkEdgeVertexCount;
-            int totalVertexCount = edgeVertexCount * edgeVertexCount;
             
-            int edgeSamplePointCount = edgeVertexCount + 2; // Generate 1 extra noise sample in each direction of the grid
+            int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
-            
-            float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
-            Vector2 chunkWorldPosition = ((Vector2)chunkPosition * ChunkSize) - Vector2.one * stepSize;
+            Vector2 chunkWorldPosition = ((Vector2)chunkPosition * ChunkSize) - Vector2.one * vertexGridInfo.stepSize;
 
             GenerationJobData jobData = new()
             {
-                indicesCount = (totalVertexCount - edgeVertexCount) * 6,
+                indicesCount = vertexGridInfo.GetIndicesCount(),
                 chunkPosition = chunkPosition,
                 heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
-                vertexData = new NativeArray<Vertex>(totalVertexCount, Allocator.Persistent),
+                vertexData = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent), // TODO figure out if it makes more sense to allocate this in the chunk (it does)
                 meshData = Mesh.AllocateWritableMeshData(1),
                 chunk = chunk
             };
             
             // Noise gen job
             var noiseJobHandle = noiseGenerator
-                .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, stepSize, jobData.heightData)
+                .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, vertexGridInfo.stepSize, jobData.heightData)
                 .Schedule(totalSamplePointCount, 3);
 
             // Vertex position/normal/uv job
@@ -233,18 +221,18 @@ namespace Roots.World
             {
                 heights = jobData.heightData,
                 vertices = jobData.vertexData,
-                stepSize = stepSize,
-                edgeVertexCount = edgeVertexCount,
+                stepSize = vertexGridInfo.stepSize,
+                edgeVertexCount = vertexGridInfo.edgeCount,
                 edgeSampleCount = edgeSamplePointCount,
                 uvScale = uvScale,
-            }.Schedule(totalVertexCount, 3, noiseJobHandle);
+            }.Schedule(vertexGridInfo.totalPoints, 4, noiseJobHandle);
 
             // Mesh data job
             var meshJobHandle = new CreateMeshJob
             {
                 meshData = jobData.meshData[0],
                 vertices = jobData.vertexData,
-                edgeVertexCount = edgeVertexCount,
+                edgeVertexCount = vertexGridInfo.edgeCount,
             }.Schedule(vertexJobHandle);
             
             jobData.jobHandle = meshJobHandle;
@@ -254,6 +242,33 @@ namespace Roots.World
             return chunk;
         }
 
+        private void FinalizeChunkJob(GenerationJobData jobData)
+        {
+            Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
+
+            jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
+
+            MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
+            // MeshCollider meshCollider = jobData.chunk.gameObject.AddComponent<MeshCollider>();
+            // meshCollider.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.UseFastMidphase;
+
+            var terrainMeshData = jobData.meshData[0]; 
+            terrainMeshData.subMeshCount = 1;
+            terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), NoCalcMeshUpdateFlags);
+            
+            var terrainMesh = new Mesh();
+            terrainMesh.name = $"Terrain Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
+            terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
+            Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
+            meshFilter.mesh = terrainMesh;
+
+            // Mesh colliderMesh = ColliderMeshFromVertices(jobData.vertexData);
+            // colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
+            // meshCollider.sharedMesh = colliderMesh;
+            
+            jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, vertexGridInfo, jobData.vertexData, points);
+        }
+
         public override Chunk CreateChunk(int x, int z, Transform parent = null)
         {
             throw new System.NotImplementedException();
@@ -261,10 +276,10 @@ namespace Roots.World
 
         private Vector3[] GeneratePointCloudFromHeightData(NativeArray<float> heights)
         {
-            int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgeVertexCount = vertexGridInfo.edgeCount;
             int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
-            int edgePointCount = ChunkEdgePointCount;
+            int edgePointCount = pointGridDescriptor.edgeCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
             Vector3[] points = new Vector3[edgePointCount * edgePointCount];
@@ -286,7 +301,7 @@ namespace Roots.World
 
         private Mesh ColliderMeshFromVertices(NativeArray<Vertex> vertices)
         {
-            int edgeVertexCount = ChunkEdgeVertexCount;
+            int edgeVertexCount = vertexGridInfo.edgeCount;
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
             int colliderMeshEdgeVertexCount = (int)ChunkSize + 1;
 
@@ -321,28 +336,6 @@ namespace Roots.World
             var mesh = new Mesh();
             mesh.SetVertices(colliderVerts);
             mesh.SetTriangles(tris, 0);
-            return mesh;
-        }
-
-        private Mesh TerrainMeshFromVertices(NativeArray<Vertex> vertices)
-        {
-            int vertexCount = ChunkEdgeVertexCount;
-
-            MeshBuilder mb = new MeshBuilder(vertices.Length * 4, vertices.Length * 6);
-            for (int x = 0; x < vertexCount - 1; x++)
-            {
-                for (int z = 0; z < vertexCount - 1; z++)
-                {
-                    mb.AddQuadNew(
-                        vertices[z + vertexCount * x],
-                        vertices[z + 1 + vertexCount * x],
-                        vertices[z + 1 + vertexCount * (x + 1)],
-                        vertices[z + vertexCount * (x + 1)]
-                    );
-                }
-            }
-
-            Mesh mesh = mb.GetMesh();
             return mesh;
         }
 

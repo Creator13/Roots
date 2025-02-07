@@ -1,5 +1,4 @@
 ﻿using Roots.World;
-using StarterAssets;
 using UnityEngine;
 
 namespace Roots.Player

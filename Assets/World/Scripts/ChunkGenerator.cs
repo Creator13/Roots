@@ -6,27 +6,21 @@ namespace Roots.World
     {
         [field: SerializeField] public float ChunkSize { get; private set; }
 
-        public abstract int ChunkEdgeVertexCount { get; }
+        // public abstract int ChunkEdgeVertexCount { get; }
 
-        public int ChunkVertexCount
-        {
-            get
-            {
-                int edgeCount = ChunkEdgeVertexCount;
-                return edgeCount * edgeCount;
-            }
-        }
+        // public abstract int ChunkEdgePointCount { get; }
 
-        public abstract int ChunkEdgePointCount { get; }
-
-        public int ChunkPointCount
-        {
-            get
-            {
-                int edgeCount = ChunkEdgePointCount;
-                return edgeCount * edgeCount;
-            }
-        }
+        // public int ChunkPointCount
+        // {
+        //     get
+        //     {
+        //         int edgeCount = ChunkEdgePointCount;
+        //         return edgeCount * edgeCount;
+        //     }
+        // }
+        
+        public abstract GridInfo PointGridDescriptor { get; }
+        public abstract GridInfo VertexGridInfo { get; }
 
         public abstract int ActiveChunkGenJobCount { get; }
 

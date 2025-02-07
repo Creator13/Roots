@@ -13,8 +13,8 @@ namespace Roots.World
         [SerializeField] private float treeDensity;
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
 
-        public override int ChunkEdgeVertexCount => 11;
-        public override int ChunkEdgePointCount => 11;
+        public override GridInfo VertexGridInfo => GridInfo.FromEdgeCount(ChunkSize, 11);
+        public override GridInfo PointGridDescriptor => GridInfo.FromEdgeCount(ChunkSize, 11);
 
         public override int ActiveChunkGenJobCount => throw new System.NotImplementedException();
 
@@ -22,7 +22,7 @@ namespace Roots.World
         {
             Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
-            chunk.InitAt(x, z, null, null);
+            chunk.InitAt(x, z, default,default, null);
             SpawnTrees(chunk.transform);
             return chunk;
         }
