@@ -35,20 +35,15 @@ namespace Roots.World
             this.Vertices = vertices;
             this.Points = points;
 
-            if (vertices != null)
-            {
-                FindLowestPoint();
-            }
-
             meshRenderer = GetComponent<MeshRenderer>();
             meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             CachedWorldPosition = transform.position;
             IsInitialized = true;
         }
 
-        private void FindLowestPoint()
+        public Vector3 FindLowestPoint()
         {
-            LowestPoint = Vector3.positiveInfinity;
+            Vector3 lowestPoint = Vector3.positiveInfinity;
             foreach (Vertex vertex in Vertices)
             {
                 if (vertex.position.y < LowestPoint.y)
@@ -56,6 +51,8 @@ namespace Roots.World
                     LowestPoint = vertex.position;
                 }
             }
+
+            return lowestPoint;
         }
 
         public void SetMeshRendererEnabled(bool enabled)

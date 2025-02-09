@@ -200,7 +200,7 @@ namespace Roots.World
                 Vector2Int current = frontier.Dequeue();
                 if (!loadedChunks.TryGetValue(current, out var currentChunk)) continue;
 
-                Vector3 chunkLowestPoint = currentChunk.LowestPoint + currentChunk.CachedWorldPosition;
+                Vector3 chunkLowestPoint = currentChunk.FindLowestPoint() + currentChunk.CachedWorldPosition;
                 
                 if (chunkLowestPoint.y < threshold)
                 {

@@ -126,9 +126,6 @@ namespace Roots.World
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
         [SerializeField] private int pointCloudStepSize = 0; // Subsample step size of mesh edge
         [SerializeField] private float uvScale = 1;
-        
-        // public override int ChunkEdgeVertexCount => Mathf.FloorToInt(ChunkSize) * (terrainMeshSubdivisions + 1) + 1;
-        // public override int ChunkEdgePointCount => ChunkEdgeVertexCount / pointCloudStepSize;
 
         // Grids
         private GridInfo vertexGridInfo;
@@ -247,11 +244,8 @@ namespace Roots.World
             Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
 
             jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
-
             MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
-            // MeshCollider meshCollider = jobData.chunk.gameObject.AddComponent<MeshCollider>();
-            // meshCollider.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation | MeshColliderCookingOptions.UseFastMidphase;
-
+            
             var terrainMeshData = jobData.meshData[0]; 
             terrainMeshData.subMeshCount = 1;
             terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), NoCalcMeshUpdateFlags);
@@ -261,10 +255,6 @@ namespace Roots.World
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             meshFilter.mesh = terrainMesh;
-
-            // Mesh colliderMesh = ColliderMeshFromVertices(jobData.vertexData);
-            // colliderMesh.name = $"Collider Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
-            // meshCollider.sharedMesh = colliderMesh;
             
             jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, vertexGridInfo, jobData.vertexData, points);
         }
@@ -297,46 +287,6 @@ namespace Roots.World
             }
 
             return points;
-        }
-
-        private Mesh ColliderMeshFromVertices(NativeArray<Vertex> vertices)
-        {
-            int edgeVertexCount = vertexGridInfo.edgeCount;
-            // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
-            int colliderMeshEdgeVertexCount = (int)ChunkSize + 1;
-
-            Vector3[] colliderVerts = new Vector3[colliderMeshEdgeVertexCount * colliderMeshEdgeVertexCount];
-            for (int xi = 0, i = 0, j = 0; xi < edgeVertexCount; xi++)
-            {
-                for (int zi = 0; zi < edgeVertexCount; zi++, i++)
-                {
-                    if (xi % (terrainMeshSubdivisions + 1) == 0 && zi % (terrainMeshSubdivisions + 1) == 0)
-                    {
-                        colliderVerts[j] = vertices[i].position;
-                        j++;
-                    }
-                }
-            }
-
-            var tris = new int[(colliderVerts.Length - colliderMeshEdgeVertexCount) * 6];
-            for (int vertIndex = 0, triIndex = 0; vertIndex < colliderVerts.Length - colliderMeshEdgeVertexCount; vertIndex++, triIndex += 6)
-            {
-                if ((vertIndex + 1) % colliderMeshEdgeVertexCount == 0) continue;
-
-                // tri 1
-                tris[triIndex] = vertIndex;
-                tris[triIndex + 1] = vertIndex + 1;
-                tris[triIndex + 2] = vertIndex + colliderMeshEdgeVertexCount;
-                // tri 2
-                tris[triIndex + 3] = vertIndex + 1;
-                tris[triIndex + 4] = vertIndex + colliderMeshEdgeVertexCount + 1;
-                tris[triIndex + 5] = vertIndex + colliderMeshEdgeVertexCount;
-            }
-
-            var mesh = new Mesh();
-            mesh.SetVertices(colliderVerts);
-            mesh.SetTriangles(tris, 0);
-            return mesh;
         }
 
         public override float GetTerrainHeightAt(Vector3 worldPosition)
