@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEngine.InputSystem;
 
 namespace Roots.World
 {
@@ -54,11 +52,6 @@ namespace Roots.World
 
         private void Update()
         {
-            if (Keyboard.current[Key.G].wasPressedThisFrame)
-            {
-                RegenerateChunks();
-            }
-
             int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
 
             if (finishedJobs > 0)
@@ -144,7 +137,7 @@ namespace Roots.World
         public Vector3[] GetCombinedPointData()
         {
             int chunkCount = InitializedChunkCount;
-            int chunkPointCount = chunkGenerator.PointGridDescriptor.totalPoints;
+            int chunkPointCount = chunkGenerator.PointGridInfo.totalPoints;
 
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
             Vector3[] points = new Vector3[chunkCount * chunkPointCount];
@@ -234,26 +227,6 @@ namespace Roots.World
                 y = (int)math.floor(worldPosition.z / chunkGenerator.ChunkSize),
             };
             return chunkIndex;
-        }
-
-        [ContextMenu("Regenerate all")]
-        private void RegenerateChunks()
-        {
-            // TODO fix this method (it wonks out when run and not at chunk 0,0)
-#if UNITY_EDITOR
-            if (!EditorApplication.isPlaying) return;
-#endif
-
-            var newChunks = new Dictionary<Vector2Int, Chunk>(loadedChunks.Count);
-            foreach (var (chunkPos, chunk) in loadedChunks)
-            {
-                Chunk newChunk = chunkGenerator.CreateChunk(chunkPos.x + playerChunkX, chunkPos.y + playerChunkZ, transform);
-                Destroy(chunk.gameObject);
-                newChunks.Add(chunkPos, newChunk);
-            }
-
-            loadedChunks = newChunks;
-            LoadedChunksChanged?.Invoke();
         }
 
         private void OnDrawGizmos()

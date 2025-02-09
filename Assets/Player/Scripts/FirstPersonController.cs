@@ -49,6 +49,8 @@ namespace Roots.Player
 
 		[Header("World")]
 		[SerializeField] private ChunkLoader chunkLoader;
+
+		public bool isEnabled; // ffs why do i need this stupid shit
 		
 		// cinemachine
 		private float _cinemachineTargetPitch;
@@ -111,6 +113,8 @@ namespace Roots.Player
 
 		private void Update()
 		{
+			if (!isEnabled) return;
+			
 			GroundedCheck();
 			Move();
 		}
@@ -149,6 +153,15 @@ namespace Roots.Player
 			}
 		}
 
+		public void ForceMove(Vector3 position)
+		{
+			// I hate this so much but what happens here is that the controller is forced to re-record the position data it internally stores
+			// after the transform.position is being changed.......
+			_controller.enabled = false;
+			transform.position = position;
+			_controller.enabled = true;
+		}
+		
 		private void Move()
 		{
 			// set target speed based on move speed, sprint speed and if sprint is pressed

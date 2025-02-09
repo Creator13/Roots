@@ -1,5 +1,4 @@
-﻿using System;
-using Roots.Util;
+﻿using Roots.Util;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -46,9 +45,9 @@ namespace Roots.World
             Vector3 lowestPoint = Vector3.positiveInfinity;
             foreach (Vertex vertex in Vertices)
             {
-                if (vertex.position.y < LowestPoint.y)
+                if (vertex.position.y < lowestPoint.y)
                 {
-                    LowestPoint = vertex.position;
+                    lowestPoint = vertex.position;
                 }
             }
 

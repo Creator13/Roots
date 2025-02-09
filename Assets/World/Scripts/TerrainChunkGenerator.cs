@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Roots.Util;
 using Unity.Burst;
 using Unity.Collections;
@@ -131,7 +130,7 @@ namespace Roots.World
         private GridInfo vertexGridInfo;
         private GridInfo pointGridDescriptor;
         public override GridInfo VertexGridInfo => vertexGridInfo;
-        public override GridInfo PointGridDescriptor => pointGridDescriptor;
+        public override GridInfo PointGridInfo => pointGridDescriptor;
         
         // Jobs
         private List<GenerationJobData> activeJobs = new();
@@ -257,11 +256,6 @@ namespace Roots.World
             meshFilter.mesh = terrainMesh;
             
             jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, vertexGridInfo, jobData.vertexData, points);
-        }
-
-        public override Chunk CreateChunk(int x, int z, Transform parent = null)
-        {
-            throw new System.NotImplementedException();
         }
 
         private Vector3[] GeneratePointCloudFromHeightData(NativeArray<float> heights)

@@ -10,7 +10,7 @@ namespace Roots.Player
 
         private void Awake()
         {
-            playerController.enabled = false;
+            playerController.isEnabled = false;
         }
 
         private void Start()
@@ -25,8 +25,8 @@ namespace Roots.Player
             Vector3 lowestPoint = chunkLoader.FindLowestPointNearChunk(Vector2Int.zero, maxRadius: 2);
             lowestPoint.y += 0.05f;
             Debug.Log($"Placing player at low point: {lowestPoint}");
-            playerController.transform.position = lowestPoint;
-            playerController.enabled = true;
+            playerController.ForceMove(lowestPoint);
+            playerController.isEnabled = true;
         }
     }
 }

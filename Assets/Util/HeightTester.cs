@@ -1,5 +1,4 @@
-﻿using System;
-using Roots.World;
+﻿using Roots.World;
 using UnityEngine;
 
 namespace Roots.Util

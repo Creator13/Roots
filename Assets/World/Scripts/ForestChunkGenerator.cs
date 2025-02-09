@@ -14,11 +14,11 @@ namespace Roots.World
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
 
         public override GridInfo VertexGridInfo => GridInfo.FromEdgeCount(ChunkSize, 11);
-        public override GridInfo PointGridDescriptor => GridInfo.FromEdgeCount(ChunkSize, 11);
+        public override GridInfo PointGridInfo => GridInfo.FromEdgeCount(ChunkSize, 11);
 
         public override int ActiveChunkGenJobCount => throw new System.NotImplementedException();
 
-        public override Chunk CreateChunk(int x, int z, Transform parent = null)
+        public Chunk CreateChunk(int x, int z, Transform parent = null)
         {
             Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
             chunk.gameObject.name = $"Chunk ({x}, {z})";
