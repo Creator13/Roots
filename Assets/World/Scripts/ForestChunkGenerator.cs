@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Unity.Mathematics;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace Roots.World
@@ -20,18 +21,24 @@ namespace Roots.World
 
         public Chunk CreateChunk(int x, int z, Transform parent = null)
         {
-            Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
-            chunk.gameObject.name = $"Chunk ({x}, {z})";
-            chunk.InitAt(x, z, default,default, null);
-            SpawnTrees(chunk.transform);
-            return chunk;
+            // Chunk chunk = Instantiate(chunkPrefab, CalculateChunkOrigin(x, z), Quaternion.identity, parent);
+            // chunk.gameObject.name = $"Chunk ({x}, {z})";
+            // chunk.InitAt(new int2(x, z), default,default, null);
+            // SpawnTrees(chunk.transform);
+            // return chunk;
+            throw new System.NotImplementedException();
+        }
+
+        public override void CreateChunkAsync(int2 chunkPosition, ChunkLoader.LoaderChunkData container)
+        {
+            throw new System.NotImplementedException();
         }
 
         public override int UpdateChunkGenerationJobs()
         {
             throw new System.NotImplementedException();
         }
-        public override Chunk CreateChunkAsync(Vector2Int position, Transform transform)
+        public override Chunk CreateChunkAsync(int2 position, Transform transform)
         {
             throw new System.NotImplementedException();
         }

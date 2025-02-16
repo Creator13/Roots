@@ -1,5 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
 
+// Grids in the project are defined with x being the column axis and z the row axis. Implications for index calculations:
+//    x: movement: ±grid width;   x index = i / grid width;   outer loop
+//    z: movement: ±1;            z index = i % grid width;   inner loop
+// i = x * width + z;
+
 namespace Roots.World
 {
     public readonly struct GridInfo

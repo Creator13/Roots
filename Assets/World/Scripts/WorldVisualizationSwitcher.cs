@@ -73,11 +73,12 @@ namespace Roots.World
             
             bool meshEnabled = currentWorldType == WorldType.Mesh;
             bool instancedRendererEnabled = currentWorldType == WorldType.Instanced;
-            
-            foreach (Chunk chunk in chunkLoader.GetChunkEnumerable())
-            {
-                chunk.SetMeshRendererEnabled(meshEnabled);
-            }
+
+            // TODO fix
+            // foreach (Chunk chunk in chunkLoader.GetChunkEnumerable())
+            // {
+            //     chunk.SetMeshRendererEnabled(meshEnabled);
+            // }
             instancedRenderer.enabled = instancedRendererEnabled;
         }
         

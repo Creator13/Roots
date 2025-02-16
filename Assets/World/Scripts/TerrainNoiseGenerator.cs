@@ -14,14 +14,17 @@ namespace Roots.World
     {
         [WriteOnly] public NativeArray<float> heightData;
 
+        // Grid info
         public Vector2 offset;
         public int edgePointCount;
         public float stepSize;
 
+        // Generators
         public FastNoiseLite worleyGen;
         public FastNoiseLite ridgeGen;
         public FastNoiseLite fbmGen;
 
+        // Gen settings
         public float height;
         public float gradientWeight;
         public float worleyStrengthMultiplier;
@@ -161,7 +164,6 @@ namespace Roots.World
             return sample * height;
         }
 
-        // TODO further generalize this api, especially the part where it magically adds a border around the area that is being requested.
         public GenerateTerrainNoisePointsJob CreateNoiseGenJob(int edgePointCount, Vector2 startPosition, float stepSize, NativeArray<float> heightDataArray)
         {
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");

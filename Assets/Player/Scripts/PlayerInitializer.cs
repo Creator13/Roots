@@ -1,4 +1,5 @@
 ﻿using Roots.World;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Roots.Player
@@ -22,8 +23,7 @@ namespace Roots.Player
         {
             chunkLoader.InitialChunksLoaded -= PlacePlayerInValley;
 
-            Vector3 lowestPoint = chunkLoader.FindLowestPointNearChunk(Vector2Int.zero, maxRadius: 2);
-            lowestPoint.y += 0.05f;
+            Vector3 lowestPoint = chunkLoader.FindLowestPointNearChunk(int2.zero, maxRadius: 2);
             Debug.Log($"Placing player at low point: {lowestPoint}");
             playerController.ForceMove(lowestPoint);
             playerController.isEnabled = true;

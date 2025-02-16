@@ -100,13 +100,13 @@ namespace Roots.World
     public class GenerationJobData
     {
         public int indicesCount;
-        public Vector2Int chunkPosition;
+        public int2 chunkCoords;
         
         public JobHandle jobHandle;
         public NativeArray<float> heightData;
         public NativeArray<Vertex> vertexData;
         public Mesh.MeshDataArray meshData;
-        public Chunk chunk;
+        public ChunkLoader.LoaderChunkData chunkData;
     }
 
     [CreateAssetMenu(fileName = "Terrain Chunk Generator", menuName = "Roots/Terrain Chunk Generator", order = 50)]
@@ -128,9 +128,9 @@ namespace Roots.World
 
         // Grids
         private GridInfo vertexGridInfo;
-        private GridInfo pointGridDescriptor;
+        private GridInfo pointGridInfo;
         public override GridInfo VertexGridInfo => vertexGridInfo;
-        public override GridInfo PointGridInfo => pointGridDescriptor;
+        public override GridInfo PointGridInfo => pointGridInfo;
         
         // Jobs
         private List<GenerationJobData> activeJobs = new();
@@ -152,7 +152,7 @@ namespace Roots.World
         private void CalculateGridDescriptors()
         {
             vertexGridInfo = GridInfo.FromSubdivisionsPerUnit(Mathf.FloorToInt(ChunkSize), terrainMeshSubdivisions);
-            pointGridDescriptor = GridInfo.FromEdgeCount(ChunkSize, vertexGridInfo.edgeCount / pointCloudStepSize);
+            pointGridInfo = GridInfo.FromEdgeCount(ChunkSize, vertexGridInfo.edgeCount / pointCloudStepSize);
         }
 
         public override int UpdateChunkGenerationJobs()
@@ -182,31 +182,36 @@ namespace Roots.World
             return toRemove.Count;
         }
 
-        public override Chunk CreateChunkAsync(Vector2Int chunkPosition, Transform parent = null)
+        public override void CreateChunkAsync(int2 coords, ChunkLoader.LoaderChunkData container)
         {
-            Chunk chunk = new GameObject($"Chunk ({chunkPosition.x}, {chunkPosition.y})").AddComponent<Chunk>();
-            chunk.transform.position = CalculateChunkOrigin(chunkPosition.x, chunkPosition.y);
-            chunk.transform.localRotation = Quaternion.identity;
-            if (parent)
-            {
-                chunk.transform.SetParent(parent, true);
-            }
-            
             int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
+            
+            Chunk chunk = new Chunk()
+            {
+                coords = coords,
+                worldPos = CalculateChunkOrigin(coords),
+                gridInfo = vertexGridInfo,
+                points = new NativeArray<Vector3>(pointGridInfo.totalPoints, Allocator.Persistent),
+                vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent),
+            };
 
-            Vector2 chunkWorldPosition = ((Vector2)chunkPosition * ChunkSize) - Vector2.one * vertexGridInfo.stepSize;
-
+            container.chunkData = chunk;
+            container.isLoaded = false;
+            container.gameObject.SetActive(false);
+            
             GenerationJobData jobData = new()
             {
                 indicesCount = vertexGridInfo.GetIndicesCount(),
-                chunkPosition = chunkPosition,
+                chunkCoords = coords,
                 heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
-                vertexData = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent), // TODO figure out if it makes more sense to allocate this in the chunk (it does)
+                vertexData = chunk.vertices,
                 meshData = Mesh.AllocateWritableMeshData(1),
-                chunk = chunk
+                chunkData = container
             };
             
+            Vector2 chunkWorldPosition = coords.ToVector2() * ChunkSize - Vector2.one * vertexGridInfo.stepSize;
+
             // Noise gen job
             var noiseJobHandle = noiseGenerator
                 .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, vertexGridInfo.stepSize, jobData.heightData)
@@ -234,39 +239,96 @@ namespace Roots.World
             jobData.jobHandle = meshJobHandle;
             
             activeJobs.Add(jobData);
+        }
 
-            return chunk;
+        public override Chunk CreateChunkAsync(int2 chunkPosition, Transform parent = null)
+        {
+        //     Chunk chunk = new GameObject($"Chunk ({chunkPosition.x}, {chunkPosition.y})").AddComponent<Chunk>();
+        //     chunk.transform.position = CalculateChunkOrigin(chunkPosition.x, chunkPosition.y);
+        //     chunk.transform.localRotation = Quaternion.identity;
+        //     if (parent)
+        //     {
+        //         chunk.transform.SetParent(parent, true);
+        //     }
+        //     
+        //     int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
+        //     int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
+        //
+        //     GenerationJobData jobData = new()
+        //     {
+        //         indicesCount = vertexGridInfo.GetIndicesCount(),
+        //         chunkPosition = chunkPosition,
+        //         heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
+        //         vertexData = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent), // TODO figure out if it makes more sense to allocate this in the chunk (it does)
+        //         meshData = Mesh.AllocateWritableMeshData(1),
+        //         chunk = chunk
+        //     };
+        //     
+        //     Vector2 chunkWorldPosition = (chunkPosition.ToVector2() * ChunkSize) - Vector2.one * vertexGridInfo.stepSize;
+        //
+        //     // Noise gen job
+        //     var noiseJobHandle = noiseGenerator
+        //         .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, vertexGridInfo.stepSize, jobData.heightData)
+        //         .Schedule(totalSamplePointCount, 3);
+        //
+        //     // Vertex position/normal/uv job
+        //     var vertexJobHandle = new CreateVerticesJob
+        //     {
+        //         heights = jobData.heightData,
+        //         vertices = jobData.vertexData,
+        //         stepSize = vertexGridInfo.stepSize,
+        //         edgeVertexCount = vertexGridInfo.edgeCount,
+        //         edgeSampleCount = edgeSamplePointCount,
+        //         uvScale = uvScale,
+        //     }.Schedule(vertexGridInfo.totalPoints, 4, noiseJobHandle);
+        //
+        //     // Mesh data job
+        //     var meshJobHandle = new CreateMeshJob
+        //     {
+        //         meshData = jobData.meshData[0],
+        //         vertices = jobData.vertexData,
+        //         edgeVertexCount = vertexGridInfo.edgeCount,
+        //     }.Schedule(vertexJobHandle);
+        //     
+        //     jobData.jobHandle = meshJobHandle;
+        //     
+        //     activeJobs.Add(jobData);
+        //
+        //     return chunk;
+            throw new System.NotImplementedException();
         }
 
         private void FinalizeChunkJob(GenerationJobData jobData)
         {
-            Vector3[] points = GeneratePointCloudFromHeightData(jobData.heightData);
+            GeneratePointCloudFromHeightData(jobData.chunkData.chunkData.points, jobData.heightData);
 
-            jobData.chunk.gameObject.AddComponent<MeshRenderer>().sharedMaterial = terrainMaterial;
-            MeshFilter meshFilter = jobData.chunk.gameObject.AddComponent<MeshFilter>();
+            jobData.chunkData.transform.position = CalculateChunkOrigin(jobData.chunkCoords); // assumption that the parent object of the transform doesn't change positions
+            jobData.chunkData.transform.rotation = Quaternion.identity;
+
+            jobData.chunkData.meshRenderer.sharedMaterial = terrainMaterial;
             
             var terrainMeshData = jobData.meshData[0]; 
             terrainMeshData.subMeshCount = 1;
             terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), NoCalcMeshUpdateFlags);
             
             var terrainMesh = new Mesh();
-            terrainMesh.name = $"Terrain Mesh ({jobData.chunkPosition.x}, {jobData.chunkPosition.y})";
+            terrainMesh.name = $"Terrain Mesh ({jobData.chunkCoords.x}, {jobData.chunkCoords.y})";
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
-            meshFilter.mesh = terrainMesh;
-            
-            jobData.chunk.InitAt(jobData.chunkPosition.x, jobData.chunkPosition.y, vertexGridInfo, jobData.vertexData, points);
+            jobData.chunkData.meshFilter.mesh = terrainMesh;
+         
+            jobData.chunkData.isLoaded = true;
+            jobData.chunkData.gameObject.SetActive(true);
         }
 
-        private Vector3[] GeneratePointCloudFromHeightData(NativeArray<float> heights)
+        private void GeneratePointCloudFromHeightData(NativeArray<Vector3> points, NativeArray<float> heights)
         {
             int edgeVertexCount = vertexGridInfo.edgeCount;
             int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.
-            int edgePointCount = pointGridDescriptor.edgeCount;
+            int edgePointCount = pointGridInfo.edgeCount;
             float stepSize = 1.0f / (terrainMeshSubdivisions + 1);
 
-            Vector3[] points = new Vector3[edgePointCount * edgePointCount];
             for (int xi = 0, j = 0; xi < edgeVertexCount; xi++)
             {
                 for (int zi = 0; zi < edgeVertexCount; zi++)
@@ -279,8 +341,6 @@ namespace Roots.World
                     }
                 }
             }
-
-            return points;
         }
 
         public override float GetTerrainHeightAt(Vector3 worldPosition)

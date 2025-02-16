@@ -17,7 +17,7 @@ namespace Roots.World
         }
         
         public override Vector3[] GetPointData()
-        { 
+        {
             return chunkLoader.GetCombinedPointData();
         }
 
