@@ -29,7 +29,7 @@ namespace Roots.World
             throw new System.NotImplementedException();
         }
 
-        public override void CreateChunkAsync(int2 chunkPosition, ChunkLoader.LoaderChunkData container)
+        public override void CreateChunkAsync(int2 chunkPosition, ChunkLoader.ChunkContainer container)
         {
             throw new System.NotImplementedException();
         }

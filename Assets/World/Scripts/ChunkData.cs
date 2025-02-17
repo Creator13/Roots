@@ -45,9 +45,9 @@ namespace Roots.World
 
         // Position is a v3 to use the transform.position directly but the y value is entirely ignored. 
         // Position assumes a WORLD position
-        public float GetHeightAt(Vector3 position)
+        public float GetHeightAt(Vector3 worldPosition)
         {
-            position -= worldPos; // convert to local position
+            Vector3 position = worldPosition - worldPos; // convert to local position
             
             int xi_low = (int)math.floor(position.x / gridInfo.stepSize);
             int zi_low = (int)math.floor(position.z / gridInfo.stepSize);

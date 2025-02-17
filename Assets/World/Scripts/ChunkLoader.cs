@@ -11,7 +11,7 @@ namespace Roots.World
 {
     public class ChunkLoader : MonoBehaviour
     {
-        public class LoaderChunkData
+        public class ChunkContainer
         {
             public Chunk chunkData;
 
@@ -43,7 +43,7 @@ namespace Roots.World
         [SerializeField] private int2 playerChunk;
 
         private Vector3 playerPosition;
-        private LoaderChunkData[] loadedChunks;
+        private ChunkContainer[] loadedChunks;
 
         private int Diameter => loadRadius * 2 + 1;
         private int PlayerChunkIndexOffset => Diameter * loadRadius + loadRadius;
@@ -93,22 +93,23 @@ namespace Roots.World
 
             if (!delta.Equals(int2.zero))
             {
-                int2 sign = math.sign(delta);
-                int2 abs = math.abs(delta);
-                for (int x = 0; x < abs.x; x++)
-                {
-                    UpdateVisibleChunks(new int2(sign.x, 0));
-                }
-                for (int y = 0; y < abs.y; y++)
-                {
-                    UpdateVisibleChunks(new int2(sign.y, 0));
-                }
+                UpdateVisibleChunks(delta);
+                // int2 sign = math.sign(delta);
+                // int2 abs = math.abs(delta);
+                // for (int x = 0; x < abs.x; x++)
+                // {
+                //     UpdateVisibleChunks(new int2(sign.x, 0));
+                // }
+                // for (int y = 0; y < abs.y; y++)
+                // {
+                //     UpdateVisibleChunks(new int2(0, sign.y));
+                // }
             }
         }
 
         private void OnDestroy()
         {
-            foreach (LoaderChunkData chunk in loadedChunks)
+            foreach (ChunkContainer chunk in loadedChunks)
             {
                 chunk.chunkData.Dispose();
             }
@@ -116,13 +117,13 @@ namespace Roots.World
 
         private void InitializeChunks()
         {
-            loadedChunks = new LoaderChunkData[ChunkCount];
+            loadedChunks = new ChunkContainer[ChunkCount];
 
             for (int xRel = -loadRadius, i = 0; xRel < loadRadius + 1; xRel++)
             {
                 for (int zRel = -loadRadius; zRel < loadRadius + 1; zRel++, i++)
                 {
-                    var data = new LoaderChunkData();
+                    var data = new ChunkContainer();
                     data.gameObject = new GameObject($"Chunk x{xRel} z{zRel}");
                     data.transform = data.gameObject.transform;
                     data.meshFilter = data.gameObject.AddComponent<MeshFilter>();
@@ -159,14 +160,14 @@ namespace Roots.World
                     }
                     
                     // Order a new chunk to be loaded into the rotating object
-                    int2 newChunkCoords =  + movementDelta;
+                    int2 newChunkCoords = new int2(loadRadius + playerChunk.x, temp.chunkData.coords.y);
                     temp.chunkData.Dispose(); // Invalidate the old chunkData
                     chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
                     loadedChunks[_GetIndex(width - 1, z)] = temp; // set last element to cached first element (rotate)
                 }
             }
 
-            // Player moves z - 1
+            // Player moves x - 1
             if (movementDelta.x < 0)
             {
                 for (int z = 0; z < width; z++)
@@ -176,6 +177,11 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x - 1 , z)];
                     }
+                    
+                    // Order a new chunk to be loaded into the rotating object
+                    int2 newChunkCoords = new int2(-loadRadius + playerChunk.x, temp.chunkData.coords.y);
+                    temp.chunkData.Dispose(); // Invalidate the old chunkData
+                    chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
                     loadedChunks[_GetIndex(0, z)] = temp;
                 }
             }
@@ -190,6 +196,11 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x, z + 1)];
                     }
+                    
+                    // Order a new chunk to be loaded into the rotating object
+                    int2 newChunkCoords = new int2(temp.chunkData.coords.x, loadRadius + playerChunk.y);
+                    temp.chunkData.Dispose(); // Invalidate the old chunkData
+                    chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
                     loadedChunks[_GetIndex(x, width - 1)] = temp;
                 }
             }
@@ -204,6 +215,11 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z + 1)] = loadedChunks[_GetIndex(x, z)];
                     }
+                    
+                    // Order a new chunk to be loaded into the rotating object
+                    int2 newChunkCoords = new int2(temp.chunkData.coords.x, -loadRadius + playerChunk.y);
+                    temp.chunkData.Dispose(); // Invalidate the old chunkData
+                    chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
                     loadedChunks[_GetIndex(x, 0)] = temp;
                 }
             }
@@ -218,7 +234,7 @@ namespace Roots.World
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
             Vector3[] points = new Vector3[chunkCount * chunkPointCount];
             int iChunk = 0;
-            foreach (LoaderChunkData chunk in loadedChunks)
+            foreach (ChunkContainer chunk in loadedChunks)
             {
                 if (!chunk.isLoaded) continue;
 
@@ -248,15 +264,15 @@ namespace Roots.World
 
         public float GetInterpolatedGroundHeightAt(Vector3 position)
         {
-            return ChunkAt(position).GetHeightAt(position);
+            return loadedChunks[PlayerChunkIndexOffset].chunkData.GetHeightAt(position);
         }
 
-        public Vector3 FindLowestPointNearChunk(int2 chunkOffset, float threshold = 0.05f, int maxRadius = 1)
+        public Vector3 FindLowestPointNearChunk(int2 coords, float threshold = 0.05f, int maxRadius = 1)
         {
-            Assert.IsTrue(CartesianMath.IsInSquareRadius(chunkOffset, playerChunk, loadRadius),
-                $"Called on a chunk that is outside the current load radius. Start chunk: {chunkOffset}, center: {playerChunk}, radius: {loadRadius}");
-            Assert.IsTrue(loadedChunks[WorldChunkCoordinatesToLocalChunkIndex(chunkOffset)].isLoaded,
-                $"Called on a start chunk that is not initialized: {chunkOffset}.");
+            Assert.IsTrue(CartesianMath.IsInSquareRadius(coords, playerChunk, loadRadius),
+                $"Called on a chunk that is outside the current load radius. Start chunk: {coords}, center: {playerChunk}, radius: {loadRadius}");
+            Assert.IsTrue(ChunkDataAt(coords).isLoaded,
+                $"Called on a start chunk that is not initialized: {coords}.");
 
             Queue<int2> frontier = new Queue<int2>();
             HashSet<int2> visited = new HashSet<int2>();
@@ -273,7 +289,7 @@ namespace Roots.World
                 int2 current = frontier.Dequeue();
                 if (!CartesianMath.IsInSquareRadius(current, loadRadius)) continue;
 
-                Chunk currentChunk = ChunkAt(current + chunkOffset);
+                Chunk currentChunk = ChunkAt(current + coords);
                 Vector3 chunkLowestPoint = currentChunk.FindLowestPoint() + currentChunk.worldPos;
 
                 if (chunkLowestPoint.y < threshold)
@@ -289,7 +305,7 @@ namespace Roots.World
                 foreach (var dir in NeighborDirections)
                 {
                     int2 neighbor = current + dir;
-                    if (!visited.Contains(neighbor) && math.abs(chunkOffset.x - neighbor.x) <= maxRadius && math.abs(chunkOffset.y - neighbor.y) <= maxRadius)
+                    if (!visited.Contains(neighbor) && math.abs(coords.x - neighbor.x) <= maxRadius && math.abs(coords.y - neighbor.y) <= maxRadius)
                     {
                         frontier.Enqueue(neighbor);
                         visited.Add(neighbor);
@@ -301,13 +317,13 @@ namespace Roots.World
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LoaderChunkData ChunkDataAt(int2 chunkCoordinates)
+        private ChunkContainer ChunkDataAt(int2 chunkCoordinates)
         {
             return loadedChunks[WorldChunkCoordinatesToLocalChunkIndex(chunkCoordinates)];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private LoaderChunkData ChunkDataAt(Vector3 worldPosition)
+        private ChunkContainer ChunkDataAt(Vector3 worldPosition)
         {
             return loadedChunks[WorldPositionToLocalChunkIndex(worldPosition)];
         }
@@ -348,8 +364,9 @@ namespace Roots.World
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int2 LocalChunkIndexToLocalChunkCoordinates(int index)
+        public int2 LocalChunkIndexToWorldChunkCoordinates(int index)
         {
+            index -= PlayerChunkIndexOffset;
             int2 localCoords = new int2
             {
                 x = index / Diameter,

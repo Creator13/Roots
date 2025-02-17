@@ -106,7 +106,7 @@ namespace Roots.World
         public NativeArray<float> heightData;
         public NativeArray<Vertex> vertexData;
         public Mesh.MeshDataArray meshData;
-        public ChunkLoader.LoaderChunkData chunkData;
+        public ChunkLoader.ChunkContainer container;
     }
 
     [CreateAssetMenu(fileName = "Terrain Chunk Generator", menuName = "Roots/Terrain Chunk Generator", order = 50)]
@@ -182,7 +182,7 @@ namespace Roots.World
             return toRemove.Count;
         }
 
-        public override void CreateChunkAsync(int2 coords, ChunkLoader.LoaderChunkData container)
+        public override void CreateChunkAsync(int2 coords, ChunkLoader.ChunkContainer container)
         {
             int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
@@ -207,7 +207,7 @@ namespace Roots.World
                 heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
                 vertexData = chunk.vertices,
                 meshData = Mesh.AllocateWritableMeshData(1),
-                chunkData = container
+                container = container
             };
             
             Vector2 chunkWorldPosition = coords.ToVector2() * ChunkSize - Vector2.one * vertexGridInfo.stepSize;
@@ -300,12 +300,12 @@ namespace Roots.World
 
         private void FinalizeChunkJob(GenerationJobData jobData)
         {
-            GeneratePointCloudFromHeightData(jobData.chunkData.chunkData.points, jobData.heightData);
+            GeneratePointCloudFromHeightData(jobData.container.chunkData.points, jobData.heightData);
 
-            jobData.chunkData.transform.position = CalculateChunkOrigin(jobData.chunkCoords); // assumption that the parent object of the transform doesn't change positions
-            jobData.chunkData.transform.rotation = Quaternion.identity;
+            jobData.container.transform.position = CalculateChunkOrigin(jobData.chunkCoords); // assumption that the parent object of the transform doesn't change positions
+            jobData.container.transform.rotation = Quaternion.identity;
 
-            jobData.chunkData.meshRenderer.sharedMaterial = terrainMaterial;
+            jobData.container.meshRenderer.sharedMaterial = terrainMaterial;
             
             var terrainMeshData = jobData.meshData[0]; 
             terrainMeshData.subMeshCount = 1;
@@ -315,10 +315,10 @@ namespace Roots.World
             terrainMesh.name = $"Terrain Mesh ({jobData.chunkCoords.x}, {jobData.chunkCoords.y})";
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
-            jobData.chunkData.meshFilter.mesh = terrainMesh;
+            jobData.container.meshFilter.mesh = terrainMesh;
          
-            jobData.chunkData.isLoaded = true;
-            jobData.chunkData.gameObject.SetActive(true);
+            jobData.container.isLoaded = true;
+            jobData.container.gameObject.SetActive(true);
         }
 
         private void GeneratePointCloudFromHeightData(NativeArray<Vector3> points, NativeArray<float> heights)

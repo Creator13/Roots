@@ -13,7 +13,7 @@ namespace Roots.World
         public abstract int ActiveChunkGenJobCount { get; }
 
         public abstract Chunk CreateChunkAsync(int2 chunkPosition, Transform transform);
-        public abstract void CreateChunkAsync(int2 chunkPosition, ChunkLoader.LoaderChunkData container);
+        public abstract void CreateChunkAsync(int2 chunkPosition, ChunkLoader.ChunkContainer container);
         public abstract int UpdateChunkGenerationJobs();
 
         public abstract float GetTerrainHeightAt(Vector3 worldPosition);
