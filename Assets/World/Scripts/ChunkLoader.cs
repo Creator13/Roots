@@ -55,15 +55,15 @@ namespace Roots.World
         private bool initialChunksLoaded;
         public event Action LoadedChunksChanged;
         public event Action InitialChunksLoaded;
-        
+
         private void Start()
         {
             playerPosition = player.position;
             playerChunk = WorldPositionToWorldChunkCoordinates(playerPosition);
-            
-            InitializeChunks();
+
+            InitializeChunks(playerChunk);
             // This assertion verifies that the UpdateVisibleChunks method orders all the chunks it needs to
-            // (this won't assert false because the jobs can't complete until at least one UpdateChunkGenerationJobs() has been called)
+            // (this won't ever assert false because the jobs can't complete until at least one UpdateChunkGenerationJobs() has been called, which should ONLY happen from the chunk loader)
             Assert.IsTrue(chunkGenerator.ActiveChunkGenJobCount == ChunkCount);
             initialChunksLoaded = false;
         }
@@ -115,7 +115,7 @@ namespace Roots.World
             }
         }
 
-        private void InitializeChunks()
+        private void InitializeChunks(int2 center)
         {
             loadedChunks = new ChunkContainer[ChunkCount];
 
@@ -123,15 +123,16 @@ namespace Roots.World
             {
                 for (int zRel = -loadRadius; zRel < loadRadius + 1; zRel++, i++)
                 {
-                    var data = new ChunkContainer();
-                    data.gameObject = new GameObject($"Chunk x{xRel} z{zRel}");
-                    data.transform = data.gameObject.transform;
-                    data.meshFilter = data.gameObject.AddComponent<MeshFilter>();
-                    data.meshRenderer = data.gameObject.AddComponent<MeshRenderer>();
+                    var container = new ChunkContainer();
+                    container.gameObject = new GameObject($"Chunk x{xRel} z{zRel}");
+                    container.transform = container.gameObject.transform;
+                    container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
+                    container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
 
-                    data.transform.SetParent(transform, true);
-                    loadedChunks[i] = data;
-                    chunkGenerator.CreateChunkAsync(new int2(xRel, zRel) + playerChunk, data);
+                    container.transform.SetParent(transform, true);
+
+                    loadedChunks[i] = container;
+                    chunkGenerator.CreateChunkAsync(new int2(xRel, zRel) + center, container);
                 }
             }
         }
@@ -143,11 +144,11 @@ namespace Roots.World
 
             // Cache width
             int width = Diameter;
-            
+
             // local coordinates to index function
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             int _GetIndex(int x, int z) => x * width + z;
-            
+
             // Player moves x + 1
             if (movementDelta.x > 0)
             {
@@ -158,7 +159,7 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x + 1, z)];
                     }
-                    
+
                     // Order a new chunk to be loaded into the rotating object
                     int2 newChunkCoords = new int2(loadRadius + playerChunk.x, temp.chunkData.coords.y);
                     temp.chunkData.Dispose(); // Invalidate the old chunkData
@@ -175,9 +176,9 @@ namespace Roots.World
                     var temp = loadedChunks[_GetIndex(width - 1, z)]; // cache last element in row
                     for (int x = width - 1; x > 0; x--) // iterate last to second element (backwards), set each item to the previous in the list (= next in backwards iteration), overwrites last element keeps first 
                     {
-                        loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x - 1 , z)];
+                        loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x - 1, z)];
                     }
-                    
+
                     // Order a new chunk to be loaded into the rotating object
                     int2 newChunkCoords = new int2(-loadRadius + playerChunk.x, temp.chunkData.coords.y);
                     temp.chunkData.Dispose(); // Invalidate the old chunkData
@@ -185,7 +186,7 @@ namespace Roots.World
                     loadedChunks[_GetIndex(0, z)] = temp;
                 }
             }
-        
+
             // Player moves z + 1
             if (movementDelta.y > 0)
             {
@@ -196,7 +197,7 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x, z + 1)];
                     }
-                    
+
                     // Order a new chunk to be loaded into the rotating object
                     int2 newChunkCoords = new int2(temp.chunkData.coords.x, loadRadius + playerChunk.y);
                     temp.chunkData.Dispose(); // Invalidate the old chunkData
@@ -204,7 +205,7 @@ namespace Roots.World
                     loadedChunks[_GetIndex(x, width - 1)] = temp;
                 }
             }
-        
+
             // PLayer moves z - 1
             if (movementDelta.y < 0)
             {
@@ -215,7 +216,7 @@ namespace Roots.World
                     {
                         loadedChunks[_GetIndex(x, z + 1)] = loadedChunks[_GetIndex(x, z)];
                     }
-                    
+
                     // Order a new chunk to be loaded into the rotating object
                     int2 newChunkCoords = new int2(temp.chunkData.coords.x, -loadRadius + playerChunk.y);
                     temp.chunkData.Dispose(); // Invalidate the old chunkData
@@ -224,7 +225,7 @@ namespace Roots.World
                 }
             }
         }
-        
+
         public Vector3[] GetCombinedPointData()
         {
             int chunkCount = InitializedChunkCount;
@@ -264,7 +265,7 @@ namespace Roots.World
 
         public float GetInterpolatedGroundHeightAt(Vector3 position)
         {
-            return loadedChunks[PlayerChunkIndexOffset].chunkData.GetHeightAt(position);
+            return ChunkAt(position).GetHeightAt(position);
         }
 
         public Vector3 FindLowestPointNearChunk(int2 coords, float threshold = 0.05f, int maxRadius = 1)
