@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Roots.World
 {
@@ -18,7 +19,7 @@ namespace Roots.World
             this.coords = coords;
             this.worldPos = worldPos;
             this.gridInfo = gridInfo;
-            
+
             this.vertices = vertices;
             this.points = points;
         }
@@ -48,11 +49,14 @@ namespace Roots.World
         public float GetHeightAt(Vector3 worldPosition)
         {
             Vector3 position = worldPosition - worldPos; // convert to local position
-            
+
+            Assert.IsTrue(position.x >= 0 && position.x <= gridInfo.size && position.z >= 0 && position.z <= gridInfo.size,
+                "World position not inside chunk bounds (GetHeightAt called on incorrect chunk for world position)");
+
             int xi_low = (int)math.floor(position.x / gridInfo.stepSize);
             int zi_low = (int)math.floor(position.z / gridInfo.stepSize);
             int lowestVertIndex = gridInfo.GetIndexFromXZ(xi_low, zi_low);
-            
+
             Vector3 posA = vertices[lowestVertIndex].position;
             Vector3 posB = vertices[lowestVertIndex + 1].position;
             Vector3 posC = vertices[lowestVertIndex + gridInfo.edgeCount].position;
@@ -63,7 +67,7 @@ namespace Roots.World
 
             float h0 = math.lerp(posA.y, posB.y, tz);
             float h1 = math.lerp(posC.y, posD.y, tz);
-            return math.lerp(h0 ,h1, tx);
+            return math.lerp(h0, h1, tx);
         }
     }
 }

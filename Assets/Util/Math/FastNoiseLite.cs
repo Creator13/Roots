@@ -2,6 +2,7 @@
 //
 // Copyright(c) 2023 Jordan Peck (jordan.me2@gmail.com)
 // Copyright(c) 2023 Contributors
+// Adapted for Unity.Mathematics by Casper van Battum 2025
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal

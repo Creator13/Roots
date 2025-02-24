@@ -6,18 +6,12 @@ namespace Roots.Util
 {
     public static class CartesianMath
     {
-        /// <summary>
-        /// Calculate whether a point 
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInSquareRadius(int2 point, int radius)
         {
             return point.x < radius && point.x > -radius && point.y < radius && point.y > -radius;
         }
 
-        /// <summary>
-        /// Calculate whether a point on a grid of discrete values is 
-        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInSquareRadius(int2 point, int2 center, int radius)
         {

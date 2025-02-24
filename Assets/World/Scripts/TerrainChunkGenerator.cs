@@ -184,6 +184,8 @@ namespace Roots.World
 
         public override void CreateChunkAsync(int2 coords, ChunkLoader.ChunkContainer container)
         {
+            Debug.Log($"Creating new chunk at {coords}.");
+            
             int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
             
@@ -209,12 +211,13 @@ namespace Roots.World
                 meshData = Mesh.AllocateWritableMeshData(1),
                 container = container
             };
-            
-            Vector2 chunkWorldPosition = coords.ToVector2() * ChunkSize - Vector2.one * vertexGridInfo.stepSize;
+
+            // Noise grid is offset by 1 * stepsize for use in normal calculation
+            Vector2 noiseGridOrigin = coords.ToVector2() * ChunkSize - Vector2.one * vertexGridInfo.stepSize;
 
             // Noise gen job
             var noiseJobHandle = noiseGenerator
-                .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, vertexGridInfo.stepSize, jobData.heightData)
+                .CreateNoiseGenJob(edgeSamplePointCount, noiseGridOrigin, vertexGridInfo.stepSize, jobData.heightData)
                 .Schedule(totalSamplePointCount, 3);
 
             // Vertex position/normal/uv job
@@ -243,58 +246,6 @@ namespace Roots.World
 
         public override Chunk CreateChunkAsync(int2 chunkPosition, Transform parent = null)
         {
-        //     Chunk chunk = new GameObject($"Chunk ({chunkPosition.x}, {chunkPosition.y})").AddComponent<Chunk>();
-        //     chunk.transform.position = CalculateChunkOrigin(chunkPosition.x, chunkPosition.y);
-        //     chunk.transform.localRotation = Quaternion.identity;
-        //     if (parent)
-        //     {
-        //         chunk.transform.SetParent(parent, true);
-        //     }
-        //     
-        //     int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
-        //     int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
-        //
-        //     GenerationJobData jobData = new()
-        //     {
-        //         indicesCount = vertexGridInfo.GetIndicesCount(),
-        //         chunkPosition = chunkPosition,
-        //         heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
-        //         vertexData = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent), // TODO figure out if it makes more sense to allocate this in the chunk (it does)
-        //         meshData = Mesh.AllocateWritableMeshData(1),
-        //         chunk = chunk
-        //     };
-        //     
-        //     Vector2 chunkWorldPosition = (chunkPosition.ToVector2() * ChunkSize) - Vector2.one * vertexGridInfo.stepSize;
-        //
-        //     // Noise gen job
-        //     var noiseJobHandle = noiseGenerator
-        //         .CreateNoiseGenJob(edgeSamplePointCount, chunkWorldPosition, vertexGridInfo.stepSize, jobData.heightData)
-        //         .Schedule(totalSamplePointCount, 3);
-        //
-        //     // Vertex position/normal/uv job
-        //     var vertexJobHandle = new CreateVerticesJob
-        //     {
-        //         heights = jobData.heightData,
-        //         vertices = jobData.vertexData,
-        //         stepSize = vertexGridInfo.stepSize,
-        //         edgeVertexCount = vertexGridInfo.edgeCount,
-        //         edgeSampleCount = edgeSamplePointCount,
-        //         uvScale = uvScale,
-        //     }.Schedule(vertexGridInfo.totalPoints, 4, noiseJobHandle);
-        //
-        //     // Mesh data job
-        //     var meshJobHandle = new CreateMeshJob
-        //     {
-        //         meshData = jobData.meshData[0],
-        //         vertices = jobData.vertexData,
-        //         edgeVertexCount = vertexGridInfo.edgeCount,
-        //     }.Schedule(vertexJobHandle);
-        //     
-        //     jobData.jobHandle = meshJobHandle;
-        //     
-        //     activeJobs.Add(jobData);
-        //
-        //     return chunk;
             throw new System.NotImplementedException();
         }
 
@@ -319,6 +270,7 @@ namespace Roots.World
          
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
+            Debug.Log($"Chunk {jobData.chunkCoords} was loaded!");
         }
 
         private void GeneratePointCloudFromHeightData(NativeArray<Vector3> points, NativeArray<float> heights)

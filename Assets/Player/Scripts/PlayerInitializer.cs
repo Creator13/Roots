@@ -9,6 +9,7 @@ namespace Roots.Player
         [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private FirstPersonController playerController;
         [SerializeField] private int maxRadius = 1;
+        [SerializeField] private float lowestPointThreshold = 0.05f;
 
         private void Start()
         {
@@ -20,9 +21,9 @@ namespace Roots.Player
         {
             chunkLoader.InitialChunksLoaded -= PlacePlayerInValley;
 
-            // Vector3 lowestPoint = chunkLoader.FindLowestPointNearChunk(int2.zero, maxRadius);
-            // Debug.Log($"Placing player at low point: {lowestPoint}");
-            // playerController.ForceMove(lowestPoint);
+            Vector3 lowestPoint = chunkLoader.FindLowestPointNearChunk(int2.zero, lowestPointThreshold, maxRadius);
+            Debug.Log($"Placing player at low point: {lowestPoint}");
+            playerController.ForceMove(lowestPoint);
             playerController.isEnabled = true;
         }
     }

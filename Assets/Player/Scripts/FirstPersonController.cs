@@ -114,6 +114,7 @@ namespace Roots.Player
 		private void Update()
 		{
 			if (!isEnabled) return;
+			if (!chunkLoader.AllChunksLoaded) return;
 			
 			GroundedCheck();
 			Move();
