@@ -17,7 +17,7 @@ namespace Roots.World
         public int edgeVertexCount;
         public int edgeSampleCount;
         public float uvScale;
-        
+
         [ReadOnly] public NativeArray<float> heights;
         [WriteOnly] public NativeArray<Vertex> vertices;
 
@@ -25,7 +25,7 @@ namespace Roots.World
         {
             int xi = index / edgeVertexCount; // point x index
             int zi = index % edgeVertexCount; // point z index
-            
+
             // Calculate the indexer into the heights array using larger width of the sample grid
             int heightsIndexer = (xi + 1) * edgeSampleCount + zi + 1;
 
@@ -48,7 +48,7 @@ namespace Roots.World
 
             // Uv
             float2 uv = new float2(xPos, zPos) * uvScale;
-            
+
             vertices[index] = new Vertex
             {
                 position = position,
@@ -62,15 +62,15 @@ namespace Roots.World
     public struct CreateMeshJob : IJob
     {
         public int edgeVertexCount;
-        
+
         [WriteOnly] public Mesh.MeshData meshData;
-        
+
         [ReadOnly] public NativeArray<Vertex> vertices;
-        
+
         public void Execute()
         {
             meshData.SetIndexBufferParams((vertices.Length - edgeVertexCount) * 6, IndexFormat.UInt32);
-            
+
             var attributes = new NativeArray<VertexAttributeDescriptor>(3, Allocator.Temp);
             attributes[0] = new VertexAttributeDescriptor(VertexAttribute.Position, dimension: 3);
             attributes[1] = new VertexAttributeDescriptor(VertexAttribute.Normal, dimension: 3);
@@ -79,7 +79,7 @@ namespace Roots.World
 
             var vertexData = meshData.GetVertexData<Vertex>();
             vertexData.CopyFrom(vertices);
-            
+
             var indexData = meshData.GetIndexData<uint>();
             for (int vertIndex = 0, triIndex = 0; vertIndex < vertices.Length - edgeVertexCount; vertIndex++, triIndex += 6)
             {
@@ -101,7 +101,7 @@ namespace Roots.World
     {
         public int indicesCount;
         public int2 chunkCoords;
-        
+
         public JobHandle jobHandle;
         public NativeArray<float> heightData;
         public NativeArray<Vertex> vertexData;
@@ -112,12 +112,12 @@ namespace Roots.World
     [CreateAssetMenu(fileName = "Terrain Chunk Generator", menuName = "Roots/Terrain Chunk Generator", order = 50)]
     public class TerrainChunkGenerator : ChunkGenerator
     {
-        private const MeshUpdateFlags NoCalcMeshUpdateFlags = 
-            MeshUpdateFlags.DontRecalculateBounds 
-            | MeshUpdateFlags.DontValidateIndices 
-            | MeshUpdateFlags.DontNotifyMeshUsers 
+        private const MeshUpdateFlags NoCalcMeshUpdateFlags =
+            MeshUpdateFlags.DontRecalculateBounds
+            | MeshUpdateFlags.DontValidateIndices
+            | MeshUpdateFlags.DontNotifyMeshUsers
             | MeshUpdateFlags.DontResetBoneBounds;
-        
+
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
         [SerializeField] private Material terrainMaterial;
 
@@ -131,7 +131,7 @@ namespace Roots.World
         private GridInfo pointGridInfo;
         public override GridInfo VertexGridInfo => vertexGridInfo;
         public override GridInfo PointGridInfo => pointGridInfo;
-        
+
         // Jobs
         private List<GenerationJobData> activeJobs = new();
         public override int ActiveChunkGenJobCount => activeJobs.Count;
@@ -140,7 +140,7 @@ namespace Roots.World
         {
             Assert.IsTrue(pointCloudStepSize > 0);
             Assert.IsTrue(ChunkSize > 0);
-            
+
             CalculateGridDescriptors();
         }
 
@@ -167,9 +167,9 @@ namespace Roots.World
                 {
                     jobData.jobHandle.Complete();
                     FinalizeChunkJob(jobData);
-                    
+
                     jobData.heightData.Dispose();
-                    
+
                     toRemove.Add(jobData);
                 }
             }
@@ -184,11 +184,9 @@ namespace Roots.World
 
         public override void CreateChunkAsync(int2 coords, ChunkLoader.ChunkContainer container)
         {
-            Debug.Log($"Creating new chunk at {coords}.");
-            
             int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
-            
+
             Chunk chunk = new Chunk()
             {
                 coords = coords,
@@ -201,7 +199,7 @@ namespace Roots.World
             container.chunkData = chunk;
             container.isLoaded = false;
             container.gameObject.SetActive(false);
-            
+
             GenerationJobData jobData = new()
             {
                 indicesCount = vertexGridInfo.GetIndicesCount(),
@@ -238,9 +236,9 @@ namespace Roots.World
                 vertices = jobData.vertexData,
                 edgeVertexCount = vertexGridInfo.edgeCount,
             }.Schedule(vertexJobHandle);
-            
+
             jobData.jobHandle = meshJobHandle;
-            
+
             activeJobs.Add(jobData);
         }
 
@@ -257,24 +255,25 @@ namespace Roots.World
             jobData.container.transform.rotation = Quaternion.identity;
 
             jobData.container.meshRenderer.sharedMaterial = terrainMaterial;
-            
-            var terrainMeshData = jobData.meshData[0]; 
+
+            var terrainMeshData = jobData.meshData[0];
             terrainMeshData.subMeshCount = 1;
             terrainMeshData.SetSubMesh(0, new SubMeshDescriptor(0, jobData.indicesCount), NoCalcMeshUpdateFlags);
-            
+
             var terrainMesh = new Mesh();
             terrainMesh.name = $"Terrain Mesh ({jobData.chunkCoords.x}, {jobData.chunkCoords.y})";
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
-         
+
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
-            Debug.Log($"Chunk {jobData.chunkCoords} was loaded!");
         }
 
         private void GeneratePointCloudFromHeightData(NativeArray<Vector3> points, NativeArray<float> heights)
         {
+            // TODO convert function to job
+
             int edgeVertexCount = vertexGridInfo.edgeCount;
             int edgeSampleCount = edgeVertexCount + 2; // There are two more samples on either axis/one more in each grid direction
             // TODO there's an issue where the edge point count is not calculated correctly, when the point step size is set to 1. This shows up in the world as extra points drawn on top of each other at (0,0,0) of each chunk.

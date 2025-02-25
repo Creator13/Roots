@@ -83,7 +83,6 @@ namespace Roots.World
                     {
                         initialChunksLoaded = true;
                         InitialChunksLoaded?.Invoke();
-                        Debug.Log("All chunks loaded");
                     }
                 }
             }
