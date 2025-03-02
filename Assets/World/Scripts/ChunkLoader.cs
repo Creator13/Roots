@@ -21,6 +21,7 @@ namespace Roots.World
             public Transform transform;
             public MeshRenderer meshRenderer;
             public MeshFilter meshFilter;
+            public ChunkVegetationManager vegetation;
         }
 
         private static readonly int2[] NeighborDirections =
@@ -41,7 +42,10 @@ namespace Roots.World
         [Space]
         [SerializeField] private Transform player;
         [SerializeField] private int2 playerChunk;
-
+        
+        [Header("temp")]
+        [SerializeField] private GameObject vegetationPrefab;
+        
         private Vector3 playerPosition;
         private ChunkContainer[] loadedChunks;
 
@@ -118,6 +122,9 @@ namespace Roots.World
                     container.transform = container.gameObject.transform;
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
+                    container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
+                    container.vegetation.SetPrefab(vegetationPrefab);
+                    container.vegetation.Initialize((int)(chunkGenerator.ChunkSize * chunkGenerator.ChunkSize));
 
                     container.transform.SetParent(transform, true);
 
@@ -284,7 +291,7 @@ namespace Roots.World
         {
             ChunkContainer cc = ChunkDataAt(position);
             Assert.IsTrue(cc.isLoaded, "Invalid call to get terrain height on a chunk that is still being loaded.");
-            return cc.chunkData.GetHeightAt(position);
+            return cc.chunkData.InterpolateHeightAtWorldPosition(position);
         }
 
         public Vector3 FindLowestPointNearChunk(int2 coords, float threshold, int maxRadius)

@@ -1355,11 +1355,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
-  loadRadius: 15
+  loadRadius: 7
   player: {fileID: 1289735941}
   playerChunk:
     x: 0
     y: 0
+  vegetationPrefab: {fileID: 692654345341249315, guid: ed924c3c930699c4c840b1a46f9d64b6, type: 3}
 --- !u!4 &1158956744
 Transform:
   m_ObjectHideFlags: 0

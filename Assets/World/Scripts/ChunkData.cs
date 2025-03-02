@@ -14,16 +14,6 @@ namespace Roots.World
         public GridInfo gridInfo;
         public NativeArray<Vector3> points;
 
-        public Chunk(int2 coords, Vector3 worldPos, NativeArray<Vertex> vertices, GridInfo gridInfo, NativeArray<Vector3> points)
-        {
-            this.coords = coords;
-            this.worldPos = worldPos;
-            this.gridInfo = gridInfo;
-
-            this.vertices = vertices;
-            this.points = points;
-        }
-
         public void Dispose()
         {
             vertices.Dispose();
@@ -46,10 +36,14 @@ namespace Roots.World
 
         // Position is a v3 to use the transform.position directly but the y value is entirely ignored. 
         // Position assumes a WORLD position
-        public float GetHeightAt(Vector3 worldPosition)
+        public float InterpolateHeightAtWorldPosition(Vector3 worldPosition)
         {
             Vector3 position = worldPosition - worldPos; // convert to local position
-
+            return InterpolateHeightAt(position);
+        }
+        
+        public float InterpolateHeightAt(float3 position)
+        {
             Assert.IsTrue(position.x >= 0 && position.x <= gridInfo.size && position.z >= 0 && position.z <= gridInfo.size,
                 "World position not inside chunk bounds (GetHeightAt called on incorrect chunk for world position)");
 

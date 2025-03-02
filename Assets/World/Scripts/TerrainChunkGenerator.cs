@@ -7,6 +7,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
+using Random = Unity.Mathematics.Random;
 
 namespace Roots.World
 {
@@ -96,7 +97,7 @@ namespace Roots.World
             }
         }
     }
-
+    
     public class GenerationJobData
     {
         public int indicesCount;
@@ -119,7 +120,9 @@ namespace Roots.World
             | MeshUpdateFlags.DontResetBoneBounds;
 
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
+        [SerializeField] private SeedProvider seedProvider;
         [SerializeField] private Material terrainMaterial;
+        [SerializeField] private float treeDensity;
 
         [Header("Detail")]
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
@@ -265,7 +268,9 @@ namespace Roots.World
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
-
+            
+            jobData.container.vegetation.SetVegetation(GenerateSpawnPoints(jobData.container.chunkData));
+            
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
         }
@@ -292,6 +297,28 @@ namespace Roots.World
                     }
                 }
             }
+        }
+
+        private List<float3> GenerateSpawnPoints(Chunk chunkData)
+        {
+            // TODO switch to poisson disk sampling
+            uint chunkHash = math.hash(chunkData.coords);
+            float targetTreeCount = ChunkSize * ChunkSize * treeDensity;
+            Random random = new Random(seedProvider.SeedAsUint() ^ chunkHash);
+            List<float3> results = new List<float3>();
+            for (int i = 0; i < targetTreeCount; i++)
+            {
+                float3 pos = random.NextFloat3(new float3(ChunkSize, 1, ChunkSize));
+                float height = chunkData.InterpolateHeightAt(pos);
+                if (pos.y * noiseGenerator.height > height)
+                {
+                    continue;
+                }
+
+                pos.y = height;
+                results.Add(pos);
+            }
+            return results;
         }
 
         public override float GetTerrainHeightAt(Vector3 worldPosition)

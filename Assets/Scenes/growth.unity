@@ -515,7 +515,7 @@ MonoBehaviour:
   jump: 0
   sprint: 0
   analogMovement: 0
-  cursorLocked: 1
+  lockCursor: 1
   cursorInputForLook: 1
 --- !u!114 &716285388
 MonoBehaviour:
