@@ -299,17 +299,17 @@ namespace Roots.World
             }
         }
 
-        private List<float3> GenerateSpawnPoints(Chunk chunkData)
+        private List<float4> GenerateSpawnPoints(Chunk chunkData)
         {
             // TODO switch to poisson disk sampling
             uint chunkHash = math.hash(chunkData.coords);
-            float targetTreeCount = ChunkSize * ChunkSize * treeDensity;
+            int targetTreeCount = (int)(ChunkSize * ChunkSize * treeDensity);
             Random random = new Random(seedProvider.SeedAsUint() ^ chunkHash);
-            List<float3> results = new List<float3>();
+            List<float4> results = new List<float4>(targetTreeCount);
             for (int i = 0; i < targetTreeCount; i++)
             {
-                float3 pos = random.NextFloat3(new float3(ChunkSize, 1, ChunkSize));
-                float height = chunkData.InterpolateHeightAt(pos);
+                float4 pos = random.NextFloat4(new float4(ChunkSize, 1, ChunkSize, 360));
+                float height = chunkData.InterpolateHeightAt(pos.xyz);
                 if (pos.y * noiseGenerator.height > height)
                 {
                     continue;

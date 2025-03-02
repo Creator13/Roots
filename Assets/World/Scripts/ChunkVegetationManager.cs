@@ -25,7 +25,7 @@ namespace Roots.World
             }
         }
         
-        public void SetVegetation(IList<float3> positions)
+        public void SetVegetation(IList<float4> positions)
         {
             // Grow list if necessary
             if (positions.Count > objects.Count)
@@ -39,7 +39,8 @@ namespace Roots.World
             // Set positions of all vegetation instances
             for (int i = 0; i < positions.Count; i++)
             {
-                objects[i].localPosition = positions[i];
+                objects[i].localPosition = positions[i].xyz;
+                objects[i].rotation = Quaternion.Euler(0, positions[i].w, 0);
                 objects[i].gameObject.SetActive(true);
             }
 
