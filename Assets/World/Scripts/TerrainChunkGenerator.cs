@@ -195,8 +195,8 @@ namespace Roots.World
                 coords = coords,
                 worldPos = CalculateChunkOrigin(coords),
                 gridInfo = vertexGridInfo,
-                points = new NativeArray<Vector3>(pointGridInfo.totalPoints, Allocator.Persistent),
-                vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent),
+                points = new NativeArray<Vector3>(pointGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
+                vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
             };
 
             container.chunkData = chunk;
@@ -207,7 +207,7 @@ namespace Roots.World
             {
                 indicesCount = vertexGridInfo.GetIndicesCount(),
                 chunkCoords = coords,
-                heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent),
+                heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
                 vertexData = chunk.vertices,
                 meshData = Mesh.AllocateWritableMeshData(1),
                 container = container

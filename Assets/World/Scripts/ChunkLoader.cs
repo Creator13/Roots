@@ -43,8 +43,10 @@ namespace Roots.World
         [SerializeField] private Transform player;
         [SerializeField] private int2 playerChunk;
         
-        [Header("temp")]
+        [Header("temp veg")]
         [SerializeField] private GameObject vegetationPrefab;
+        [SerializeField] private GrowthParameters growthParams;
+        [SerializeField] private float vegetationLoadRadius;
         
         private Vector3 playerPosition;
         private ChunkContainer[] loadedChunks;
@@ -56,6 +58,7 @@ namespace Roots.World
         public int InitializedChunkCount => loadedChunks?.Count(chunkData => chunkData.isLoaded) ?? 0;
         public int ActiveChunkGenJobCount => chunkGenerator.ActiveChunkGenJobCount;
         public bool AllChunksLoaded => chunkGenerator.ActiveChunkGenJobCount == 0;
+        public float2 HalfChunkOffset => new float2(chunkGenerator.ChunkSize * .5f, chunkGenerator.ChunkSize * .5f);
 
         private bool initialChunksLoaded;
         public event Action LoadedChunksChanged;
@@ -123,7 +126,7 @@ namespace Roots.World
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
                     container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
-                    container.vegetation.SetPrefab(vegetationPrefab);
+                    container.vegetation.SetPrefab(vegetationPrefab, growthParams);
                     container.vegetation.Initialize((int)(chunkGenerator.ChunkSize * chunkGenerator.ChunkSize));
 
                     container.transform.SetParent(transform, true);
@@ -132,6 +135,7 @@ namespace Roots.World
                     chunkGenerator.CreateChunkAsync(new int2(xRel, zRel) + center, container);
                 }
             }
+            UpdateVisibleVegetation();
         }
 
         private void ShiftGridNegativeX()
@@ -247,6 +251,18 @@ namespace Roots.World
             {
                 if (movementDelta.y > 0) ShiftGridPositiveZ();
                 if (movementDelta.y < 0) ShiftGridNegativeZ();
+            }
+            UpdateVisibleVegetation();
+        }
+
+        private void UpdateVisibleVegetation()
+        {
+            Vector3 playerChunkCenter = chunkGenerator.CalculateChunkCenterPosition(playerChunk);
+            float sqrVegRadius = vegetationLoadRadius * vegetationLoadRadius * chunkGenerator.ChunkSize * chunkGenerator.ChunkSize;
+            foreach (ChunkContainer chunk in loadedChunks)
+            {
+                Vector3 chunkCenter = chunkGenerator.CalculateChunkCenterPosition(chunk.chunkData.coords);
+                chunk.vegetation.enabled = !((chunkCenter - playerChunkCenter).sqrMagnitude >= sqrVegRadius);
             }
         }
 
@@ -405,7 +421,7 @@ namespace Roots.World
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(playerChunk.x, playerChunk.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
+            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(playerChunk), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
 
             if (loadedChunks != null)
             {
@@ -415,7 +431,7 @@ namespace Roots.World
                     if (i == PlayerChunkIndexOffset) continue;
 
                     int2 chunkCoords = loadedChunks[i].chunkData.coords;
-                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(chunkCoords.x, chunkCoords.y), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
+                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(chunkCoords), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
         }

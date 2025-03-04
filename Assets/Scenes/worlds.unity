@@ -1360,7 +1360,9 @@ MonoBehaviour:
   playerChunk:
     x: 0
     y: 0
-  vegetationPrefab: {fileID: 692654345341249315, guid: ed924c3c930699c4c840b1a46f9d64b6, type: 3}
+  vegetationPrefab: {fileID: 1404946881256995093, guid: 83307e3c811b56340960e2a989bc6773, type: 3}
+  growthParams: {fileID: 11400000, guid: 22fe3e4db35c4db4c99a5de9c5120305, type: 2}
+  vegetationLoadRadius: 3
 --- !u!4 &1158956744
 Transform:
   m_ObjectHideFlags: 0

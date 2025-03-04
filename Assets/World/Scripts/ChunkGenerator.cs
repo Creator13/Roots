@@ -27,9 +27,9 @@ namespace Roots.World
             return new Vector3(coords.x * ChunkSize, 0, coords.y * ChunkSize);
         }
         
-        public Vector3 CalculateChunkCenterPosition(int x, int z)
+        public Vector3 CalculateChunkCenterPosition(int2 coords)
         {
-            return new Vector3(x * ChunkSize + .5f * ChunkSize, 0, z * ChunkSize + .5f * ChunkSize);
+            return new Vector3(coords.x * ChunkSize + .5f * ChunkSize, 0, coords.y * ChunkSize + .5f * ChunkSize);
         }
     }
 }
