@@ -18,5 +18,5 @@ MonoBehaviour:
   terrainMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
   treeDensity: 0.5
   terrainMeshSubdivisions: 4
-  pointCloudStepSize: 2
+  pointCloudStepSize: 4
   uvScale: 1

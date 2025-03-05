@@ -141,8 +141,8 @@ namespace Roots.World
 
         private void OnValidate()
         {
-            Assert.IsTrue(pointCloudStepSize > 0);
-            Assert.IsTrue(ChunkSize > 0);
+            Assert.IsTrue(pointCloudStepSize > 0, "Point cloud step size must be greater than 0");
+            Assert.IsTrue(ChunkSize > 0, "Chunk size must be greater than 0");
 
             CalculateGridDescriptors();
         }
@@ -155,7 +155,7 @@ namespace Roots.World
         private void CalculateGridDescriptors()
         {
             vertexGridInfo = GridInfo.FromSubdivisionsPerUnit(Mathf.FloorToInt(ChunkSize), terrainMeshSubdivisions);
-            pointGridInfo = GridInfo.FromEdgeCount(ChunkSize, vertexGridInfo.edgeCount / pointCloudStepSize);
+            pointGridInfo = GridInfo.FromEdgePointCount(ChunkSize, vertexGridInfo.edgeCount / pointCloudStepSize);
         }
 
         public override int UpdateChunkGenerationJobs()

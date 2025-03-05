@@ -1,4 +1,5 @@
-﻿using Roots.Util;
+﻿using System;
+using Roots.Util;
 using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.Assertions;
 
 namespace Roots.World
 {
-    public struct Chunk
+    public struct Chunk : IDisposable
     {
         public int2 coords;
         public Vector3 worldPos;
@@ -35,20 +36,22 @@ namespace Roots.World
         }
 
         // Position is a v3 to use the transform.position directly but the y value is entirely ignored. 
-        // Position assumes a WORLD position
-        public float InterpolateHeightAtWorldPosition(Vector3 worldPosition)
+        public float InterpolateHeightAtWorldPosition(Vector3 worldPos)
         {
-            Vector3 position = worldPosition - worldPos; // convert to local position
+            Vector3 position = worldPos - this.worldPos; // convert to local position
             return InterpolateHeightAt(position);
         }
-        
-        public float InterpolateHeightAt(float3 position)
+
+        // Position is a v3 to use the transform.position directly but the y value is entirely ignored. 
+        // Position assumes a local chunk position (one that lies within the range [0, chunk size] inclusive). 
+        // Uses simple bilinear interpolation, which results in points that lie on the plane defined by four vertices that lie on one plane
+        public float InterpolateHeightAt(float3 localPos)
         {
-            Assert.IsTrue(position.x >= 0 && position.x <= gridInfo.size && position.z >= 0 && position.z <= gridInfo.size,
+            Assert.IsTrue(localPos.x >= 0 && localPos.x <= gridInfo.size && localPos.z >= 0 && localPos.z <= gridInfo.size,
                 "World position not inside chunk bounds (GetHeightAt called on incorrect chunk for world position)");
 
-            int xi_low = (int)math.floor(position.x / gridInfo.stepSize);
-            int zi_low = (int)math.floor(position.z / gridInfo.stepSize);
+            int xi_low = (int)math.floor(localPos.x / gridInfo.stepSize);
+            int zi_low = (int)math.floor(localPos.z / gridInfo.stepSize);
             int lowestVertIndex = gridInfo.GetIndexFromXZ(xi_low, zi_low);
 
             Vector3 posA = vertices[lowestVertIndex].position;
@@ -56,8 +59,8 @@ namespace Roots.World
             Vector3 posC = vertices[lowestVertIndex + gridInfo.edgeCount].position;
             Vector3 posD = vertices[lowestVertIndex + gridInfo.edgeCount + 1].position;
 
-            float tx = (position.x - posA.x) / gridInfo.stepSize;
-            float tz = (position.z - posA.z) / gridInfo.stepSize;
+            float tx = (localPos.x - posA.x) / gridInfo.stepSize;
+            float tz = (localPos.z - posA.z) / gridInfo.stepSize;
 
             float h0 = math.lerp(posA.y, posB.y, tz);
             float h1 = math.lerp(posC.y, posD.y, tz);

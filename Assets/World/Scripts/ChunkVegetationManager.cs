@@ -175,6 +175,7 @@ namespace Roots.World
         private void AddObject()
         {
             GameObject obj = Instantiate(prefab, this.transform);
+            obj.transform.localScale = Vector3.one * growthParams.scaleFactor;
             objects.Add(new VegetationInstance
             {
                 transform = obj.transform,

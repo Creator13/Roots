@@ -6,6 +6,18 @@ namespace Roots.Util
 {
     public static class CartesianMath
     {
+        public static readonly int2[] NeighborDirections =
+        {
+            new(1, 0),
+            new(-1, 0),
+            new(0, 1),
+            new(0, -1),
+            new(1, 1),
+            new(1, -1),
+            new(-1, 1),
+            new(-1, -1)
+        };
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsInSquareRadius(int2 point, int radius)
         {

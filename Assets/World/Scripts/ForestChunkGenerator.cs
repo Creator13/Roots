@@ -14,8 +14,8 @@ namespace Roots.World
         [SerializeField] private float treeDensity;
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
 
-        public override GridInfo VertexGridInfo => GridInfo.FromEdgeCount(ChunkSize, 11);
-        public override GridInfo PointGridInfo => GridInfo.FromEdgeCount(ChunkSize, 11);
+        public override GridInfo VertexGridInfo => GridInfo.FromEdgePointCount(ChunkSize, 11);
+        public override GridInfo PointGridInfo => GridInfo.FromEdgePointCount(ChunkSize, 11);
 
         public override int ActiveChunkGenJobCount => throw new System.NotImplementedException();
 

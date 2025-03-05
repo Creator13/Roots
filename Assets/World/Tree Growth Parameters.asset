@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 157b444aed3c474c97e8b6b9d265aa7c, type: 3}
   m_Name: Tree Growth Parameters
   m_EditorClassIdentifier: 
-  <minDistance>k__BackingField: 6
-  <maxDistance>k__BackingField: 14
+  <minDistance>k__BackingField: 10
+  <maxDistance>k__BackingField: 22
   <growthStageMeshes>k__BackingField:
   - {fileID: 7219540267711687030, guid: c6c5f082a9316e34fa43a103c4942dc3, type: 3}
   - {fileID: -5620426633308040856, guid: 40d37f5fae4d96740b87a16952d86ca3, type: 3}
@@ -21,27 +21,4 @@ MonoBehaviour:
   - {fileID: 4664429750018096363, guid: 92607367bd180b44ca379bc56ebcf1ba, type: 3}
   - {fileID: 1879131907895868108, guid: 3c8e046cb5a88bd499eb42857f9e64d4, type: 3}
   - {fileID: -3709691350470372939, guid: 852df66864fb1e3439a4a55e6f08bce8, type: 3}
-  <growthCurve>k__BackingField:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 2
-      outSlope: 2
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
+  <scaleFactor>k__BackingField: 0.65

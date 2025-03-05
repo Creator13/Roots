@@ -24,41 +24,29 @@ namespace Roots.World
             public ChunkVegetationManager vegetation;
         }
 
-        private static readonly int2[] NeighborDirections =
-        {
-            new(1, 0),
-            new(-1, 0),
-            new(0, 1),
-            new(0, -1),
-            new(1, 1),
-            new(1, -1),
-            new(-1, 1),
-            new(-1, -1)
-        };
-
         [SerializeField] private ChunkGenerator chunkGenerator;
         [SerializeField] private int loadRadius = 3;
 
         [Space]
         [SerializeField] private Transform player;
         [SerializeField] private int2 playerChunk;
-        
+
         [Header("temp veg")]
         [SerializeField] private GameObject vegetationPrefab;
         [SerializeField] private GrowthParameters growthParams;
         [SerializeField] private float vegetationLoadRadius;
-        
+
         private Vector3 playerPosition;
-        private ChunkContainer[] loadedChunks;
+        private ChunkContainer[] chunks;
 
         private int Diameter => loadRadius * 2 + 1;
         private int PlayerChunkIndexOffset => Diameter * loadRadius + loadRadius;
 
         public int ChunkCount => Diameter * Diameter;
-        public int InitializedChunkCount => loadedChunks?.Count(chunkData => chunkData.isLoaded) ?? 0;
+        public int InitializedChunkCount => chunks?.Count(chunkData => chunkData.isLoaded) ?? 0;
         public int ActiveChunkGenJobCount => chunkGenerator.ActiveChunkGenJobCount;
         public bool AllChunksLoaded => chunkGenerator.ActiveChunkGenJobCount == 0;
-        public float2 HalfChunkOffset => new float2(chunkGenerator.ChunkSize * .5f, chunkGenerator.ChunkSize * .5f);
+        public float2 HalfChunkOffset => new(chunkGenerator.ChunkSize * .5f, chunkGenerator.ChunkSize * .5f);
 
         private bool initialChunksLoaded;
         public event Action LoadedChunksChanged;
@@ -78,6 +66,28 @@ namespace Roots.World
 
         private void Update()
         {
+            UpdateGenerationJobs();
+
+            playerPosition = player.position;
+            int2 currentChunk = WorldPositionToWorldChunkCoordinates(playerPosition);
+            int2 delta = currentChunk - playerChunk;
+            playerChunk = currentChunk;
+            if (!delta.Equals(int2.zero))
+            {
+                UpdateVisibleChunks(delta);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (ChunkContainer chunk in chunks)
+            {
+                chunk.chunkData.Dispose();
+            }
+        }
+
+        private void UpdateGenerationJobs()
+        {
             int finishedJobs = chunkGenerator.UpdateChunkGenerationJobs();
 
             if (finishedJobs > 0)
@@ -93,28 +103,13 @@ namespace Roots.World
                     }
                 }
             }
-
-            playerPosition = player.position;
-            int2 currentChunk = WorldPositionToWorldChunkCoordinates(playerPosition);
-            int2 delta = currentChunk - playerChunk;
-            playerChunk = currentChunk;
-            if (!delta.Equals(int2.zero))
-            {
-                UpdateVisibleChunks(delta);
-            }
         }
 
-        private void OnDestroy()
-        {
-            foreach (ChunkContainer chunk in loadedChunks)
-            {
-                chunk.chunkData.Dispose();
-            }
-        }
+        #region Loading and updating of visible chunks
 
         private void InitializeChunks(int2 center)
         {
-            loadedChunks = new ChunkContainer[ChunkCount];
+            chunks = new ChunkContainer[ChunkCount];
 
             for (int xRel = -loadRadius, i = 0; xRel < loadRadius + 1; xRel++)
             {
@@ -131,111 +126,12 @@ namespace Roots.World
 
                     container.transform.SetParent(transform, true);
 
-                    loadedChunks[i] = container;
+                    chunks[i] = container;
                     chunkGenerator.CreateChunkAsync(new int2(xRel, zRel) + center, container);
                 }
             }
+
             UpdateVisibleVegetation();
-        }
-
-        private void ShiftGridNegativeX()
-        {
-            // Cache width
-            int width = Diameter;
-
-            // local coordinates to index function
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            int _GetIndex(int x, int z) => x * width + z;
-
-            for (int z = 0; z < width; z++)
-            {
-                var temp = loadedChunks[_GetIndex(width - 1, z)]; // cache last element in row
-                for (int x = width - 1; x > 0; x--) // iterate last to second element (backwards), set each item to the previous in the list (= next in backwards iteration), overwrites last element keeps first 
-                {
-                    loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x - 1, z)];
-                }
-
-                // Order a new chunk to be loaded into the rotating object
-                int2 newChunkCoords = new int2(temp.chunkData.coords.x - width, temp.chunkData.coords.y);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
-                loadedChunks[_GetIndex(0, z)] = temp;
-            }
-        }
-
-        private void ShiftGridPositiveX()
-        {
-            // Cache width
-            int width = Diameter;
-
-            // local coordinates to index function
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            int _GetIndex(int x, int z) => x * width + z;
-
-            for (int z = 0; z < width; z++)
-            {
-                var temp = loadedChunks[_GetIndex(0, z)]; // cache first
-                for (int x = 0; x < width - 1; x++) // iterate first to second last element, set each item to the next in the list (overwrites first element, keeps last)
-                {
-                    loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x + 1, z)];
-                }
-
-                // Order a new chunk to be loaded into the rotating object
-                int2 newChunkCoords = new int2(temp.chunkData.coords.x + width, temp.chunkData.coords.y);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
-                loadedChunks[_GetIndex(width - 1, z)] = temp; // set last element to cached first element (rotate)
-            }
-        }
-
-        private void ShiftGridNegativeZ()
-        {
-            // Cache width
-            int width = Diameter;
-
-            // local coordinates to index function
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            int _GetIndex(int x, int z) => x * width + z;
-
-            for (int x = 0; x < width; x++)
-            {
-                var temp = loadedChunks[_GetIndex(x, width - 1)];
-                for (int z = width - 2; z >= 0; z--)
-                {
-                    loadedChunks[_GetIndex(x, z + 1)] = loadedChunks[_GetIndex(x, z)];
-                }
-
-                // Order a new chunk to be loaded into the rotating object
-                int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y - width);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
-                loadedChunks[_GetIndex(x, 0)] = temp;
-            }
-        }
-
-        private void ShiftGridPositiveZ()
-        {
-            // Cache width
-            int width = Diameter;
-
-            // local coordinates to index function
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            int _GetIndex(int x, int z) => x * width + z;
-
-            for (int x = 0; x < width; x++)
-            {
-                var temp = loadedChunks[_GetIndex(x, 0)];
-                for (int z = 0; z < width - 1; z++)
-                {
-                    loadedChunks[_GetIndex(x, z)] = loadedChunks[_GetIndex(x, z + 1)];
-                }
-
-                // Order a new chunk to be loaded into the rotating object
-                int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y + width);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
-                loadedChunks[_GetIndex(x, width - 1)] = temp;
-            }
         }
 
         private void UpdateVisibleChunks(int2 movementDelta)
@@ -252,6 +148,7 @@ namespace Roots.World
                 if (movementDelta.y > 0) ShiftGridPositiveZ();
                 if (movementDelta.y < 0) ShiftGridNegativeZ();
             }
+
             UpdateVisibleVegetation();
         }
 
@@ -259,12 +156,120 @@ namespace Roots.World
         {
             Vector3 playerChunkCenter = chunkGenerator.CalculateChunkCenterPosition(playerChunk);
             float sqrVegRadius = vegetationLoadRadius * vegetationLoadRadius * chunkGenerator.ChunkSize * chunkGenerator.ChunkSize;
-            foreach (ChunkContainer chunk in loadedChunks)
+            foreach (ChunkContainer chunk in chunks)
             {
                 Vector3 chunkCenter = chunkGenerator.CalculateChunkCenterPosition(chunk.chunkData.coords);
                 chunk.vegetation.enabled = !((chunkCenter - playerChunkCenter).sqrMagnitude >= sqrVegRadius);
             }
         }
+
+        #endregion
+
+        #region Grid shifting
+
+        private void ShiftGridNegativeX()
+        {
+            // Cache width
+            int width = Diameter;
+
+            // local coordinates to index function
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int _GetIndex(int x, int z) => x * width + z;
+
+            for (int z = 0; z < width; z++)
+            {
+                var temp = chunks[_GetIndex(width - 1, z)]; // cache last element in row
+                for (int x = width - 1; x > 0; x--) // iterate last to second element (backwards), set each item to the previous in the list (= next in backwards iteration), overwrites last element keeps first 
+                {
+                    chunks[_GetIndex(x, z)] = chunks[_GetIndex(x - 1, z)];
+                }
+
+                // Order a new chunk to be loaded into the rotating object
+                int2 newChunkCoords = new int2(temp.chunkData.coords.x - width, temp.chunkData.coords.y);
+                temp.chunkData.Dispose(); // Invalidate the old chunkData
+                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                chunks[_GetIndex(0, z)] = temp;
+            }
+        }
+
+        private void ShiftGridPositiveX()
+        {
+            // Cache width
+            int width = Diameter;
+
+            // local coordinates to index function
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int _GetIndex(int x, int z) => x * width + z;
+
+            for (int z = 0; z < width; z++)
+            {
+                var temp = chunks[_GetIndex(0, z)]; // cache first
+                for (int x = 0; x < width - 1; x++) // iterate first to second last element, set each item to the next in the list (overwrites first element, keeps last)
+                {
+                    chunks[_GetIndex(x, z)] = chunks[_GetIndex(x + 1, z)];
+                }
+
+                // Order a new chunk to be loaded into the rotating object
+                int2 newChunkCoords = new int2(temp.chunkData.coords.x + width, temp.chunkData.coords.y);
+                temp.chunkData.Dispose(); // Invalidate the old chunkData
+                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                chunks[_GetIndex(width - 1, z)] = temp; // set last element to cached first element (rotate)
+            }
+        }
+
+        private void ShiftGridNegativeZ()
+        {
+            // Cache width
+            int width = Diameter;
+
+            // local coordinates to index function
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int _GetIndex(int x, int z) => x * width + z;
+
+            for (int x = 0; x < width; x++)
+            {
+                var temp = chunks[_GetIndex(x, width - 1)];
+                for (int z = width - 2; z >= 0; z--)
+                {
+                    chunks[_GetIndex(x, z + 1)] = chunks[_GetIndex(x, z)];
+                }
+
+                // Order a new chunk to be loaded into the rotating object
+                int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y - width);
+                temp.chunkData.Dispose(); // Invalidate the old chunkData
+                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                chunks[_GetIndex(x, 0)] = temp;
+            }
+        }
+
+        private void ShiftGridPositiveZ()
+        {
+            // Cache width
+            int width = Diameter;
+
+            // local coordinates to index function
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            int _GetIndex(int x, int z) => x * width + z;
+
+            for (int x = 0; x < width; x++)
+            {
+                var temp = chunks[_GetIndex(x, 0)];
+                for (int z = 0; z < width - 1; z++)
+                {
+                    chunks[_GetIndex(x, z)] = chunks[_GetIndex(x, z + 1)];
+                }
+
+                // Order a new chunk to be loaded into the rotating object
+                int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y + width);
+                temp.chunkData.Dispose(); // Invalidate the old chunkData
+                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                chunks[_GetIndex(x, width - 1)] = temp;
+            }
+        }
+
+        #endregion
+
+        #region the getting data from chunks region
 
         public Vector3[] GetCombinedPointData()
         {
@@ -275,7 +280,7 @@ namespace Roots.World
             // TODO this can definitely be parallelized (copy each chunk to the array in a separate job; see NativeSlices)
             Vector3[] points = new Vector3[chunkCount * chunkPointCount];
             int iChunk = 0;
-            foreach (ChunkContainer chunk in loadedChunks)
+            foreach (ChunkContainer chunk in chunks)
             {
                 if (!chunk.isLoaded) continue;
 
@@ -345,7 +350,7 @@ namespace Roots.World
                     bestPoint = chunkLowestPoint;
                 }
 
-                foreach (var dir in NeighborDirections)
+                foreach (var dir in CartesianMath.NeighborDirections)
                 {
                     int2 neighbor = current + dir;
                     if (!visited.Contains(neighbor) && math.abs(coords.x - neighbor.x) <= maxRadius && math.abs(coords.y - neighbor.y) <= maxRadius)
@@ -359,16 +364,28 @@ namespace Roots.World
             return bestPoint;
         }
 
+        #endregion
+
+        public void SetChunkMeshRenderersEnabled(bool enabled)
+        {
+            foreach (ChunkContainer chunk in chunks)
+            {
+                chunk.meshRenderer.enabled = enabled;
+            }
+        }
+
+        #region Indexing shorthands
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ChunkContainer ChunkDataAt(int2 chunkCoordinates)
         {
-            return loadedChunks[WorldChunkCoordinatesToLocalChunkIndex(chunkCoordinates)];
+            return chunks[WorldChunkCoordinatesToLocalChunkIndex(chunkCoordinates)];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ChunkContainer ChunkDataAt(Vector3 worldPosition)
         {
-            return loadedChunks[WorldPositionToLocalChunkIndex(worldPosition)];
+            return chunks[WorldPositionToLocalChunkIndex(worldPosition)];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -418,22 +435,28 @@ namespace Roots.World
             return localCoords + playerChunk;
         }
 
+        #endregion
+
+        #region Gizmos/debug
+
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(playerChunk), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
 
-            if (loadedChunks != null)
+            if (chunks != null)
             {
                 Gizmos.color = Color.green;
                 for (int i = 0; i < ChunkCount; i++)
                 {
                     if (i == PlayerChunkIndexOffset) continue;
 
-                    int2 chunkCoords = loadedChunks[i].chunkData.coords;
+                    int2 chunkCoords = chunks[i].chunkData.coords;
                     Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(chunkCoords), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
         }
+
+        #endregion
     }
 }

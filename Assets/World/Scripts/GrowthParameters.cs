@@ -8,6 +8,6 @@ namespace Roots.World
         [field: SerializeField] public float minDistance { get; private set; }
         [field: SerializeField] public float maxDistance { get; private set; }
         [field: SerializeField] public Mesh[] growthStageMeshes { get; private set; }
-        [field: SerializeField] public AnimationCurve growthCurve { get; private set; }
+        [field: SerializeField] public float scaleFactor { get; private set; }
     }
 }

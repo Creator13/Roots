@@ -49,13 +49,6 @@ namespace Roots.World
 
         private void UpdateCameraSettings()
         {
-            // CameraClearFlags clearFlags = currentWorldType switch
-            // {
-            //     WorldType.Instanced => CameraClearFlags.SolidColor,
-            //     WorldType.Mesh => CameraClearFlags.Skybox,
-            //     _ => throw new ArgumentOutOfRangeException()
-            // };
-            // camera.clearFlags = clearFlags;
             Material skyBoxMaterial = currentWorldType switch
             {
                 WorldType.Mesh => skyBox,
@@ -74,11 +67,7 @@ namespace Roots.World
             bool meshEnabled = currentWorldType == WorldType.Mesh;
             bool instancedRendererEnabled = currentWorldType == WorldType.Instanced;
 
-            // TODO fix
-            // foreach (Chunk chunk in chunkLoader.GetChunkEnumerable())
-            // {
-            //     chunk.SetMeshRendererEnabled(meshEnabled);
-            // }
+            chunkLoader.SetChunkMeshRenderersEnabled(meshEnabled);
             instancedRenderer.enabled = instancedRendererEnabled;
         }
         

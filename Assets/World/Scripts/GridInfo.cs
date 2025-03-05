@@ -23,7 +23,7 @@ namespace Roots.World
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static GridInfo FromEdgeCount(float size, int edgeCount)
+        public static GridInfo FromEdgePointCount(float size, int edgeCount)
         {
             float stepSize = size / (edgeCount - 1);
             int totalPoints = edgeCount * edgeCount;
