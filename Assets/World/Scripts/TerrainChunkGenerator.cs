@@ -269,7 +269,7 @@ namespace Roots.World
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
             
-            jobData.container.vegetation.SetVegetation(GenerateSpawnPoints(jobData.container.chunkData));
+            // jobData.container.vegetation.SetVegetation(GenerateSpawnPoints(jobData.container.chunkData));
             
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
@@ -302,12 +302,18 @@ namespace Roots.World
         private List<float4> GenerateSpawnPoints(Chunk chunkData)
         {
             // TODO switch to poisson disk sampling
+            // Create a unique seed for each chunk based on its chunk coordinates
             uint chunkHash = math.hash(chunkData.coords);
-            int targetTreeCount = (int)(ChunkSize * ChunkSize * treeDensity);
             Random random = new Random(seedProvider.SeedAsUint() ^ chunkHash);
-            List<float4> results = new List<float4>(targetTreeCount);
-            for (int i = 0; i < targetTreeCount; i++)
+            
+            // Statistically-average number of points in the chunk, with the density representing the average number of points in a single
+            // square unit.
+            int targetPointCount = (int)(ChunkSize * ChunkSize * treeDensity);
+            List<float4> results = new List<float4>(targetPointCount);
+            
+            for (int i = 0; i < targetPointCount; i++)
             {
+                // Store position in xyz component and y-axis rotation in degrees in w.
                 float4 pos = random.NextFloat4(new float4(ChunkSize, 1, ChunkSize, 360));
                 float height = chunkData.InterpolateHeightAt(pos.xyz);
                 if (pos.y * noiseGenerator.height > height)

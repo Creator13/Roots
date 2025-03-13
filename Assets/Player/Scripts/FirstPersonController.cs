@@ -1,4 +1,5 @@
-﻿using Roots.World;
+﻿using System;
+using Roots.World;
 using StarterAssets;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -75,6 +76,8 @@ namespace Roots.Player
 
 		private const float _threshold = 0.01f;
 
+		public float TotalDistance { get;private set; }
+
 		private bool IsCurrentDeviceMouse
 		{
 			get
@@ -89,11 +92,22 @@ namespace Roots.Player
 
 		private void Awake()
 		{
-			// get a reference to our main camera
+			chunkLoader.InitialChunksLoaded += ResetTotalDistance;
+			
 			if (_mainCamera == null)
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 			}
+		}
+
+		private void OnDisable()
+		{
+			chunkLoader.InitialChunksLoaded -= ResetTotalDistance;
+		}
+
+		private void ResetTotalDistance()
+		{
+			TotalDistance = 0;
 		}
 
 		private void Start()
@@ -212,7 +226,9 @@ namespace Roots.Player
 			float deltaY = newHeight - transform.position.y;
 			
 			// move the player
-			_controller.Move(motion + new Vector3(0.0f, deltaY, 0.0f));
+			Vector3 fullMotion = motion + new Vector3(0.0f, deltaY, 0.0f);
+			TotalDistance += fullMotion.magnitude;
+			_controller.Move(fullMotion);
 		}
 
 		private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
