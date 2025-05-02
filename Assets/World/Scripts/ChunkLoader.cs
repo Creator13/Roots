@@ -32,6 +32,7 @@ namespace Roots.World
         [SerializeField] private int2 playerChunk;
 
         [Header("temp veg")]
+        [SerializeField] private bool useVegetation;
         [SerializeField] private GameObject vegetationPrefab;
         [SerializeField] private GrowthParameters growthParams;
         [SerializeField] private float vegetationLoadRadius;
@@ -120,9 +121,12 @@ namespace Roots.World
                     container.transform = container.gameObject.transform;
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
-                    container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
-                    container.vegetation.SetPrefab(vegetationPrefab, growthParams);
-                    container.vegetation.Initialize((int)(chunkGenerator.ChunkSize * chunkGenerator.ChunkSize));
+                    if (useVegetation)
+                    {
+                        container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
+                        container.vegetation.SetPrefab(vegetationPrefab, growthParams);
+                        container.vegetation.Initialize((int)(chunkGenerator.ChunkSize * chunkGenerator.ChunkSize));
+                    }
 
                     container.transform.SetParent(transform, true);
 
@@ -131,7 +135,7 @@ namespace Roots.World
                 }
             }
 
-            UpdateVisibleVegetation();
+            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void UpdateVisibleChunks(int2 movementDelta)
@@ -149,7 +153,7 @@ namespace Roots.World
                 if (movementDelta.y < 0) ShiftGridNegativeZ();
             }
 
-            UpdateVisibleVegetation();
+            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void UpdateVisibleVegetation()
