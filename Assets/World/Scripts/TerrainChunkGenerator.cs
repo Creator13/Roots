@@ -213,10 +213,9 @@ namespace Roots.World
                 container = container
             };
 
+            // Noise gen job
             // Noise grid is offset by 1 * stepsize for use in normal calculation
             Vector2 noiseGridOrigin = coords.ToVector2() * ChunkSize - Vector2.one * vertexGridInfo.stepSize;
-
-            // Noise gen job
             var noiseJobHandle = noiseGenerator
                 .CreateNoiseGenJob(edgeSamplePointCount, noiseGridOrigin, vertexGridInfo.stepSize, jobData.heightData)
                 .Schedule(totalSamplePointCount, 3);

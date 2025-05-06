@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Gen_PathNoiseGenerator
   m_EditorClassIdentifier: 
   seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
-  frequencyModifier: 0.5
+  frequencyModifier: 0.35
   worleyFrequency: 0.02
   gradientFrequency: 0.05
   fbmFrequency: 0.2
@@ -23,4 +23,4 @@ MonoBehaviour:
   smoothstepLevel: 0.89
   smoothstepWidth: 1.27
   noisePremultiplier: 1.2
-  height: 6
+  height: 3
