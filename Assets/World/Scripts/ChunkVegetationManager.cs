@@ -64,24 +64,24 @@ namespace Roots.World
 
         #region Unity Hooks
 
-        private void Update()
-        {
-            var job = new UpdateGrowthProgressJob
-            {
-                data = jobData,
-                maxDistance = growthParams.maxDistance,
-                minDistance = growthParams.minDistance,
-                playerPos = player.position,
-                stageCount = growthParams.growthStageMeshes.Length
-            };
-            updateJobHandle = job.Schedule(jobData.Length, 16);
-        }
-
-        private void LateUpdate()
-        {
-            updateJobHandle.Complete();
-            UpdateMeshesToProgress();
-        }
+        // private void Update()
+        // {
+        //     var job = new UpdateGrowthProgressJob
+        //     {
+        //         data = jobData,
+        //         maxDistance = growthParams.maxDistance,
+        //         minDistance = growthParams.minDistance,
+        //         playerPos = player.position,
+        //         stageCount = growthParams.growthStageMeshes.Length
+        //     };
+        //     updateJobHandle = job.Schedule(jobData.Length, 16);
+        // }
+        //
+        // private void LateUpdate()
+        // {
+        //     updateJobHandle.Complete();
+        //     UpdateMeshesToProgress();
+        // }
 
         private void OnDestroy()
         {
@@ -98,8 +98,9 @@ namespace Roots.World
 
         public void Initialize(int count)
         {
+            objectCount = count;
             objects = new List<VegetationInstance>(count);
-            jobData = new NativeList<VegetationUpdateData>(count, Allocator.Persistent);
+            jobData = new NativeList<VegetationUpdateData>(Allocator.Persistent);
             jobData.Resize(count, NativeArrayOptions.UninitializedMemory);
             for (int i = 0; i < count; i++)
             {
@@ -175,14 +176,14 @@ namespace Roots.World
         private void AddObject()
         {
             GameObject obj = Instantiate(prefab, this.transform);
-            obj.transform.localScale = Vector3.one * growthParams.scaleFactor;
+            // obj.transform.localScale = Vector3.one * growthParams.scaleFactor;
             objects.Add(new VegetationInstance
             {
                 transform = obj.transform,
                 meshFilter = obj.GetComponent<MeshFilter>(),
                 meshRenderer = obj.GetComponent<MeshRenderer>(),
             });
-            obj.SetActive(false);
+            // obj.SetActive(false);
         }
     }
 }
