@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Burst;
 using Unity.Collections;
@@ -25,13 +26,15 @@ namespace Roots.World
             objectPos.y = 0;
 
             float distance = math.distance(objectPos, playerPos);
+            veg.visible = distance < 300; // TODO remove hardcoded visibility
+                
             distance = math.clamp(distance, minDistance, maxDistance);
 
             float progress = math.remap(maxDistance, minDistance, 0, 1, distance);
             progress = 1 - (1 - progress) * (1 - progress);
             veg.growthProgress = math.max(veg.growthProgress, progress);
             veg.stageIndex = math.min((int)(veg.growthProgress * stageCount), stageCount - 1);
-
+            
             data[index] = veg;
         }
     }
@@ -50,6 +53,7 @@ namespace Roots.World
             public float3 position;
             public float growthProgress;
             public int stageIndex;
+            public bool visible;
         }
 
         [SerializeField] private GameObject prefab;
@@ -64,24 +68,24 @@ namespace Roots.World
 
         #region Unity Hooks
 
-        // private void Update()
-        // {
-        //     var job = new UpdateGrowthProgressJob
-        //     {
-        //         data = jobData,
-        //         maxDistance = growthParams.maxDistance,
-        //         minDistance = growthParams.minDistance,
-        //         playerPos = player.position,
-        //         stageCount = growthParams.growthStageMeshes.Length
-        //     };
-        //     updateJobHandle = job.Schedule(jobData.Length, 16);
-        // }
-        //
-        // private void LateUpdate()
-        // {
-        //     updateJobHandle.Complete();
-        //     UpdateMeshesToProgress();
-        // }
+        private void Update()
+        {
+            var job = new UpdateGrowthProgressJob
+            {
+                data = jobData,
+                maxDistance = growthParams.maxDistance,
+                minDistance = growthParams.minDistance,
+                playerPos = player.position,
+                stageCount = growthParams.growthStageMeshes.Length
+            };
+            updateJobHandle = job.Schedule(jobData.Length, 16);
+        }
+        
+        private void LateUpdate()
+        {
+            updateJobHandle.Complete();
+            UpdateMeshesToProgress();
+        }
 
         private void OnDestroy()
         {
@@ -98,7 +102,6 @@ namespace Roots.World
 
         public void Initialize(int count)
         {
-            objectCount = count;
             objects = new List<VegetationInstance>(count);
             jobData = new NativeList<VegetationUpdateData>(Allocator.Persistent);
             jobData.Resize(count, NativeArrayOptions.UninitializedMemory);
@@ -141,10 +144,10 @@ namespace Roots.World
                     stageIndex = 0,
                 };
                 
-                objects[i].meshFilter.sharedMesh = growthParams.growthStageMeshes[jobData[i].stageIndex];
+                // objects[i].meshFilter.sharedMesh = growthParams.growthStageMeshes[jobData[i].stageIndex];
             }
             
-            UpdateMeshesToProgress();
+            // UpdateMeshesToProgress();
 
             // Disable all unnecessary objects
             if (objects.Count > positions.Count)
@@ -183,7 +186,7 @@ namespace Roots.World
                 meshFilter = obj.GetComponent<MeshFilter>(),
                 meshRenderer = obj.GetComponent<MeshRenderer>(),
             });
-            // obj.SetActive(false);
+            obj.SetActive(false);
         }
     }
 }

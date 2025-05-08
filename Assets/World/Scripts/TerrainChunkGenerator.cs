@@ -267,9 +267,12 @@ namespace Roots.World
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
-            
-            // jobData.container.vegetation.SetVegetation(GenerateSpawnPoints(jobData.container.chunkData));
-            
+
+            if (jobData.container.hasVegetation)
+            {
+                jobData.container.vegetation.SetVegetation(GenerateVegetationSpawnPoints(jobData.container.chunkData));
+            }
+
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
         }
@@ -298,9 +301,10 @@ namespace Roots.World
             }
         }
 
-        private List<float4> GenerateSpawnPoints(Chunk chunkData)
+        private List<float4> GenerateVegetationSpawnPoints(Chunk chunkData)
         {
             // TODO switch to poisson disk sampling
+            
             // Create a unique seed for each chunk based on its chunk coordinates
             uint chunkHash = math.hash(chunkData.coords);
             Random random = new Random(seedProvider.SeedAsUint() ^ chunkHash);

@@ -21,6 +21,7 @@ namespace Roots.World
             public Transform transform;
             public MeshRenderer meshRenderer;
             public MeshFilter meshFilter;
+            public bool hasVegetation;
             public ChunkVegetationManager vegetation;
         }
 
@@ -121,6 +122,8 @@ namespace Roots.World
                     container.transform = container.gameObject.transform;
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
+                    
+                    container.hasVegetation = useVegetation;
                     if (useVegetation)
                     {
                         container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
