@@ -268,11 +268,6 @@ namespace Roots.World
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
 
-            if (jobData.container.hasVegetation)
-            {
-                jobData.container.vegetation.SetVegetation(GenerateVegetationSpawnPoints(jobData.container.chunkData));
-            }
-
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
         }

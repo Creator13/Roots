@@ -370,6 +370,46 @@ namespace Roots.World
 
             return bestPoint;
         }
+        
+        public bool RaycastTerrain(Ray ray, float maxDistance, out Vector3 hitPoint)
+        {
+            const float step = 0.2f;
+            float traveled = 0f;
+
+            while (traveled < maxDistance)
+            {
+                Vector3 pos = ray.origin + ray.direction * traveled;
+                float terrainHeight = GetInterpolatedGroundHeightAt(pos); 
+
+                if (pos.y < terrainHeight)
+                {
+                    hitPoint = BinarySearchHit(ray, traveled - step, traveled, 5);
+                    return true;
+                }
+
+                traveled += step;
+            }
+
+            hitPoint = Vector3.zero;
+            return false;
+        }
+
+        private Vector3 BinarySearchHit(Ray ray, float minDist, float maxDist, int iterations)
+        {
+            for (int i = 0; i < iterations; i++)
+            {
+                float mid = (minDist + maxDist) * 0.5f;
+                Vector3 pos = ray.origin + ray.direction * mid;
+                float terrainHeight = GetInterpolatedGroundHeightAt(pos);
+
+                if (pos.y > terrainHeight)
+                    minDist = mid;
+                else
+                    maxDist = mid;
+            }
+
+            return ray.origin + ray.direction * ((minDist + maxDist) * 0.5f);
+        }
 
         #endregion
 
