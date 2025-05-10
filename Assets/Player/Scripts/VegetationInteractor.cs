@@ -15,6 +15,11 @@ namespace Roots.Player
             UpdateClosestInstance();
         }
 
+        public void Interact()
+        {
+            
+        }
+
         private void UpdateClosestInstance()
         {
             Vector3 playerPos = transform.position;

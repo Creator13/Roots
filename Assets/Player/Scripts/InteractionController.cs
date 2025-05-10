@@ -10,6 +10,9 @@ namespace Roots.Player
         [SerializeField] private ChunkLoader terrain;
         [SerializeField] private VegetationRootManager vegetationManager;
         [SerializeField] private StarterAssetsInputs input;
+        
+        [Space]
+        [SerializeField] private VegetationInteractor vegetationInteractor;
 
         [Space]
         [SerializeField] private Transform placePreview;
@@ -38,6 +41,16 @@ namespace Roots.Player
                     if (canPlace) Place();
                 }
             }
+            else
+            {
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    if (vegetationInteractor.HasTargetInRange)
+                    {
+                        vegetationInteractor.Interact();
+                    }
+                }
+            }
         }
 
         private void SetPlaceMode(bool newMode)
@@ -60,13 +73,12 @@ namespace Roots.Player
             {
                 canPlace = true;
                 previewPosition = hitPoint;
+                placePreview.position = previewPosition;
             }
             else
             {
                 canPlace = false;
             }
-
-            placePreview.position = previewPosition;
             placePreview.gameObject.SetActive(canPlace);
         }
     }

@@ -45,6 +45,7 @@ namespace Roots.World
         // Position is a v3 to use the transform.position directly but the y value is entirely ignored. 
         // Position assumes a local chunk position (one that lies within the range [0, chunk size] inclusive). 
         // Uses simple bilinear interpolation, which results in points that lie on the plane defined by four vertices that lie on one plane
+        // (note that not all four vertices of a terrain quad will lie on one plane, but this is an inaccuracy that doesn't matter much)
         public float InterpolateHeightAt(float3 localPos)
         {
             Assert.IsTrue(localPos.x >= 0 && localPos.x <= gridInfo.size && localPos.z >= 0 && localPos.z <= gridInfo.size,
