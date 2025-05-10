@@ -1,5 +1,4 @@
-﻿using System;
-using Roots.World;
+﻿using Roots.World;
 using StarterAssets;
 using UnityEngine;
 
@@ -33,18 +32,10 @@ namespace Roots.Player
             if (placeMode)
             {
                 UpdatePlacePreview();
-            }
-            
-            if (input.interact)
-            {
-                // Delegate the interaction according to interaction rules
-                if (placeMode)
+
+                if (Input.GetMouseButtonDown(0))
                 {
                     if (canPlace) Place();
-                }
-                else
-                {
-                    
                 }
             }
         }

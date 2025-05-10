@@ -57,7 +57,7 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": false
+                    "initialStateCheck": true
                 }
             ],
             "bindings": [
@@ -250,22 +250,22 @@
                 },
                 {
                     "name": "",
-                    "id": "8cf766bb-37de-4526-a3bd-74ed2b5e1a5a",
-                    "path": "<Gamepad>/buttonWest",
+                    "id": "4ff17d2c-0693-47fc-b2e2-c3f59b38f5c1",
+                    "path": "<Keyboard>/e",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";Gamepad",
+                    "groups": ";KeyboardMouse",
                     "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "4ff17d2c-0693-47fc-b2e2-c3f59b38f5c1",
-                    "path": "<Keyboard>/e",
+                    "id": "8cf766bb-37de-4526-a3bd-74ed2b5e1a5a",
+                    "path": "<Gamepad>/buttonWest",
                     "interactions": "",
                     "processors": "",
-                    "groups": ";KeyboardMouse",
+                    "groups": ";Gamepad",
                     "action": "Interact",
                     "isComposite": false,
                     "isPartOfComposite": false

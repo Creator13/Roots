@@ -1792,7 +1792,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
-  loadRadius: 7
+  loadRadius: 5
   player: {fileID: 1289735941}
   playerChunk:
     x: 0
