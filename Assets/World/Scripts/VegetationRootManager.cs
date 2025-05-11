@@ -19,6 +19,7 @@ namespace Roots.World
         {
             VegetationRoot instance = Instantiate(placePrefab, position, Quaternion.identity, transform);
             instance.Initialize(1);
+            roots.Add(instance);
         }
     }
 }

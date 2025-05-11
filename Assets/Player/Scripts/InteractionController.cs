@@ -1,4 +1,5 @@
-﻿using Roots.World;
+﻿using System;
+using Roots.World;
 using StarterAssets;
 using UnityEngine;
 
@@ -10,18 +11,19 @@ namespace Roots.Player
         [SerializeField] private ChunkLoader terrain;
         [SerializeField] private VegetationRootManager vegetationManager;
         [SerializeField] private StarterAssetsInputs input;
-        
+
         [Space]
         [SerializeField] private VegetationInteractor vegetationInteractor;
 
         [Space]
         [SerializeField] private Transform placePreview;
         [SerializeField] private float maxReachDistance = 5;
-        
+
         private Vector3 previewPosition = Vector3.positiveInfinity;
         private bool canPlace;
-        
+
         private bool placeMode = false;
+        public bool HasInteractionTarget { get; private set; } = false;
 
         private void Start()
         {
@@ -32,6 +34,8 @@ namespace Roots.Player
         {
             if (Input.GetKeyDown(KeyCode.C)) SetPlaceMode(!placeMode);
 
+            HasInteractionTarget = !placeMode & vegetationInteractor.HasTargetInRange;
+            
             if (placeMode)
             {
                 UpdatePlacePreview();
@@ -43,9 +47,9 @@ namespace Roots.Player
             }
             else
             {
-                if (Input.GetKeyDown(KeyCode.E))
+                if (vegetationInteractor.HasTargetInRange)
                 {
-                    if (vegetationInteractor.HasTargetInRange)
+                    if (Input.GetKeyDown(KeyCode.E))
                     {
                         vegetationInteractor.Interact();
                     }
@@ -69,6 +73,7 @@ namespace Roots.Player
         private void UpdatePlacePreview()
         {
             Ray centerRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+            centerRay.direction += -mainCamera.transform.up * .12f; // angle ray downward ever so slightly for more natural aiming on grass patches
             if (terrain.RaycastTerrain(centerRay, maxReachDistance, out var hitPoint))
             {
                 canPlace = true;
@@ -79,7 +84,16 @@ namespace Roots.Player
             {
                 canPlace = false;
             }
+
             placePreview.gameObject.SetActive(canPlace);
+        }
+
+        private void OnDrawGizmos()
+        {
+            Ray centerRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+            centerRay.direction += -mainCamera.transform.up * .2f;
+            Gizmos.color = Color.red;
+            Gizmos.DrawRay(centerRay.origin, centerRay.direction * 5);
         }
     }
 }

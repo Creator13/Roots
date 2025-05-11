@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
 using UnityEngine;
@@ -105,7 +106,7 @@ namespace Roots.World
 
         private void AddInstance()
         {
-            float3 relativePos = random.NextFloat3Direction() * math.sqrt(random.NextFloat() * Radius);
+            float3 relativePos = random.NextFloat3Direction() * math.sqrt(random.NextFloat()) * Radius;
             float rotation = random.NextFloat(0, 360);
 
             Vector3 pos = transform.position + (Vector3)relativePos;
@@ -123,6 +124,29 @@ namespace Roots.World
         private static int GetInstanceCount(float radius, float density)
         {
             return (int)math.ceil(density * radius * radius * math.PI);
+        }
+
+        private void OnDrawGizmos()
+        {
+            const int segments = 9;
+            Vector3[] points = new Vector3[segments];
+            
+            float angleStep = math.PI2 / segments;
+
+            for (int i = 0; i < segments; i++)
+            {
+                Vector3 pos = Vector3.zero;
+                math.sincos(angleStep * i, out pos.z, out pos.x);
+
+                pos *= Radius;
+                pos += transform.position;
+                pos.y = chunkLoader.GetInterpolatedGroundHeightAt(pos);
+
+                points[i] = pos;
+            }
+
+            Gizmos.color = Color.olive;
+            Gizmos.DrawLineStrip(points, true);
         }
     }
 }
