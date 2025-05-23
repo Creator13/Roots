@@ -1754,7 +1754,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactionPromptPanel: {fileID: 888673304}
-  interactionController: {fileID: 1766525619}
+  interactionController: {fileID: 2053719261}
 --- !u!1001 &1007257690
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2119,17 +2119,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eea69c2049154426aee29340991bea9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1766525619 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4833386053705113484, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
-  m_PrefabInstance: {fileID: 8907908728744228716}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8616685848430114080}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0806f3d7815a4df78864f66068bcd0d7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1840072475
 GameObject:
   m_ObjectHideFlags: 0
@@ -2209,6 +2198,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1840072475}
   m_CullTransparentMesh: 1
+--- !u!4 &1880161838 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2190747179403436543, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+  m_PrefabInstance: {fileID: 8907908728744228716}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1926904675
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2275,6 +2269,74 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9c489a8547f4d9e4387da15a4ff82c81, type: 3}
+--- !u!1 &2053719259
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2053719260}
+  - component: {fileID: 2053719261}
+  - component: {fileID: 2053719262}
+  m_Layer: 8
+  m_Name: Player Interaction
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2053719260
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053719259}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8997996947377729434}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2053719261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053719259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0806f3d7815a4df78864f66068bcd0d7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCamera: {fileID: 245344141}
+  terrain: {fileID: 1158956743}
+  vegetationManager: {fileID: 1158956749}
+  input: {fileID: 8997996947377729437}
+  vegetationInteractor: {fileID: 2053719262}
+  characterAnimationController: {fileID: 706234148}
+  placePreview: {fileID: 1880161838}
+  maxReachDistance: 5
+--- !u!114 &2053719262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053719259}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ef9c255ab764278b9e05fbf0c5e35af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCamera: {fileID: 245344141}
+  chunkLoader: {fileID: 1158956743}
+  vegetationManager: {fileID: 1158956749}
 --- !u!4 &4135013735602982012 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 724508531607179673, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
@@ -2549,13 +2611,21 @@ PrefabInstance:
       propertyPath: vegetationManager
       value: 
       objectReference: {fileID: 1158956749}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4833386053705113484, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+    - {fileID: 8763326335765239615, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 1764980297725276558, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2053719260}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8997996947377729435}
+    - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8997996947377729440}
     - targetCorrespondingSourceObject: {fileID: 831697712601080225, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 706234148}
@@ -2579,6 +2649,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetPositionTransform: {fileID: 1623965458}
   objectToMove: {fileID: 4135013735602982012}
+--- !u!114 &8997996947377729437 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3841138324864999467, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+  m_PrefabInstance: {fileID: 8907908728744228716}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848430114080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e087ecce43ebbff45a1b360637807d93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8997996947377729440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848430114080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 472b3ce746d74301a366d39d0d1381b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  chunkLoader: {fileID: 1158956743}
+  playerController: {fileID: 1766525618}
+  interactionController: {fileID: 2053719261}
+  placeInValley: 0
+  maxRadius: 1
+  lowestPointThreshold: 0.05
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

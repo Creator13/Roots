@@ -1,5 +1,4 @@
-﻿using System;
-using Roots.World;
+﻿using Roots.World;
 using StarterAssets;
 using UnityEngine;
 
@@ -65,16 +64,15 @@ namespace Roots.Player
 
         private void TryToggleSit()
         {
-            if (!characterAnimationController.IsStateChangeLocked)
+            if (characterAnimationController.IsStateChangeLocked) return;
+            
+            if (characterAnimationController.IsKneeling)
             {
-                if (characterAnimationController.IsKneeling)
-                {
-                    characterAnimationController.StopKneeling();
-                }
-                else
-                {
-                    characterAnimationController.StartKneeling();
-                }
+                characterAnimationController.StopKneeling();
+            }
+            else
+            {
+                characterAnimationController.StartKneeling();
             }
         }
 
