@@ -14,6 +14,7 @@ namespace Roots.Player
 
         [Space]
         [SerializeField] private VegetationInteractor vegetationInteractor;
+        [SerializeField] private CharacterAnimationController characterAnimationController;
 
         [Space]
         [SerializeField] private Transform placePreview;
@@ -35,7 +36,7 @@ namespace Roots.Player
             if (Input.GetKeyDown(KeyCode.C)) SetPlaceMode(!placeMode);
 
             HasInteractionTarget = !placeMode & vegetationInteractor.HasTargetInRange;
-            
+
             if (placeMode)
             {
                 UpdatePlacePreview();
@@ -47,12 +48,32 @@ namespace Roots.Player
             }
             else
             {
+                if (Input.GetKeyDown(KeyCode.G))
+                {
+                    TryToggleSit();
+                }
+
                 if (vegetationInteractor.HasTargetInRange)
                 {
                     if (Input.GetKeyDown(KeyCode.E))
                     {
                         vegetationInteractor.Interact();
                     }
+                }
+            }
+        }
+
+        private void TryToggleSit()
+        {
+            if (!characterAnimationController.IsStateChangeLocked)
+            {
+                if (characterAnimationController.IsKneeling)
+                {
+                    characterAnimationController.StopKneeling();
+                }
+                else
+                {
+                    characterAnimationController.StartKneeling();
                 }
             }
         }

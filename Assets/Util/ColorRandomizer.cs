@@ -8,7 +8,7 @@ namespace Roots.Util
     {
         [SerializeField] private string colorPropertyName;
         [SerializeField] private Color colorA = Color.white;
-        [SerializeField] private Color colorB= Color.white;
+        [SerializeField] private Color colorB = Color.white;
     
         private MeshRenderer renderer;
     

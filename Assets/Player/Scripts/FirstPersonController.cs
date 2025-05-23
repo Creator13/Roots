@@ -161,7 +161,7 @@ namespace Roots.Player
 
 				// Update Cinemachine camera target pitch
 				CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0);
-
+				
 				// rotate the player left and right
 				transform.Rotate(Vector3.up * _rotationVelocity);
 			}
