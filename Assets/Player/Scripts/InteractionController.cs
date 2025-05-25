@@ -21,6 +21,8 @@ namespace Roots.Player
 
         private Vector3 previewPosition = Vector3.positiveInfinity;
         private bool canPlace;
+        private bool hasPhysicsTarget;
+        private TreeOfLife treeTarget;
 
         private bool placeMode = false;
         public bool HasInteractionTarget { get; private set; } = false;
@@ -34,7 +36,9 @@ namespace Roots.Player
         {
             if (Input.GetKeyDown(KeyCode.C)) SetPlaceMode(!placeMode);
 
-            HasInteractionTarget = !placeMode & vegetationInteractor.HasTargetInRange;
+            UpdatePhysicsInteractionTarget();
+
+            HasInteractionTarget = !placeMode & (vegetationInteractor.HasTargetInRange || hasPhysicsTarget);
 
             if (placeMode)
             {
@@ -52,9 +56,13 @@ namespace Roots.Player
                     TryToggleSit();
                 }
 
-                if (vegetationInteractor.HasTargetInRange)
+                if (Input.GetKeyDown(KeyCode.E))
                 {
-                    if (Input.GetKeyDown(KeyCode.E))
+                    if (hasPhysicsTarget)
+                    {
+                        treeTarget.Interact(transform);
+                    }
+                    else if (vegetationInteractor.HasTargetInRange)
                     {
                         vegetationInteractor.Interact();
                     }
@@ -65,7 +73,7 @@ namespace Roots.Player
         private void TryToggleSit()
         {
             if (characterAnimationController.IsStateChangeLocked) return;
-            
+
             if (characterAnimationController.IsKneeling)
             {
                 characterAnimationController.StopKneeling();
@@ -74,6 +82,24 @@ namespace Roots.Player
             {
                 characterAnimationController.StartKneeling();
             }
+        }
+
+        private void UpdatePhysicsInteractionTarget()
+        {
+            bool foundTree = false;
+
+            Ray centerRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
+            if (Physics.Raycast(centerRay, out var hit, maxReachDistance))
+            {
+                var treeComponent = hit.transform.GetComponent<TreeOfLife>();
+                if (treeComponent)
+                {
+                    foundTree = true;
+                    treeTarget = treeComponent;
+                }
+            }
+
+            hasPhysicsTarget = foundTree;
         }
 
         private void SetPlaceMode(bool newMode)

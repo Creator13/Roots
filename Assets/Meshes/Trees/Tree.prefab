@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2532395049397794950}
   - component: {fileID: 2963972482505643173}
+  - component: {fileID: -4581510535685432225}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Untagged
@@ -25,14 +26,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5863078554386003853}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.4480712, z: 0, w: 0.8939979}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4032434764440188407}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 53.24, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &2963972482505643173
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -52,10 +53,24 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.80425507
-  m_Height: 3.453262
+  m_Radius: 0.6556386
+  m_Height: 4.717334
   m_Direction: 1
-  m_Center: {x: 0.03927833, y: 1.1156338, z: 0.08458078}
+  m_Center: {x: 0.03927833, y: 1.7476697, z: 0.08458078}
+--- !u!114 &-4581510535685432225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5863078554386003853}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3261f74864a046fc8d4a4494b48fa920, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  easingFunction: 15
+  fallDuration: 3
 --- !u!1001 &8386635532726632745
 PrefabInstance:
   m_ObjectHideFlags: 0

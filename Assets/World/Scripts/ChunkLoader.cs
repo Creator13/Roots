@@ -373,7 +373,7 @@ namespace Roots.World
         
         public bool RaycastTerrain(Ray ray, float maxDistance, out Vector3 hitPoint)
         {
-            Assert.IsTrue(AllChunksLoaded, "Raycast is illegal before chunks are loaded.");
+            Assert.IsTrue(initialChunksLoaded, "Raycast is illegal before chunks are loaded.");
             
             const float step = 0.2f;
             float traveled = 0f;
