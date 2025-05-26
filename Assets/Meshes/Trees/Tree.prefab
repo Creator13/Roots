@@ -69,6 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3261f74864a046fc8d4a4494b48fa920, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collider: {fileID: 2963972482505643173}
   easingFunction: 15
   fallDuration: 3
 --- !u!1001 &8386635532726632745

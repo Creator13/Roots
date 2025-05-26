@@ -7,16 +7,24 @@ namespace Roots.World
 {
     public class TreeOfLife : MonoBehaviour
     {
+        [SerializeField] private Collider collider;
+        
         [SerializeField] private EasingFunction.Ease easingFunction = EasingFunction.Ease.EaseInExpo;
         [SerializeField] private float fallDuration;
+
+        public bool CanFall => !fallen;
+        private bool fallen = false;
         
         public void Interact(Transform sourceTransform)
         {
+            if (fallen) return;
             StartCoroutine(AnimateFall(sourceTransform.position));
         }
 
         private IEnumerator AnimateFall(Vector3 sourcePos)
         {
+            fallen = true;
+            
             Quaternion initialRotation = transform.rotation;
             
             Vector3 fallDirection = (transform.position - sourcePos).normalized;
@@ -38,6 +46,10 @@ namespace Roots.World
                 timePassed += Time.deltaTime;
                 yield return null;
             }
+            
+            // Trigger collider update after fall
+            collider.enabled = false;
+            collider.enabled = true;
         }
     }
 }

@@ -94,8 +94,11 @@ namespace Roots.Player
                 var treeComponent = hit.transform.GetComponent<TreeOfLife>();
                 if (treeComponent)
                 {
-                    foundTree = true;
-                    treeTarget = treeComponent;
+                    if (treeComponent.CanFall)
+                    {
+                        foundTree = true;
+                        treeTarget = treeComponent;
+                    }
                 }
             }
 
