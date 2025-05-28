@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Isoline terrain
-  m_Shader: {fileID: -6465566751694194690, guid: 1c637fd7cd10e7a49a8e14b32afbb632, type: 3}
+  m_Shader: {fileID: -6465566751694194690, guid: dddfdf2499c73e04ab6e966469339dc0, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -40,7 +40,7 @@ Material:
     m_Floats:
     - _Interval: 0.19
     - _Line_thickness: 0.05
-    - _Minimum_height: 0.15
+    - _Minimum_height: 0.19
     - _Noise_scale: 0
     - _Offset: -0.1
     - _QueueControl: 0
@@ -48,7 +48,7 @@ Material:
     - _slope1: 0
     - _slope2: 0
     m_Colors:
-    - _Line_color: {r: 1.0962055, g: 3.4415905, b: 0.6220361, a: 1}
+    - _Line_color: {r: 0.757743, g: 3.4101884, b: 3.7358491, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &4077260837971242399
