@@ -6,7 +6,7 @@ namespace Roots.World
 {
     public class WorldVisualizationSwitcher : MonoBehaviour
     {
-        private enum WorldType { Mesh, Instanced }
+        public enum WorldType { Mesh, Isoline, Instanced }
 
         [SerializeField] private WorldType currentWorldType = WorldType.Mesh;
         
@@ -16,20 +16,19 @@ namespace Roots.World
         // [SerializeField] private Camera camera;
         [SerializeField] private Material skyBox;
         [SerializeField] private Material skyBox2;
+        [SerializeField] private Material groundMaterial;
+        [SerializeField] private Material isolineMaterial;
 
         private void OnEnable()
         {
+            chunkLoader.InitialChunksLoaded += UpdateAll;
             chunkLoader.LoadedChunksChanged += UpdateEnabledRenderers;
         }
 
         private void OnDisable()
         {
-            chunkLoader.LoadedChunksChanged -= UpdateEnabledRenderers;
-        }
-
-        private void Start()
-        {
-            UpdateAll();
+            chunkLoader.LoadedChunksChanged -= UpdateEnabledRenderers;            
+            chunkLoader.InitialChunksLoaded -= UpdateAll;
         }
 
         private void Update()
@@ -39,6 +38,12 @@ namespace Roots.World
                 RotateWorldVisualizationType();
                 UpdateAll();
             }
+        }
+
+        public void SetVisualizationType(WorldType worldType)
+        {
+            currentWorldType = worldType;
+            UpdateAll();
         }
 
         private void UpdateAll()
@@ -52,7 +57,7 @@ namespace Roots.World
             Material skyBoxMaterial = currentWorldType switch
             {
                 WorldType.Mesh => skyBox,
-                WorldType.Instanced => skyBox2,
+                WorldType.Isoline or WorldType.Instanced => skyBox2,
                 _ => throw new ArgumentOutOfRangeException()
             };
             RenderSettings.skybox = skyBoxMaterial;
@@ -64,11 +69,25 @@ namespace Roots.World
             Assert.IsNotNull(chunkLoader);
             Assert.IsNotNull(instancedRenderer);
             
-            bool meshEnabled = currentWorldType == WorldType.Mesh;
+            bool meshEnabled = currentWorldType is WorldType.Mesh or WorldType.Isoline;
             bool instancedRendererEnabled = currentWorldType == WorldType.Instanced;
 
             chunkLoader.SetChunkMeshRenderersEnabled(meshEnabled);
             instancedRenderer.enabled = instancedRendererEnabled;
+            
+            UpdateMaterials();
+        }
+
+        private void UpdateMaterials()
+        {
+            if (currentWorldType == WorldType.Instanced) return;
+            
+            Material newMaterial = currentWorldType switch
+            {
+                WorldType.Mesh => groundMaterial,
+                WorldType.Isoline => isolineMaterial,
+            };
+            chunkLoader.SetTerrainMaterial(newMaterial);
         }
         
         private void RotateWorldVisualizationType()

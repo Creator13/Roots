@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using Math = Roots.Util.Math;
 using Random = UnityEngine.Random;
@@ -15,6 +16,13 @@ namespace Roots.World
         public bool CanFall => !fallen;
         private bool fallen = false;
         
+        private WorldVisualizationSwitcher visSwitcher;
+
+        private void Awake()
+        {
+            visSwitcher = FindAnyObjectByType<WorldVisualizationSwitcher>();
+        }
+
         public void Interact(Transform sourceTransform)
         {
             if (fallen) return;
@@ -46,6 +54,8 @@ namespace Roots.World
                 timePassed += Time.deltaTime;
                 yield return null;
             }
+            
+            visSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
             
             // Trigger collider update after fall
             collider.enabled = false;

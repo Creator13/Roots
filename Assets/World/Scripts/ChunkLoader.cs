@@ -423,6 +423,14 @@ namespace Roots.World
             }
         }
 
+        public void SetTerrainMaterial(Material material)
+        {
+            foreach (ChunkContainer chunk in chunks)
+            {
+                chunk.meshRenderer.sharedMaterial = material;
+            }
+        }
+
         #region Indexing shorthands
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

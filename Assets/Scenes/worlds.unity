@@ -1933,6 +1933,8 @@ MonoBehaviour:
   instancedRenderer: {fileID: 1158956746}
   skyBox: {fileID: 2100000, guid: aeab33f69c199e54794f516d31450ec4, type: 2}
   skyBox2: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
+  groundMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
+  isolineMaterial: {fileID: 2100000, guid: 51a5dce5abacf594aa84b077615e3768, type: 2}
 --- !u!114 &1158956748
 MonoBehaviour:
   m_ObjectHideFlags: 0
