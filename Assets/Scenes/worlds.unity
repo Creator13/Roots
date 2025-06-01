@@ -2585,6 +2585,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Place prewiew
       objectReference: {fileID: 0}
+    - target: {fileID: 7858829915033599873, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8508666490877783216, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: -30.672974
