@@ -76,6 +76,8 @@ namespace Roots.Player
 		private const float _threshold = 0.01f;
 
 		public float TotalDistance { get;private set; }
+		public bool IsMoving => _speed > 0;
+		public float MovingTime { get; private set; }
 
 		private bool IsCurrentDeviceMouse
 		{
@@ -202,6 +204,8 @@ namespace Roots.Player
 
 				// round speed to 3 decimal places
 				_speed = Mathf.Round(_speed * 1000f) / 1000f;
+				
+				if (_speed < 0.001f) _speed = 0; // failsafe
 			}
 			else
 			{

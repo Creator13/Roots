@@ -2477,6 +2477,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3841138324864999467, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      propertyPath: analogMovement
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4833386053705113484, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       propertyPath: terrain
       value: 
@@ -2632,6 +2636,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8997996947377729440}
+    - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8997996947377729444}
+    - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8997996947377729443}
     - targetCorrespondingSourceObject: {fileID: 831697712601080225, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 706234148}
@@ -2684,6 +2694,36 @@ MonoBehaviour:
   placeInValley: 0
   maxRadius: 1
   lowestPointThreshold: 0.05
+--- !u!114 &8997996947377729443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848430114080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62c8e767624d4e8d86d399722f2ee995, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stepTracker: {fileID: 8997996947377729444}
+  prefab: {fileID: 267314570386128923, guid: 20f5751019d0b104ab6c783a10c933d3, type: 3}
+--- !u!114 &8997996947377729444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848430114080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6c90612c30b49f6bf6320f9e67dbb2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementController: {fileID: 1766525618}
+  minDistance: 0.6
+  maxDistance: 2
+  minTime: 0.8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
