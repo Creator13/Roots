@@ -2,9 +2,9 @@
 
 namespace Roots.Player
 {
-    public class StepSpawner : MonoBehaviour
+    public class StepTestSpawner : MonoBehaviour
     {
-        [SerializeField] private MovementStepTracker stepTracker;
+        [SerializeField] private StepTracker stepTracker;
         [SerializeField] private GameObject prefab;
 
         private void OnEnable()
@@ -17,7 +17,7 @@ namespace Roots.Player
             stepTracker.Stepped -= SpawnStep;
         }
 
-        private void SpawnStep(MovementStepTracker.StepInfo stepInfo)
+        private void SpawnStep(StepTracker.StepInfo stepInfo)
         {
             if (stepInfo.stepCountInSequence < 3) return;
             
