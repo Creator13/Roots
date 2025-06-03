@@ -801,6 +801,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9005220659476430821, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
+      propertyPath: field of view
+      value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 9005220659476430821, guid: 2d3a85ecde41a8246a79669975912b74, type: 3}
       propertyPath: far clip plane
       value: 500
       objectReference: {fileID: 0}
@@ -2962,6 +2966,7 @@ MonoBehaviour:
   maxDistance: 2
   minTime: 0.8
   firstStepDelay: 0.3
+  footOffset: {x: 1, y: 1}
 --- !u!82 &8997996947377729445
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3087,14 +3092,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepTracker: {fileID: 8997996947377729444}
   chunkLoader: {fileID: 1158956743}
-  distanceMin: 15
-  distanceMax: 40
-  distanceDeviation: 1.2
-  angleOffsetMin: 15
-  angleOffsetMax: 50
-  angleDeviation: 1.2
-  lineResolution: 3
-  lineRendererPrefab: {fileID: 139855572440344362, guid: 95574a602b286314a99d93e9ca059cac, type: 3}
+  distanceMin: 10
+  distanceMax: 30
+  distanceDeviation: 0.95
+  angleOffsetMin: 5
+  angleOffsetMax: 30
+  angleDeviation: 1.1
+  payload: {fileID: 7319467359256934598, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
+  particlePrefab: {fileID: 6626574175321101745, guid: dda63276df2b0764b96fb9bb495af984, type: 3}
+  particleSpeed: 18
+  jitter: 0.2
+  noiseScale: 3
+  easingFunction: 6
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

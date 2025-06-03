@@ -34,6 +34,11 @@ namespace Roots.World
             chunkLoader = FindFirstObjectByType<ChunkLoader>();
         }
 
+        private void Start()
+        {
+            Initialize(5);
+        }
+
         private void Update()
         {
             if (fullGrownInstances != instanceCountTarget)

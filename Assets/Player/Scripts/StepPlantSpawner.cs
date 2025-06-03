@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections;
+using Roots.Util;
 using Roots.World;
 using UnityEngine;
 using Math = Roots.Util.Math;
@@ -19,8 +20,12 @@ namespace Roots.Player
         [SerializeField] private float angleDeviation = 1;
 
         [Header("Line")]
-        [SerializeField] private int lineResolution = 3; // sample points per unit of length
-        [SerializeField] private LineRenderer lineRendererPrefab;
+        [SerializeField] private GameObject payload;
+        [SerializeField] private GameObject particlePrefab;
+        [SerializeField] private float particleSpeed;
+        [SerializeField] private float jitter = .5f;
+        [SerializeField] private float noiseScale = .5f;
+        [SerializeField] private EasingFunction.Ease easingFunction = EasingFunction.Ease.EaseOutQuint;
 
         private StepTracker.StepInfo latestStepInfo;
         private Vector3 latestPosition;
@@ -60,27 +65,79 @@ namespace Roots.Player
             return pos;
         }
 
+        // private void DrawLine(Vector3 from, Vector3 to)
+        // {
+        //     Assert.IsTrue(lineResolution > 0);
+        //     
+        //     float distance = Vector3.Distance(from, to);
+        //     Vector3 direction = (to - from).normalized;
+        //     
+        //     int segments = Mathf.FloorToInt(distance * lineResolution);
+        //     float segmentLength = distance / segments;
+        //     
+        //     Vector3[] points = new Vector3[segments + 1];
+        //     
+        //     for (int i = 0; i < segments + 1; i++)
+        //     {
+        //         points[i] = from + direction * segmentLength * i;
+        //         points[i].y = chunkLoader.GetInterpolatedGroundHeightAt(points[i]);
+        //     }
+        //
+        //     LineRenderer line = Instantiate(lineRendererPrefab, from, Quaternion.identity);
+        //     line.positionCount = points.Length;
+        //     line.SetPositions(points);
+        // }
+
         private void DrawLine(Vector3 from, Vector3 to)
         {
-            Assert.IsTrue(lineResolution > 0);
+            Transform particle = Instantiate(this.particlePrefab, from, Quaternion.identity).transform;
+            StartCoroutine(MoveParticle(particle, from, to));
+        }
+
+        private IEnumerator MoveParticle(Transform particle, Vector3 from, Vector3 to)
+        {
+            EasingFunction.Function ease = EasingFunction.GetEasingFunction(easingFunction);
             
-            float distance = Vector3.Distance(from, to);
-            Vector3 direction = (to - from).normalized;
+            float perlinSeed = Time.time;
+            Vector3 perp = Vector3.Cross(to - from, Vector3.up); 
             
-            int segments = Mathf.FloorToInt(distance * lineResolution);
-            float segmentLength = distance / segments;
-            
-            Vector3[] points = new Vector3[segments + 1];
-            
-            for (int i = 0; i < segments + 1; i++)
+            float totalTime = (to - from).magnitude / particleSpeed;
+            float time = 0;
+            while (time < totalTime)
             {
-                points[i] = from + direction * segmentLength * i;
-                points[i].y = chunkLoader.GetInterpolatedGroundHeightAt(points[i]);
+                float t = ease(0, 1, time / totalTime);
+                
+                Vector3 pos = Vector3.Lerp(from, to, t);
+                
+                float offset = (Mathf.PerlinNoise1D(t * noiseScale + perlinSeed) * 2 - 1) * jitter * (1 - t);
+                pos += perp * offset;
+                
+                pos.y = chunkLoader.GetInterpolatedGroundHeightAt(pos) + .02f;
+                
+                particle.position = pos;
+                
+                time += Time.deltaTime;
+                yield return null;
             }
 
-            LineRenderer line = Instantiate(lineRendererPrefab, from, Quaternion.identity);
-            line.positionCount = points.Length;
-            line.SetPositions(points);
+            // Vector3 direction = to - particle.position;
+            // float originalDistanceSqr = direction.sqrMagnitude;
+            // direction = direction.normalized;
+            //
+            // float distanceSqr = originalDistanceSqr;
+            // while (originalDistanceSqr - distanceSqr > 0.01)
+            // {
+            //     particle.position += direction * (particleSpeed * Time.deltaTime);
+            //     
+            //     distanceSqr = (to - particle.position).sqrMagnitude;
+            //     yield return null;
+            // } 
+            
+            // snap
+            particle.position = to;
+
+            Instantiate(payload, to, Quaternion.identity);
+            StartCoroutine(CoroutineHelper.ExecuteDelayed(.1f, () => Destroy(particle.gameObject)));
         }
     }
 }
