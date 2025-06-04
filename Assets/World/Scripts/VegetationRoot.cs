@@ -102,7 +102,7 @@ namespace Roots.World
 
         private void MatchInstanceTarget()
         {
-            veggies.Capacity = instanceCountTarget;
+            // veggies.Capacity = instanceCountTarget;
             for (int i = 0; i < instanceCountTarget - veggies.Count; i++)
             {
                 AddInstance();

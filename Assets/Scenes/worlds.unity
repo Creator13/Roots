@@ -2966,7 +2966,7 @@ MonoBehaviour:
   maxDistance: 2
   minTime: 0.8
   firstStepDelay: 0.3
-  footOffset: {x: 1, y: 1}
+  footOffset: {x: 2, y: 0.5}
 --- !u!82 &8997996947377729445
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3101,9 +3101,9 @@ MonoBehaviour:
   payload: {fileID: 7319467359256934598, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
   particlePrefab: {fileID: 6626574175321101745, guid: dda63276df2b0764b96fb9bb495af984, type: 3}
   particleSpeed: 18
-  jitter: 0.2
-  noiseScale: 3
-  easingFunction: 6
+  jitter: 0.1
+  noiseScale: 4
+  easingFunction: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

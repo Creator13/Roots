@@ -103,7 +103,6 @@ namespace Roots.Player
             lastStepPosition.y = position.y; // flatten the plane in which the direction calculation happens; laststep gets overwritten by position *AFTER* this so we can safely do this; this is quicker than setting both y to 0 and having to copy.
             Vector3 direction = (position - lastStepPosition).normalized;
             
-            
             Stepped?.Invoke(new StepInfo
             {
                 position = position + transform.forward * footOffset.x + transform.right * (footOffset.y * stepSide),
@@ -118,13 +117,6 @@ namespace Roots.Player
             StepCount++;
             currentMovementStepCount++;
             stepSide *= -1;
-        }
-
-        private void OnDrawGizmos()
-        {
-            Vector3 offset = transform.forward * footOffset.x + transform.right * (footOffset.y * stepSide);
-            Gizmos.color = Color.orangeRed;
-            Gizmos.DrawLine(transform.position, transform.position + offset);
         }
     }
 }

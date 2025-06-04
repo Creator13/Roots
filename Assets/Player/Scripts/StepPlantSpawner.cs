@@ -35,15 +35,6 @@ namespace Roots.Player
             stepTracker.Stepped += OnStep;
         }
 
-        private void Update()
-        {
-            if (!latestStepInfo.Equals(default(StepTracker.StepInfo)))
-            {
-                Debug.DrawRay(latestStepInfo.position, latestStepInfo.direction, Color.darkGoldenRod);
-                Debug.DrawLine(latestStepInfo.position, latestPosition, Color.darkCyan);
-            }
-        }
-
         private void OnStep(StepTracker.StepInfo stepInfo)
         {
             this.latestStepInfo = stepInfo;
@@ -64,29 +55,6 @@ namespace Roots.Player
             Debug.Log($"distance: {randomDistance}, angle: {randomAngle}, final pos {pos}");
             return pos;
         }
-
-        // private void DrawLine(Vector3 from, Vector3 to)
-        // {
-        //     Assert.IsTrue(lineResolution > 0);
-        //     
-        //     float distance = Vector3.Distance(from, to);
-        //     Vector3 direction = (to - from).normalized;
-        //     
-        //     int segments = Mathf.FloorToInt(distance * lineResolution);
-        //     float segmentLength = distance / segments;
-        //     
-        //     Vector3[] points = new Vector3[segments + 1];
-        //     
-        //     for (int i = 0; i < segments + 1; i++)
-        //     {
-        //         points[i] = from + direction * segmentLength * i;
-        //         points[i].y = chunkLoader.GetInterpolatedGroundHeightAt(points[i]);
-        //     }
-        //
-        //     LineRenderer line = Instantiate(lineRendererPrefab, from, Quaternion.identity);
-        //     line.positionCount = points.Length;
-        //     line.SetPositions(points);
-        // }
 
         private void DrawLine(Vector3 from, Vector3 to)
         {
@@ -119,19 +87,6 @@ namespace Roots.Player
                 time += Time.deltaTime;
                 yield return null;
             }
-
-            // Vector3 direction = to - particle.position;
-            // float originalDistanceSqr = direction.sqrMagnitude;
-            // direction = direction.normalized;
-            //
-            // float distanceSqr = originalDistanceSqr;
-            // while (originalDistanceSqr - distanceSqr > 0.01)
-            // {
-            //     particle.position += direction * (particleSpeed * Time.deltaTime);
-            //     
-            //     distanceSqr = (to - particle.position).sqrMagnitude;
-            //     yield return null;
-            // } 
             
             // snap
             particle.position = to;
