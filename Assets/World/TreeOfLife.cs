@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using Math = Roots.Util.Math;
 using Random = UnityEngine.Random;
@@ -12,6 +11,9 @@ namespace Roots.World
         
         [SerializeField] private EasingFunction.Ease easingFunction = EasingFunction.Ease.EaseInExpo;
         [SerializeField] private float fallDuration;
+        [SerializeField] private Transform rootPoint;
+        
+        [SerializeField] private GameStateManager gameStateManager;
 
         public bool CanFall => !fallen;
         private bool fallen = false;
@@ -54,8 +56,8 @@ namespace Roots.World
                 timePassed += Time.deltaTime;
                 yield return null;
             }
-            
-            visSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
+
+            gameStateManager.ProgressTreeFall(rootPoint.position);
             
             // Trigger collider update after fall
             collider.enabled = false;
