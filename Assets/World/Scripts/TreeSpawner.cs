@@ -31,22 +31,9 @@ namespace Roots.World
         private void SpawnTree()
         {
             Random random = new Random(seedProvider.SeedAsUint());
-            float randomDistance = Math.RandomNormalDistribution(random, minDistanceFromStart, maxDistanceFromStart, deviationModifier);
-
-            // TODO: Limit this to avoid a worst case scenario (store a best value, use that if a max # of attempts is reached)
-            Vector2 randomXZ = random.NextFloat2Direction() * randomDistance;
-            float altitude = chunkLoader.GetInterpolatedGroundHeightAt(new Vector3(randomXZ.x, 0, randomXZ.y));
-            int tries = 1;
-            while (altitude > maxAltitude)
-            {
-                randomXZ = random.NextFloat2Direction() * randomDistance;
-                altitude = chunkLoader.GetInterpolatedGroundHeightAt(new Vector3(randomXZ.x, 0, randomXZ.y));
-                tries++;
-            }
+            Vector3 position = chunkLoader.RandomLowPointNormalDistribution(random, minDistanceFromStart, maxDistanceFromStart, deviationModifier, maxAltitude);
             
-            Debug.Log($"Found location for tree, took {tries} tries.");
-            
-            GameObject tree = Instantiate(treePrefab, new Vector3(randomXZ.x, altitude, randomXZ.y), Quaternion.Euler(0, random.NextFloat(0, 360), 0), transform);
+            GameObject tree = Instantiate(treePrefab, position, Quaternion.Euler(0, random.NextFloat(0, 360), 0), transform);
             
             chunkLoader.InitialChunksLoaded -= SpawnTree;
         }

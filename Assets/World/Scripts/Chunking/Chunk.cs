@@ -14,6 +14,7 @@ namespace Roots.World
         public NativeArray<Vertex> vertices;
         public GridInfo gridInfo;
         public NativeArray<Vector3> points;
+        public NativeArray<float> heights;
 
         public void Dispose()
         {

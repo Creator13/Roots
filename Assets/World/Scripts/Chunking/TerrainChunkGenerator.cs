@@ -171,8 +171,6 @@ namespace Roots.World
                     jobData.jobHandle.Complete();
                     FinalizeChunkJob(jobData);
 
-                    jobData.heightData.Dispose();
-
                     toRemove.Add(jobData);
                 }
             }
@@ -190,13 +188,28 @@ namespace Roots.World
             int edgeSamplePointCount = vertexGridInfo.edgeCount + 2; // Generate 1 extra noise sample in each direction of the grid
             int totalSamplePointCount = edgeSamplePointCount * edgeSamplePointCount;
 
+            // TODO do this some other place
+            if (!container.chunkData.points.IsCreated)
+            {
+                container.chunkData.points = new NativeArray<Vector3>(pointGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            }
+            if (!container.chunkData.vertices.IsCreated)
+            {
+                container.chunkData.vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            }
+            if (!container.chunkData.heights.IsCreated)
+            {
+                container.chunkData.heights = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            }
+            
             Chunk chunk = new Chunk()
             {
                 coords = coords,
                 worldPos = CalculateChunkOrigin(coords),
                 gridInfo = vertexGridInfo,
-                points = new NativeArray<Vector3>(pointGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
-                vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
+                points = container.chunkData.points, // Reuse old height array
+                vertices = container.chunkData.vertices, // Reuse old height array
+                heights = container.chunkData.heights, // Reuse old height array
             };
 
             container.chunkData = chunk;
@@ -207,7 +220,7 @@ namespace Roots.World
             {
                 indicesCount = vertexGridInfo.GetIndicesCount(),
                 chunkCoords = coords,
-                heightData = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory),
+                heightData = chunk.heights,
                 vertexData = chunk.vertices,
                 meshData = Mesh.AllocateWritableMeshData(1),
                 container = container

@@ -1,5 +1,6 @@
 ﻿using Unity.Mathematics;
 using UnityEngine;
+using Random = Unity.Mathematics.Random;
 
 namespace Roots.World
 {
@@ -41,6 +42,12 @@ namespace Roots.World
         public uint SeedAsUint()
         {
             return math.asuint(Seed);
+        }
+
+        // Use magic number to get a random that is always the same for the same seed, but always different from other randoms with a different magic number
+        public Random RandomFromSeed(int magicNumber)
+        {
+            return new Random(SeedAsUint() ^ math.asuint(magicNumber));
         }
     }
 }

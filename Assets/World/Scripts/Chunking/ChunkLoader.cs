@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Roots.Util;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -193,7 +194,7 @@ namespace Roots.World
 
                 // Order a new chunk to be loaded into the rotating object
                 int2 newChunkCoords = new int2(temp.chunkData.coords.x - width, temp.chunkData.coords.y);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
+                // temp.chunkData.Dispose(); // Invalidate the old chunkData
                 chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
                 chunks[_GetIndex(0, z)] = temp;
             }
