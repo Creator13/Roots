@@ -5362,11 +5362,12 @@
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
     "m_Value": {
-        "m_SerializedTexture": "{\"texture\":{\"fileID\":2800000,\"guid\":\"284f593d6ee68154fa253f609b4b2c2f\",\"type\":3}}",
+        "m_SerializedTexture": "",
         "m_Guid": ""
     },
     "isMainTexture": false,
     "useTilingAndOffset": false,
+    "useTexelSize": true,
     "m_Modifiable": true,
     "m_DefaultType": 0
 }
@@ -7042,10 +7043,10 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -2104.0,
-            "y": 556.0,
-            "width": 146.0,
-            "height": 34.0
+            "x": -1977.000244140625,
+            "y": 791.9999389648438,
+            "width": 146.0001220703125,
+            "height": 34.00006103515625
         }
     },
     "m_Slots": [
@@ -13083,8 +13084,8 @@
     "m_ObjectId": "a90c683818df46bbb503ee1f5bcd0ebc",
     "m_Title": "Fade edges",
     "m_Position": {
-        "x": -1787.000244140625,
-        "y": 1574.0
+        "x": -1787.0,
+        "y": 1573.9998779296875
     }
 }
 
@@ -16755,8 +16756,8 @@
     "m_ObjectId": "e45302bcc96a49139fa710ba474b2579",
     "m_Title": "Vertical blocks",
     "m_Position": {
-        "x": -4733.00048828125,
-        "y": -1192.0001220703125
+        "x": -4733.0,
+        "y": -1192.0
     }
 }
 
@@ -16961,7 +16962,7 @@
     "m_ObjectId": "e76b8617efde42adb03a3607516cfb4b",
     "m_Title": "Flicker Threshold",
     "m_Position": {
-        "x": -2693.000244140625,
+        "x": -2693.0,
         "y": 1094.0
     }
 }
@@ -17580,8 +17581,8 @@
     "m_ObjectId": "f3eb76df8aef44759bae6814c868a02b",
     "m_Title": "Horizontal blocks",
     "m_Position": {
-        "x": -4712.00048828125,
-        "y": -417.0000305175781
+        "x": -4712.0,
+        "y": -417.0
     }
 }
 

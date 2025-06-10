@@ -2138,7 +2138,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
   chunkLoader: {fileID: 1158956743}
-  prefab: {fileID: 267314570386128923, guid: 20f5751019d0b104ab6c783a10c933d3, type: 3}
+  prefab: {fileID: 4196508163910552089, guid: 82da73bf058de3943802d411e55fc28d, type: 3}
   seedCount: 4
   minDistance: 200
   maxDistance: 300
