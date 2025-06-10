@@ -7,7 +7,7 @@ namespace Roots.World
 {
     public class EndGoalSpawner : MonoBehaviour
     {
-        [SerializeField] private SeedProvider seedProvider;
+        [SerializeField] private RngSeedProvider seedProvider;
         [SerializeField] private float minDistanceFromStart;
         [SerializeField] private float maxDistanceFromStart;
         [SerializeField] private float deviationModifier = 1; // Smaller values cluster the random distance towards the center of the spread.

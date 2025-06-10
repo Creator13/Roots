@@ -7,7 +7,7 @@ namespace Roots.World
         [SerializeField] private WorldVisualizationSwitcher worldVisSwitcher;
         [SerializeField] private SeedPointSpawner seedPointSpawner;
         
-        public void ProgressTreeFall(Vector3 rootPointPosition)
+        public void RecordTreeFall(Vector3 rootPointPosition)
         {
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
             ActivateSeedPoints(rootPointPosition);

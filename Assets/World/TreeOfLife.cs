@@ -17,12 +17,10 @@ namespace Roots.World
 
         public bool CanFall => !fallen;
         private bool fallen = false;
-        
-        private WorldVisualizationSwitcher visSwitcher;
 
         private void Awake()
         {
-            visSwitcher = FindAnyObjectByType<WorldVisualizationSwitcher>();
+            gameStateManager = FindAnyObjectByType<GameStateManager>();
         }
 
         public void Interact(Transform sourceTransform)
@@ -57,7 +55,7 @@ namespace Roots.World
                 yield return null;
             }
 
-            gameStateManager.ProgressTreeFall(rootPoint.position);
+            gameStateManager.RecordTreeFall(rootPoint.position);
             
             // Trigger collider update after fall
             collider.enabled = false;

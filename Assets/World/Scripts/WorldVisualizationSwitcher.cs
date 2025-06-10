@@ -40,6 +40,11 @@ namespace Roots.World
             }
         }
 
+        private void Start()
+        {
+            UpdateAll();
+        }
+
         public void SetVisualizationType(WorldType worldType)
         {
             currentWorldType = worldType;

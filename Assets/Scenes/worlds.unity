@@ -1984,6 +1984,8 @@ GameObject:
   - component: {fileID: 1158956747}
   - component: {fileID: 1158956748}
   - component: {fileID: 1158956749}
+  - component: {fileID: 1158956750}
+  - component: {fileID: 1158956751}
   m_Layer: 0
   m_Name: World
   m_TagString: Untagged
@@ -2108,6 +2110,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   placePrefab: {fileID: 1235165070994915260, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
+--- !u!114 &1158956750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1158956742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba288cc278524e249de5603ea3ae2b7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldVisSwitcher: {fileID: 1158956747}
+  seedPointSpawner: {fileID: 1158956751}
+--- !u!114 &1158956751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1158956742}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aec65b3dec743e19a8ee80d35a14f03, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
+  chunkLoader: {fileID: 1158956743}
+  prefab: {fileID: 267314570386128923, guid: 20f5751019d0b104ab6c783a10c933d3, type: 3}
+  seedCount: 4
+  minDistance: 200
+  maxDistance: 300
+  maxAltitude: 0.03
+  minDistanceBetweenSeeds: 80
 --- !u!1 &1480607244
 GameObject:
   m_ObjectHideFlags: 0
@@ -3085,7 +3121,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8616685848430114080}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4c13b06d6c4480088c774968aad08d6, type: 3}
   m_Name: 

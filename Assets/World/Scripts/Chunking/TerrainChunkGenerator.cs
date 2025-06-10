@@ -120,7 +120,7 @@ namespace Roots.World
             | MeshUpdateFlags.DontResetBoneBounds;
 
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
-        [SerializeField] private SeedProvider seedProvider;
+        [SerializeField] private RngSeedProvider seedProvider;
         [SerializeField] private Material terrainMaterial;
         [SerializeField] private float treeDensity;
 

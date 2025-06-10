@@ -73,6 +73,8 @@ MonoBehaviour:
   collider: {fileID: 2963972482505643173}
   easingFunction: 15
   fallDuration: 3
+  rootPoint: {fileID: 4518186422065884837}
+  gameStateManager: {fileID: 0}
 --- !u!1 &7368244724335393133
 GameObject:
   m_ObjectHideFlags: 0

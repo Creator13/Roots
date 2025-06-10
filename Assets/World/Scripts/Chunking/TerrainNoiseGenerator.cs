@@ -1,4 +1,5 @@
-﻿using FastNoise;
+﻿using System;
+using FastNoise;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -69,7 +70,7 @@ namespace Roots.World
     [CreateAssetMenu(menuName = "Roots/Noise Generator", fileName = "New Noise Generator", order = 0)]
     public class TerrainNoiseGenerator : ScriptableObject
     {
-        [SerializeField] private SeedProvider seedProvider;
+        [SerializeField] private RngSeedProvider seedProvider;
         
         [Space]
         [SerializeField] private float frequencyModifier = 1;
@@ -93,7 +94,7 @@ namespace Roots.World
         private FastNoiseLite worleyGen;
         private FastNoiseLite ridgeGen;
         private FastNoiseLite fbmGen;
-
+        
         private bool isInitialized = false;
         public bool IsInitialized => isInitialized;
 
@@ -139,29 +140,13 @@ namespace Roots.World
         public float GetNoise(float x, float z)
         {
             Assert.IsTrue(IsInitialized, "Noise generator is not initialized.");
-
-            float ridgeWarpedX = x, ridgeWarpedZ = z;
-            ridgeGen.DomainWarp(ref ridgeWarpedX, ref ridgeWarpedZ);
-            float gradientSample = math.remap(-1f, 1f, 0, 1f, ridgeGen.GetNoise(ridgeWarpedX, ridgeWarpedZ));
             
-            float worleyWarpedX = x, worleyWarpedZ = z;
-            worleyGen.DomainWarp(ref worleyWarpedX, ref worleyWarpedZ, .06f);
-            float voronoiSample = math.remap(-1f, 1f, 0, 1f, worleyGen.GetNoise(worleyWarpedX, worleyWarpedZ));
-            
-            float sample = gradientSample * gradientWeight + voronoiSample;
-            
-            sample *= worleyStrengthMultiplier;
-
-            float fbmSample = math.remap(-1, 1, 0, 1, fbmGen.GetNoise(x, z)) * fbmGenStrength;
-            sample += fbmSample;
-            sample *= .5f;
-            
-            sample = math.smoothstep(smoothstepLevel, smoothstepLevel - smoothstepWidth, sample);
-            
-            sample *= noisePremultiplier;
-            sample = Math.Smootherstep(sample);
-            
-            return sample * height;
+            NativeArray<float> tempArray = new NativeArray<float>(1, Allocator.TempJob);
+            GenerateTerrainNoisePointsJob job = CreateNoiseGenJob(1, new Vector2(x, z), 1, tempArray);
+            job.Schedule(1, 1).Complete();
+            float val = job.heightData[0];
+            tempArray.Dispose();
+            return val;
         }
 
         public GenerateTerrainNoisePointsJob CreateNoiseGenJob(int edgePointCount, Vector2 startPosition, float stepSize, NativeArray<float> heightDataArray)

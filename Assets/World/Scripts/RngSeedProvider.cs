@@ -1,11 +1,12 @@
-﻿using Unity.Mathematics;
+﻿using System;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
 
 namespace Roots.World
 {
     [CreateAssetMenu(fileName = "SeedProvider", menuName = "Roots/Seed provider", order = 200)]
-    public class SeedProvider : ScriptableObject
+    public class RngSeedProvider : ScriptableObject
     {
         [field: SerializeField] public int Seed { get; private set; } = 42;
         [SerializeField] private bool randomizeOnAssetAwake = false;
@@ -45,9 +46,14 @@ namespace Roots.World
         }
 
         // Use magic number to get a random that is always the same for the same seed, but always different from other randoms with a different magic number
-        public Random RandomFromSeed(int magicNumber)
+        public Random GetRngWithOffset(int magicNumber)
         {
             return new Random(SeedAsUint() ^ math.asuint(magicNumber));
+        }
+        
+        public Random GetRngWithOffset(uint magicNumber)
+        {
+            return new Random(SeedAsUint() ^ magicNumber);
         }
     }
 }

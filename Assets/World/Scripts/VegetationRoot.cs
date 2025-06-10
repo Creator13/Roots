@@ -14,7 +14,7 @@ namespace Roots.World
             public float age;
         }
         
-        [SerializeField] private SeedProvider seedProvider;
+        [SerializeField] private RngSeedProvider seedProvider;
         [SerializeField] private GameObject plantPrefab;
         [SerializeField] private float density = 1;
         [SerializeField] private float growthTime = 9;
@@ -49,7 +49,7 @@ namespace Roots.World
         public void Initialize(int radius)
         {
             // do some stupid hashing so that not every root starts out with the same rng state
-            random = new Random(seedProvider.SeedAsUint() ^ math.hash((int3)((float3)transform.position * 10000)));
+            random = seedProvider.GetRngWithOffset(math.hash((int3)((float3)transform.position * 10000)));
 
             StartCoroutine(GrowCoroutine(radius, growthTime));
         }
