@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public class ChunkPointProvider : PointProvider
     {

@@ -1,7 +1,7 @@
 ﻿using Unity.Mathematics;
 using UnityEngine;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public abstract class ChunkGenerator : ScriptableObject
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using Roots.Util;
 using Roots.World;
+using Roots.World.Chunking;
 using UnityEngine;
 using Math = Roots.Util.Math;
 
@@ -52,7 +53,6 @@ namespace Roots.Player
             Vector3 pos = stepInfo.position + angledDirection * randomDistance;
             pos.y = chunkLoader.GetInterpolatedGroundHeightAt(pos);
             
-            Debug.Log($"distance: {randomDistance}, angle: {randomAngle}, final pos {pos}");
             return pos;
         }
 

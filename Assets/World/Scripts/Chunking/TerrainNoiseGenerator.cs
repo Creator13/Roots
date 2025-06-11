@@ -1,5 +1,4 @@
-﻿using System;
-using FastNoise;
+﻿using FastNoise;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -8,7 +7,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using Math = Roots.Util.Math;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     [BurstCompile]
     public struct GenerateTerrainNoisePointsJob : IJobParallelFor

@@ -2,7 +2,7 @@
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     [CreateAssetMenu(fileName = "Forest Chunk Generator", menuName = "Roots/Forest Chunk Generator", order = 50)]
     public class ForestChunkGenerator : ChunkGenerator

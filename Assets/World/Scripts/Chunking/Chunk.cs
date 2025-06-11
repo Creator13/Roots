@@ -5,7 +5,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public struct Chunk : IDisposable
     {
@@ -20,6 +20,7 @@ namespace Roots.World
         {
             vertices.Dispose();
             points.Dispose();
+            heights.Dispose();
         }
 
         public Vector3 FindLowestPoint()

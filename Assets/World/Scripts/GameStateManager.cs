@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Roots.Player;
+using UnityEngine;
 
 namespace Roots.World
 {
@@ -6,6 +7,7 @@ namespace Roots.World
     {
         [SerializeField] private WorldVisualizationSwitcher worldVisSwitcher;
         [SerializeField] private SeedPointSpawner seedPointSpawner;
+        [SerializeField] private StepPlantSpawner stepPlantSpawner;
         
         public void RecordTreeFall(Vector3 rootPointPosition)
         {
@@ -17,6 +19,18 @@ namespace Roots.World
         private void ActivateSeedPoints(Vector3 rootPointPosition)
         {
             seedPointSpawner.SpawnSeeds(rootPointPosition);
+        }
+
+        public void StartPlantSpawning()
+        {
+            worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Mesh);
+            stepPlantSpawner.enabled = true;
+        }
+
+        public void EndPlantSpawning()
+        {            
+            worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
+            stepPlantSpawner.enabled = false;
         }
     }
 }

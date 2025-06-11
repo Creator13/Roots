@@ -9,7 +9,7 @@ using UnityEngine.Assertions;
 using UnityEngine.Rendering;
 using Random = Unity.Mathematics.Random;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     [BurstCompile]
     public struct CreateVerticesJob : IJobParallelFor

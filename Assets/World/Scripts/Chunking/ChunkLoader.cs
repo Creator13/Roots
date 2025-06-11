@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Roots.Util;
-using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public class ChunkLoader : MonoBehaviour
     {

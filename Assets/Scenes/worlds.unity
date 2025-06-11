@@ -2124,6 +2124,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldVisSwitcher: {fileID: 1158956747}
   seedPointSpawner: {fileID: 1158956751}
+  stepPlantSpawner: {fileID: 8997996947377729452}
 --- !u!114 &1158956751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2140,8 +2141,8 @@ MonoBehaviour:
   chunkLoader: {fileID: 1158956743}
   prefab: {fileID: 4196508163910552089, guid: 82da73bf058de3943802d411e55fc28d, type: 3}
   seedCount: 4
-  minDistance: 200
-  maxDistance: 300
+  minDistance: 180
+  maxDistance: 260
   maxAltitude: 0.03
   minDistanceBetweenSeeds: 80
 --- !u!1 &1480607244
@@ -2499,6 +2500,7 @@ MonoBehaviour:
   input: {fileID: 8997996947377729437}
   vegetationInteractor: {fileID: 2053719262}
   characterAnimationController: {fileID: 706234148}
+  gameStateManager: {fileID: 1158956750}
   placePreview: {fileID: 1880161838}
   maxReachDistance: 5
 --- !u!114 &2053719262

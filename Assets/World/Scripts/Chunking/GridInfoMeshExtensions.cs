@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public static class GridInfoMeshExtensions
     {

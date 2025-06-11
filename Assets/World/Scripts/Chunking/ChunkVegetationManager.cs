@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     [BurstCompile]
     public struct UpdateGrowthProgressJob : IJobParallelFor

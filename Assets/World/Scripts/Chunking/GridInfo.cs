@@ -5,7 +5,7 @@
 //    z: movement: ±1;            z index = i % grid width;   inner loop
 // i = x * width + z;
 
-namespace Roots.World
+namespace Roots.World.Chunking
 {
     public readonly struct GridInfo
     {

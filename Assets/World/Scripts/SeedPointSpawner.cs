@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using Roots.World.Chunking;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = Unity.Mathematics.Random;
 
 namespace Roots.World
@@ -27,6 +30,8 @@ namespace Roots.World
 
             List<Vector3> points = new List<Vector3>(seedCount);
             
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             while (points.Count < seedCount)
             {
                 Vector3 position = chunkLoader.RandomLowPointNormalDistribution(ref random, centerPosition, minDistance, maxDistance, 1, maxAltitude);
@@ -38,8 +43,10 @@ namespace Roots.World
                 }
                 
                 points.Add(position);
-                Instantiate(prefab, position, Quaternion.identity);
+                Instantiate(prefab, position + Vector3.up * 1.3f, Quaternion.identity);
             }
+            sw.Stop();
+            Debug.Log($"took {sw.ElapsedMilliseconds}ms to generate {seedCount} seeds");
         }
 
         private static bool IsTooCloseToOtherPoints(List<Vector3> points, float sqrMinDistance, Vector3 pointToCheck)

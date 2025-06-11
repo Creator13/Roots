@@ -1,6 +1,8 @@
 ﻿using Roots.World;
+using Roots.World.Chunking;
 using StarterAssets;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Roots.Player
 {
@@ -14,6 +16,7 @@ namespace Roots.Player
         [Space]
         [SerializeField] private VegetationInteractor vegetationInteractor;
         [SerializeField] private CharacterAnimationController characterAnimationController;
+        [SerializeField] private GameStateManager gameStateManager;
 
         [Space]
         [SerializeField] private Transform placePreview;
@@ -22,7 +25,10 @@ namespace Roots.Player
         private Vector3 previewPosition = Vector3.positiveInfinity;
         private bool canPlace;
         private bool hasPhysicsTarget;
-        private TreeOfLife treeTarget;
+        private GameObject interactionTarget;
+        
+        private bool foundTree = false;
+        private bool foundGlitchSeed = false;
 
         private bool placeMode = false;
         public bool HasInteractionTarget { get; private set; } = false;
@@ -60,7 +66,12 @@ namespace Roots.Player
                 {
                     if (hasPhysicsTarget)
                     {
-                        treeTarget.Interact(transform);
+                        if (foundTree) interactionTarget.GetComponent<TreeOfLife>().Interact(transform);
+                        else if (foundGlitchSeed)
+                        {
+                            Destroy(interactionTarget);
+                            gameStateManager.StartPlantSpawning();
+                        }
                     }
                     else if (vegetationInteractor.HasTargetInRange)
                     {
@@ -86,7 +97,9 @@ namespace Roots.Player
 
         private void UpdatePhysicsInteractionTarget()
         {
-            bool foundTree = false;
+            foundTree = false;
+            foundGlitchSeed = false;
+            interactionTarget = null;
 
             Ray centerRay = mainCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f));
             if (Physics.Raycast(centerRay, out var hit, maxReachDistance))
@@ -97,12 +110,23 @@ namespace Roots.Player
                     if (treeComponent.CanFall)
                     {
                         foundTree = true;
-                        treeTarget = treeComponent;
                     }
                 }
-            }
+                else
+                {
+                    var plantSeedComponent = hit.transform.GetComponent<PlantSeed>();
+                    if (plantSeedComponent)
+                    {
+                        foundGlitchSeed = true;
+                    }
+                }
+            } 
 
-            hasPhysicsTarget = foundTree;
+            hasPhysicsTarget = foundTree || foundGlitchSeed;
+            if (hasPhysicsTarget)
+            {
+                interactionTarget = hit.transform.gameObject;
+            }
         }
 
         private void SetPlaceMode(bool newMode)

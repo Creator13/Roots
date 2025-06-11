@@ -47,7 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 6570371870915437448}
-  settings: {fileID: 0}
+  highEnergySettings: {fileID: 0}
+  lowEnergySettings: {fileID: 0}
 --- !u!1001 &1247186253861622806
 PrefabInstance:
   m_ObjectHideFlags: 0
