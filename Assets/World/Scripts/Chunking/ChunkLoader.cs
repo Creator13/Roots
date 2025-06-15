@@ -11,6 +11,8 @@ namespace Roots.World.Chunking
 {
     public class ChunkLoader : MonoBehaviour
     {
+        public delegate float TerrainHeightFunction(Vector3 position);
+        
         public class ChunkContainer
         {
             public Chunk chunkData;

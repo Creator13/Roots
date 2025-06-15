@@ -55,7 +55,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.75
+  m_Radius: 0.6
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &1337185837158271397
 MonoBehaviour:
@@ -84,6 +84,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23692f859b8946b78d65603e75381b9c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  glitch: {fileID: 1337185837158271397}
+  collider: {fileID: 2478811049608109913}
 --- !u!1001 &4322336250658819781
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -309,7 +311,7 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 1.5
+  m_Time: 2
   m_PreviewTimeScale: 1
   m_Parameters:
     serializedVersion: 3
