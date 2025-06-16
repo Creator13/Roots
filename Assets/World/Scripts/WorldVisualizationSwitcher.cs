@@ -2,6 +2,7 @@
 using Roots.World.Chunking;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Audio;
 
 namespace Roots.World
 {
@@ -15,11 +16,16 @@ namespace Roots.World
         [SerializeField] private ChunkLoader chunkLoader;
         [SerializeField] private InstancedPointRenderer instancedRenderer;
         // [SerializeField] private Camera camera;
+        [SerializeField] private AudioSource footstepAudioSource;
+        
+        [Space]
         [SerializeField] private Material skyBox;
         [SerializeField] private Material skyBox2;
         [SerializeField] private Material groundMaterial;
         [SerializeField] private Material isolineMaterial;
-
+        [SerializeField] private AudioResource overworldFootsteps;
+        [SerializeField] private AudioResource underworldFootsteps;
+            
         private void OnEnable()
         {
             chunkLoader.InitialChunksLoaded += UpdateAll;
@@ -56,6 +62,7 @@ namespace Roots.World
         {
             UpdateEnabledRenderers();
             UpdateCameraSettings();
+            UpdateAudioSettings();
         }
 
         private void UpdateCameraSettings()
@@ -68,6 +75,18 @@ namespace Roots.World
             };
             RenderSettings.skybox = skyBoxMaterial;
             // fog night color : 23272F, pow 0.015
+        }
+
+        private void UpdateAudioSettings()
+        {
+            AudioResource footsteps = currentWorldType switch
+            {
+                WorldType.Mesh => overworldFootsteps,
+                WorldType.Isoline => underworldFootsteps,
+                WorldType.Instanced => underworldFootsteps,
+                _ => throw new ArgumentOutOfRangeException()
+            };
+            footstepAudioSource.resource = footsteps;
         }
         
         private void UpdateEnabledRenderers()

@@ -20,7 +20,6 @@ namespace Roots
         public bool IsActive => !hasAnimationEnded;
 
         private float timeSinceStart;
-        private Vector3 dirToDestination;
         private Vector3 startPosition;
         private bool hasAnimationEnded;
 
@@ -45,7 +44,6 @@ namespace Roots
 
             Vector3 distance = destination - startPosition;
             timeToDestination = distance.magnitude / destinationSpeed;
-            dirToDestination = distance.normalized;
 
             hasAnimationEnded = false;
         }
@@ -102,10 +100,8 @@ namespace Roots
 
         private void Stage3(float deltaTime)
         {
-            Assert.AreEqual(2, stage, "Stage2 logic can only be executed in stage 2 state");
+            Assert.AreEqual(2, stage, "Stage3 logic can only be executed in stage 2 state");
             timeSinceStart += deltaTime;
-
-            Vector3 diff = destination - transform.position;
 
             float progress = timeSinceStart / timeToDestination;
             if (progress < 1)

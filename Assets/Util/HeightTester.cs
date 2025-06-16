@@ -1,5 +1,4 @@
-﻿using Roots.World;
-using Roots.World.Chunking;
+﻿using Roots.World.Chunking;
 using UnityEngine;
 
 namespace Roots.Util

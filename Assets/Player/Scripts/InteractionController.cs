@@ -2,7 +2,6 @@
 using Roots.World.Chunking;
 using StarterAssets;
 using UnityEngine;
-using UnityEngine.Assertions;
 
 namespace Roots.Player
 {
@@ -17,6 +16,7 @@ namespace Roots.Player
         [SerializeField] private VegetationInteractor vegetationInteractor;
         [SerializeField] private CharacterAnimationController characterAnimationController;
         [SerializeField] private GameStateManager gameStateManager;
+        [SerializeField] private FirstPersonController firstPersonController;
 
         [Space]
         [SerializeField] private Transform placePreview;
@@ -44,7 +44,9 @@ namespace Roots.Player
 
             UpdatePhysicsInteractionTarget();
 
-            HasInteractionTarget = !placeMode & (vegetationInteractor.HasTargetInRange || hasPhysicsTarget);
+            HasInteractionTarget = !firstPersonController.IsMoving 
+                                   && !placeMode 
+                                   && (vegetationInteractor.HasTargetInRange || hasPhysicsTarget);
 
             if (placeMode)
             {
@@ -62,7 +64,7 @@ namespace Roots.Player
                     TryToggleSit();
                 }
 
-                if (Input.GetKeyDown(KeyCode.E))
+                if (Input.GetKeyDown(KeyCode.E) && !firstPersonController.IsMoving)
                 {
                     if (hasPhysicsTarget)
                     {

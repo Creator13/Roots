@@ -107,7 +107,7 @@ namespace Roots.Player
             {
                 position = position + transform.forward * footOffset.x + transform.right * (footOffset.y * stepSide),
                 stepCountInSequence = currentMovementStepCount,
-                movementTime = moveStartTime - time,
+                movementTime = time - moveStartTime,
                 direction = direction,
                 side = stepSide
             });

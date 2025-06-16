@@ -17,10 +17,16 @@ namespace Roots.World
         
         [Space]
         [SerializeField] private GameObject treePrefab;
+
+        private Random random;
+        public Vector3 TreePosition { get; private set; }
         
         private void Awake()
         {
             chunkLoader.InitialChunksLoaded += SpawnTree;
+            
+            random = seedProvider.GetRngWithOffset(0);
+            TreePosition = chunkLoader.RandomLowPointNormalDistribution(ref random, Vector3.zero, minDistanceFromStart, maxDistanceFromStart, deviationModifier, maxAltitude);
         }
 
         private void OnDestroy()
@@ -30,10 +36,8 @@ namespace Roots.World
 
         private void SpawnTree()
         {
-            Random random = new Random(seedProvider.SeedAsUint());
-            Vector3 position = chunkLoader.RandomLowPointNormalDistribution(ref random, Vector3.zero, minDistanceFromStart, maxDistanceFromStart, deviationModifier, maxAltitude);
             
-            GameObject tree = Instantiate(treePrefab, position, Quaternion.Euler(0, random.NextFloat(0, 360), 0), transform);
+            GameObject tree = Instantiate(treePrefab, TreePosition, Quaternion.Euler(0, random.NextFloat(0, 360), 0), transform);
             
             chunkLoader.InitialChunksLoaded -= SpawnTree;
         }
