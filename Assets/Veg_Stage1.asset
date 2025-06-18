@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f2c160ad0cc425cbe091db329eff493, type: 3}
+  m_Name: Veg_Stage1
+  m_EditorClassIdentifier: 
+  plantTypes:
+  - prefab: {fileID: 8078879316959397894, guid: 3944577a3dac63b438b1f5b106dda8aa, type: 3}
+    weight: 20
+  - prefab: {fileID: 8078879316959397894, guid: d4e7e4df91532f042a5931325be30ad6, type: 3}
+    weight: 20
+  - prefab: {fileID: 8078879316959397894, guid: 3e0d1e4432070f34c81c24454e232596, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 8078879316959397894, guid: 48ef51e06cbcc0441a6889a11c5d862d, type: 3}
+    weight: 0.5
+  - prefab: {fileID: 633316707852660641, guid: 59d233c612b75e5469a1f6cb73da91a1, type: 3}
+    weight: 0.5

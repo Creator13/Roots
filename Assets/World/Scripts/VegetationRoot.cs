@@ -16,7 +16,7 @@ namespace Roots.World
         }
         
         [SerializeField] private RngSeedProvider seedProvider;
-        [SerializeField] private GameObject plantPrefab;
+        [SerializeField] private VegetationAsset vegetationType;
         [SerializeField] private float density = 1;
         [SerializeField] private float growthTime = 9;
 
@@ -117,7 +117,7 @@ namespace Roots.World
             Vector3 pos = transform.position + (Vector3)relativePos;
             pos.y = chunkLoader.GetInterpolatedGroundHeightAt(pos);
 
-            var instance = Instantiate(plantPrefab, pos, Quaternion.Euler(0, rotation, 0), transform);
+            var instance = Instantiate(vegetationType.GetPlantType(ref random), pos, Quaternion.Euler(0, rotation, 0), transform);
             instance.transform.localScale = Vector3.zero;
             veggies.Add(new Veggie
             {
