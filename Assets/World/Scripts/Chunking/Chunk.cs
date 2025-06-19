@@ -11,8 +11,9 @@ namespace Roots.World.Chunking
     {
         public int2 coords;
         public Vector3 worldPos;
-        public NativeArray<Vertex> vertices;
         public GridInfo gridInfo;
+        
+        public NativeArray<Vertex> vertices;
         public NativeArray<Vector3> points;
         public NativeArray<float> heights;
 

@@ -1,0 +1,57 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+#pragma kernel CopyToTexture
+
+struct Root
+{
+    float2 position;
+    float radius;
+};
+
+uint num_roots;
+int2 texture_size;
+StructuredBuffer<Root> roots;
+RWStructuredBuffer<uint> density_map;
+
+[numthreads(64, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (index >= num_roots) return;
+
+    Root root = roots[index];
+
+    int2 minPixel = max(int2(0, 0), int2(root.position - root.radius));
+    int2 maxPixel = min(texture_size - 1, int2(root.position + root.radius));
+
+    for (int y = minPixel.y; y <= maxPixel.y; y++)
+    {
+        for (int x = minPixel.x; x <= maxPixel.x; x++)
+        {
+            float2 pixelPos = float2(x, y);
+            uint idx = x + y * texture_size.x;
+            float dist = distance(pixelPos, root.position);
+            if (dist <= root.radius)
+            {
+                float normDist = saturate(dist / root.radius);
+                float falloff = 1.0 - smoothstep(0.0, 1.0, normDist);
+                
+                uint scaledFalloff = (uint)(falloff * 10000.0);
+                InterlockedMax(density_map[idx], scaledFalloff);
+            }
+        }
+    }
+}
+
+RWTexture2D<float> density_texture;
+
+[numthreads(8, 8, 1)]
+void CopyToTexture(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= texture_size.x || id.y >= texture_size.y) return;
+
+    uint idx = id.x + id.y * texture_size.x;
+    float value = (float)density_map[idx] / 10000.0f;
+
+    density_texture[int2(id.xy)] = value;
+}
