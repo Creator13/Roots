@@ -11,6 +11,7 @@ namespace Roots.World.Chunking
     {
         public readonly float size;
         public readonly float stepSize;
+        public readonly float invStepSize;
         public readonly int edgeCount;
         public readonly int totalPoints;
         
@@ -18,6 +19,7 @@ namespace Roots.World.Chunking
         {
             this.size = size;
             this.stepSize = stepSize;
+            this.invStepSize = 1.0f / stepSize;
             this.edgeCount = edgeCount;
             this.totalPoints = totalPoints;
         }

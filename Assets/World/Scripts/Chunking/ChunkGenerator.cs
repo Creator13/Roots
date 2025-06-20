@@ -26,10 +26,5 @@ namespace Roots.World.Chunking
         {
             return new Vector3(coords.x * ChunkSize, 0, coords.y * ChunkSize);
         }
-        
-        public Vector3 CalculateChunkCenterPosition(int2 coords)
-        {
-            return new Vector3(coords.x * ChunkSize + .5f * ChunkSize, 0, coords.y * ChunkSize + .5f * ChunkSize);
-        }
     }
 }

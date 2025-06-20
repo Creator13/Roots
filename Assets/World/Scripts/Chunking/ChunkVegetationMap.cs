@@ -20,8 +20,7 @@ namespace Roots.World.Chunking
         private GraphicsBuffer outBuffer;
         [SerializeField] private RenderTexture renderTexture;
 
-        [ContextMenu("Do the thing")]
-        public void UpdateBuffers()
+        private void InitializeBuffers()
         {
             inBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, roots.Length, sizeof(float) * 3);
             inBuffer.SetData(roots);
@@ -32,7 +31,10 @@ namespace Roots.World.Chunking
             renderTexture = new RenderTexture(texSize, texSize, 0, RenderTextureFormat.RFloat);
             renderTexture.enableRandomWrite = true;
             renderTexture.Create();
-
+        }
+        
+        public void UpdateBuffers()
+        {
             int kernel1 = shader.FindKernel("CSMain");
 
             shader.SetBuffer(kernel1, "roots", inBuffer);

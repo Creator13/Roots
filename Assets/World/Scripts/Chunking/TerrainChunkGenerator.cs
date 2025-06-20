@@ -7,7 +7,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.Rendering;
-using Random = Unity.Mathematics.Random;
 
 namespace Roots.World.Chunking
 {
@@ -122,7 +121,6 @@ namespace Roots.World.Chunking
         [SerializeField] private TerrainNoiseGenerator noiseGenerator;
         [SerializeField] private RngSeedProvider seedProvider;
         [SerializeField] private Material terrainMaterial;
-        [SerializeField] private float treeDensity;
 
         [Header("Detail")]
         [SerializeField] private int terrainMeshSubdivisions = 0; // Subsamples per unit
@@ -197,19 +195,19 @@ namespace Roots.World.Chunking
             {
                 container.chunkData.vertices = new NativeArray<Vertex>(vertexGridInfo.totalPoints, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
             }
-            if (!container.chunkData.heights.IsCreated)
+            if (!container.chunkData.heightmap.IsCreated)
             {
-                container.chunkData.heights = new NativeArray<float>(totalSamplePointCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+                container.chunkData.heightmap = ChunkHeightmap.Create(vertexGridInfo, 1);
             }
             
             Chunk chunk = new Chunk()
             {
                 coords = coords,
                 worldPos = CalculateChunkOrigin(coords),
-                gridInfo = vertexGridInfo,
+                grid = vertexGridInfo,
                 points = container.chunkData.points, // Reuse old height array
                 vertices = container.chunkData.vertices, // Reuse old height array
-                heights = container.chunkData.heights, // Reuse old height array
+                heightmap = container.chunkData.heightmap, // Reuse old height array
             };
 
             container.chunkData = chunk;
@@ -220,7 +218,7 @@ namespace Roots.World.Chunking
             {
                 indicesCount = vertexGridInfo.GetIndicesCount(),
                 chunkCoords = coords,
-                heightData = chunk.heights,
+                heightData = chunk.heightmap.heights,
                 vertexData = chunk.vertices,
                 meshData = Mesh.AllocateWritableMeshData(1),
                 container = container
@@ -252,7 +250,9 @@ namespace Roots.World.Chunking
                 edgeVertexCount = vertexGridInfo.edgeCount,
             }.Schedule(vertexJobHandle);
 
-            jobData.jobHandle = meshJobHandle;
+            var vegJobHandle = container.vegetation.RegenerateJobified(chunk, meshJobHandle);
+
+            jobData.jobHandle = vegJobHandle;
 
             activeJobs.Add(jobData);
         }
@@ -280,7 +280,9 @@ namespace Roots.World.Chunking
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
-
+            
+            jobData.container.vegetation.Rebind();
+            
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
         }
@@ -307,35 +309,6 @@ namespace Roots.World.Chunking
                     }
                 }
             }
-        }
-
-        private List<float4> GenerateVegetationSpawnPoints(Chunk chunkData)
-        {
-            // TODO switch to poisson disk sampling
-            
-            // Create a unique seed for each chunk based on its chunk coordinates
-            uint chunkHash = math.hash(chunkData.coords);
-            Random random = new Random(seedProvider.SeedAsUint() ^ chunkHash);
-            
-            // Statistically-average number of points in the chunk, with the density representing the average number of points in a single
-            // square unit.
-            int targetPointCount = (int)(ChunkSize * ChunkSize * treeDensity);
-            List<float4> results = new List<float4>(targetPointCount);
-            
-            for (int i = 0; i < targetPointCount; i++)
-            {
-                // Store position in xyz component and y-axis rotation in degrees in w.
-                float4 pos = random.NextFloat4(new float4(ChunkSize, 1, ChunkSize, 360));
-                float height = chunkData.InterpolateHeightAt(pos.xyz);
-                if (pos.y * noiseGenerator.height > height)
-                {
-                    continue;
-                }
-
-                pos.y = height;
-                results.Add(pos);
-            }
-            return results;
         }
 
         public override float GetTerrainHeightAt(Vector3 worldPosition)

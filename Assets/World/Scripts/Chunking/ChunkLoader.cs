@@ -16,6 +16,7 @@ namespace Roots.World.Chunking
         public class ChunkContainer
         {
             public Chunk chunkData;
+            public ChunkVegetation vegetation;
 
             public bool isLoaded;
 
@@ -23,8 +24,6 @@ namespace Roots.World.Chunking
             public Transform transform;
             public MeshRenderer meshRenderer;
             public MeshFilter meshFilter;
-            public bool hasVegetation;
-            public ChunkVegetationManager vegetation;
         }
 
         [SerializeField] private ChunkGenerator chunkGenerator;
@@ -37,8 +36,9 @@ namespace Roots.World.Chunking
         [Header("temp veg")]
         [SerializeField] private bool useVegetation;
         [SerializeField] private GameObject vegetationPrefab;
-        [SerializeField] private GrowthParameters growthParams;
         [SerializeField] private float vegetationLoadRadius;
+        [SerializeField] private Material vegMaterial;
+        [SerializeField] private float vegDensity;
 
         private Vector3 playerPosition;
         private ChunkContainer[] chunks;
@@ -80,6 +80,8 @@ namespace Roots.World.Chunking
             {
                 UpdateVisibleChunks(delta);
             }
+            
+            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void OnDestroy()
@@ -87,6 +89,7 @@ namespace Roots.World.Chunking
             foreach (ChunkContainer chunk in chunks)
             {
                 chunk.chunkData.Dispose();
+                chunk.vegetation.Dispose();
             }
         }
 
@@ -125,12 +128,10 @@ namespace Roots.World.Chunking
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
                     
-                    container.hasVegetation = useVegetation;
                     if (useVegetation)
                     {
-                        container.vegetation = container.gameObject.AddComponent<ChunkVegetationManager>();
-                        container.vegetation.SetPrefab(vegetationPrefab, growthParams);
-                        container.vegetation.Initialize((int)(chunkGenerator.ChunkSize * chunkGenerator.ChunkSize));
+                        container.vegetation = new ChunkVegetation();
+                        container.vegetation.Initialize(vegetationPrefab.GetComponentInChildren<MeshFilter>().sharedMesh, vegMaterial, chunkGenerator.ChunkSize, vegDensity);
                     }
 
                     container.transform.SetParent(transform, true);
@@ -157,19 +158,28 @@ namespace Roots.World.Chunking
                 if (movementDelta.y > 0) ShiftGridPositiveZ();
                 if (movementDelta.y < 0) ShiftGridNegativeZ();
             }
-
-            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void UpdateVisibleVegetation()
         {
-            Vector3 playerChunkCenter = chunkGenerator.CalculateChunkCenterPosition(playerChunk);
+            Vector3 playerChunkCenter = Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize);
             float sqrVegRadius = vegetationLoadRadius * vegetationLoadRadius * chunkGenerator.ChunkSize * chunkGenerator.ChunkSize;
             foreach (ChunkContainer chunk in chunks)
             {
-                Vector3 chunkCenter = chunkGenerator.CalculateChunkCenterPosition(chunk.chunkData.coords);
-                chunk.vegetation.enabled = !((chunkCenter - playerChunkCenter).sqrMagnitude >= sqrVegRadius);
+                if (!chunk.isLoaded) continue;
+                
+                // Vector3 chunkCenter = Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize);
+                // if ((chunkCenter - playerChunkCenter).sqrMagnitude >= sqrVegRadius)
+                // {
+                    chunk.vegetation.Render();
+                // }
             }
+        }
+
+        private void ReloadChunk(int2 newChunkCoords, ChunkContainer chunk)
+        {
+            chunk.isLoaded = false;
+            chunkGenerator.CreateChunkAsync(newChunkCoords, chunk);
         }
 
         #endregion
@@ -195,8 +205,7 @@ namespace Roots.World.Chunking
 
                 // Order a new chunk to be loaded into the rotating object
                 int2 newChunkCoords = new int2(temp.chunkData.coords.x - width, temp.chunkData.coords.y);
-                // temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                ReloadChunk(newChunkCoords, temp);
                 chunks[_GetIndex(0, z)] = temp;
             }
         }
@@ -220,8 +229,7 @@ namespace Roots.World.Chunking
 
                 // Order a new chunk to be loaded into the rotating object
                 int2 newChunkCoords = new int2(temp.chunkData.coords.x + width, temp.chunkData.coords.y);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                ReloadChunk(newChunkCoords, temp);
                 chunks[_GetIndex(width - 1, z)] = temp; // set last element to cached first element (rotate)
             }
         }
@@ -245,8 +253,7 @@ namespace Roots.World.Chunking
 
                 // Order a new chunk to be loaded into the rotating object
                 int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y - width);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                ReloadChunk(newChunkCoords, temp);
                 chunks[_GetIndex(x, 0)] = temp;
             }
         }
@@ -270,8 +277,7 @@ namespace Roots.World.Chunking
 
                 // Order a new chunk to be loaded into the rotating object
                 int2 newChunkCoords = new int2(temp.chunkData.coords.x, temp.chunkData.coords.y + width);
-                temp.chunkData.Dispose(); // Invalidate the old chunkData
-                chunkGenerator.CreateChunkAsync(newChunkCoords, temp);
+                ReloadChunk(newChunkCoords, temp);
                 chunks[_GetIndex(x, width - 1)] = temp;
             }
         }
@@ -501,7 +507,7 @@ namespace Roots.World.Chunking
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(playerChunk), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
+            Gizmos.DrawWireCube(Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize * 2);
 
             if (chunks != null)
             {
@@ -511,7 +517,7 @@ namespace Roots.World.Chunking
                     if (i == PlayerChunkIndexOffset) continue;
 
                     int2 chunkCoords = chunks[i].chunkData.coords;
-                    Gizmos.DrawWireCube(chunkGenerator.CalculateChunkCenterPosition(chunkCoords), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
+                    Gizmos.DrawWireCube(Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
         }
