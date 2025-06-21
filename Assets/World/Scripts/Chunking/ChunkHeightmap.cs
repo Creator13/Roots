@@ -17,17 +17,17 @@ namespace Roots.World.Chunking
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float Interpolate(float3 localPos)
         {
-            int xi_low = (int)math.floor(localPos.x / gridDesc.stepSize) + borderWidth;
-            int zi_low = (int)math.floor(localPos.z / gridDesc.stepSize) + borderWidth;
-            int lowestVertIndex = xi_low * edgePointCount + zi_low;
+            int xi_low = (int)math.floor(localPos.x * gridDesc.invStepSize);
+            int zi_low = (int)math.floor(localPos.z * gridDesc.invStepSize);
+            int lowestVertIndex = (xi_low + borderWidth) * edgePointCount + zi_low + borderWidth;
 
             float posA = heights[lowestVertIndex];
             float posB = heights[lowestVertIndex + 1];
             float posC = heights[lowestVertIndex + edgePointCount];
             float posD = heights[lowestVertIndex + edgePointCount + 1];
 
-            float tx = (localPos.x - xi_low * gridDesc.stepSize) / gridDesc.stepSize;
-            float tz = (localPos.z - zi_low * gridDesc.stepSize) / gridDesc.stepSize;
+            float tx = (localPos.x - xi_low * gridDesc.stepSize) * gridDesc.invStepSize;
+            float tz = (localPos.z - zi_low * gridDesc.stepSize) * gridDesc.invStepSize;
 
             float h0 = math.lerp(posA, posB, tz);
             float h1 = math.lerp(posC, posD, tz);

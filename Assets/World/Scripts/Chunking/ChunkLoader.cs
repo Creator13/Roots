@@ -12,7 +12,7 @@ namespace Roots.World.Chunking
     public class ChunkLoader : MonoBehaviour
     {
         public delegate float TerrainHeightFunction(Vector3 position);
-        
+
         public class ChunkContainer
         {
             public Chunk chunkData;
@@ -20,6 +20,7 @@ namespace Roots.World.Chunking
 
             public bool isLoaded;
 
+            public bool useVegetation;
             public GameObject gameObject;
             public Transform transform;
             public MeshRenderer meshRenderer;
@@ -36,6 +37,7 @@ namespace Roots.World.Chunking
         [Header("temp veg")]
         [SerializeField] private bool useVegetation;
         [SerializeField] private GameObject vegetationPrefab;
+        [SerializeField] private VegetationAsset vegetationAsset;
         [SerializeField] private float vegetationLoadRadius;
         [SerializeField] private Material vegMaterial;
         [SerializeField] private float vegDensity;
@@ -80,8 +82,14 @@ namespace Roots.World.Chunking
             {
                 UpdateVisibleChunks(delta);
             }
-            
-            if (useVegetation) UpdateVisibleVegetation();
+
+            if (useVegetation)
+            {
+                foreach (ChunkContainer chunk in chunks)
+                {
+                    chunk.vegetation.Render();
+                }
+            }
         }
 
         private void OnDestroy()
@@ -127,11 +135,13 @@ namespace Roots.World.Chunking
                     container.transform = container.gameObject.transform;
                     container.meshFilter = container.gameObject.AddComponent<MeshFilter>();
                     container.meshRenderer = container.gameObject.AddComponent<MeshRenderer>();
-                    
+
+                    container.useVegetation = useVegetation;
                     if (useVegetation)
                     {
                         container.vegetation = new ChunkVegetation();
-                        container.vegetation.Initialize(vegetationPrefab.GetComponentInChildren<MeshFilter>().sharedMesh, vegMaterial, chunkGenerator.ChunkSize, vegDensity);
+                        container.vegetation.Initialize(vegDensity, chunkGenerator.ChunkSize, container.transform);
+                        container.vegetation.SetVegetationAsset(vegetationAsset);
                     }
 
                     container.transform.SetParent(transform, true);
@@ -140,8 +150,6 @@ namespace Roots.World.Chunking
                     chunkGenerator.CreateChunkAsync(new int2(xRel, zRel) + center, container);
                 }
             }
-
-            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void UpdateVisibleChunks(int2 movementDelta)
@@ -158,6 +166,8 @@ namespace Roots.World.Chunking
                 if (movementDelta.y > 0) ShiftGridPositiveZ();
                 if (movementDelta.y < 0) ShiftGridNegativeZ();
             }
+
+            if (useVegetation) UpdateVisibleVegetation();
         }
 
         private void UpdateVisibleVegetation()
@@ -167,12 +177,9 @@ namespace Roots.World.Chunking
             foreach (ChunkContainer chunk in chunks)
             {
                 if (!chunk.isLoaded) continue;
-                
-                // Vector3 chunkCenter = Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize);
-                // if ((chunkCenter - playerChunkCenter).sqrMagnitude >= sqrVegRadius)
-                // {
-                    chunk.vegetation.Render();
-                // }
+
+                Vector3 chunkCenter = Chunk.CalculateChunkCenterPosition(chunk.chunkData.coords, chunkGenerator.ChunkSize);
+                chunk.vegetation.SetVisible((chunkCenter - playerChunkCenter).sqrMagnitude - 0.1f <= sqrVegRadius);
             }
         }
 
@@ -378,18 +385,18 @@ namespace Roots.World.Chunking
 
             return bestPoint;
         }
-        
+
         public bool RaycastTerrain(Ray ray, float maxDistance, out Vector3 hitPoint)
         {
             Assert.IsTrue(initialChunksLoaded, "Raycast is illegal before chunks are loaded.");
-            
+
             const float step = 0.2f;
             float traveled = 0f;
 
             while (traveled < maxDistance)
             {
                 Vector3 pos = ray.origin + ray.direction * traveled;
-                float terrainHeight = GetInterpolatedGroundHeightAt(pos); 
+                float terrainHeight = GetInterpolatedGroundHeightAt(pos);
 
                 if (pos.y < terrainHeight)
                 {
@@ -517,7 +524,7 @@ namespace Roots.World.Chunking
                     if (i == PlayerChunkIndexOffset) continue;
 
                     int2 chunkCoords = chunks[i].chunkData.coords;
-                    Gizmos.DrawWireCube(Chunk.CalculateChunkCenterPosition(playerChunk, chunkGenerator.ChunkSize), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
+                    Gizmos.DrawWireCube(Chunk.CalculateChunkCenterPosition(chunkCoords, chunkGenerator.ChunkSize), Vector3.one * chunkGenerator.ChunkSize + Vector3.up * chunkGenerator.ChunkSize);
                 }
             }
         }

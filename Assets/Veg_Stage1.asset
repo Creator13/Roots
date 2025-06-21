@@ -14,12 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   plantTypes:
   - prefab: {fileID: 8078879316959397894, guid: 3944577a3dac63b438b1f5b106dda8aa, type: 3}
+    mesh: {fileID: -1948521156395519617, guid: 5772dcc7f7a52d0468e86d4b3f3ae1a1, type: 3}
+    material: {fileID: 2100000, guid: 31638649e55d83946bc83d18e36632be, type: 2}
     weight: 20
   - prefab: {fileID: 8078879316959397894, guid: d4e7e4df91532f042a5931325be30ad6, type: 3}
+    mesh: {fileID: 7051749061627327325, guid: 33ca58a68e760134aba431a80046572d, type: 3}
+    material: {fileID: 2100000, guid: ccd69f1c95008d044836bfc415d45522, type: 2}
     weight: 20
   - prefab: {fileID: 8078879316959397894, guid: 3e0d1e4432070f34c81c24454e232596, type: 3}
+    mesh: {fileID: 3336345201400355871, guid: 09107c17f43929344b293ebe2de563b2, type: 3}
+    material: {fileID: 2100000, guid: 847e1a6b0b596ba4f979aa7d62a802f0, type: 2}
     weight: 0.5
   - prefab: {fileID: 8078879316959397894, guid: 48ef51e06cbcc0441a6889a11c5d862d, type: 3}
+    mesh: {fileID: 6685257662696588133, guid: 6003a98438da5c746967220a4355654b, type: 3}
+    material: {fileID: 2100000, guid: 77049dee46a8e114d9746b3dd9047166, type: 2}
     weight: 0.5
   - prefab: {fileID: 633316707852660641, guid: 59d233c612b75e5469a1f6cb73da91a1, type: 3}
+    mesh: {fileID: 296662908609807221, guid: fae41420f7df7a342a678bbe30b4d4a0, type: 3}
+    material: {fileID: 2100000, guid: 12ba90b8de708e2448443980ff892ad7, type: 2}
     weight: 0.5

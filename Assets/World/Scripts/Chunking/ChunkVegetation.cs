@@ -4,116 +4,134 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Assertions;
 using Random = Unity.Mathematics.Random;
 
 namespace Roots.World.Chunking
 {
-    // [BurstCompile]
+    [BurstCompile]
     public struct GenerateVegetationPositionsJob : IJobParallelFor
     {
         [ReadOnly] public ChunkHeightmap heights;
         [WriteOnly] public NativeArray<VegetationInstance> instances;
 
-        public int typeCount;
         public float chunkSize;
         public uint hashedSeed;
 
         public void Execute(int i)
         {
-            Random random = new Random(hashedSeed ^ (uint)i);
-            float4 rng = random.NextFloat4(new float4(chunkSize, 1, chunkSize, 360));
-            float3 pos = rng.xyz;
+            Random random = Random.CreateFromIndex((uint)i + hashedSeed);
+            float3 pos = random.NextFloat3(chunkSize);
             pos.y = heights.Interpolate(pos);
-            pos -= new float3(chunkSize * .5f, 0, chunkSize * .5f);
 
             VegetationInstance instance;
-            instance.transform = float4x4.TRS(pos.xyz, quaternion.Euler(0, rng.w, 0), new float3(1, 1, 1));
-            instance.type = random.NextInt(typeCount);
-            instance.rng = random.NextFloat3();
+            instance.pos = pos;
+            instance.yRot = random.NextFloat(360);
+            instance.roll = random.NextFloat();
             instances[i] = instance;
         }
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    // [StructLayout(LayoutKind.Sequential)]
+    // [BurstCompile]
     public struct VegetationInstance
     {
-        public float4x4 transform;
-        public int type;
-        public float3 rng;
+        public float3 pos;
+        public float yRot;
+        public float roll;
     }
 
     public struct ChunkVegetation
     {
-        public NativeArray<VegetationInstance> instances;
+        private NativeArray<VegetationInstance> instances;
 
-        private GraphicsBuffer instanceBuffer;
-        private GraphicsBuffer commandBuffer;
-        private GraphicsBuffer.IndirectDrawIndexedArgs[] commandData;
-        private const int commandCount = 1;
-        private RenderParams renderParams;
+        private GameObject parent;
 
-        private Mesh mesh;
+        private Transform[] transforms;
+        private MeshFilter[] meshFilters;
+        private MeshRenderer[] renderers;
+
+        private VegetationAsset vegetationAsset;
+
+        private float chunkSize;
         private int targetInstanceCount;
-
-        private bool isValidAndBound;
 
         public JobHandle RegenerateJobified(Chunk chunk, JobHandle dep = default)
         {
-            isValidAndBound = false;
-
-            renderParams.worldBounds = chunk.GetBounds(50);
+            Assert.IsTrue(instances.IsCreated);
 
             GenerateVegetationPositionsJob job = new GenerateVegetationPositionsJob
             {
                 instances = instances,
                 heights = chunk.heightmap,
-                chunkSize = chunk.grid.size,
-                hashedSeed = 43 ^ math.hash(chunk.coords)
+                chunkSize = chunkSize,
+                hashedSeed = math.hash(chunk.coords) ^ 43,
             };
 
             return job.Schedule(instances.Length, 12, dep);
         }
 
-        public void Rebind()
+        public void ApplyAfterGeneration()
         {
-            instanceBuffer.SetData(instances);
-            renderParams.material.SetBuffer("_Instances", instanceBuffer);
-            isValidAndBound = true;
+            Assert.IsNotNull(vegetationAsset);
+
+            for (int i = 0; i < targetInstanceCount; i++)
+            {
+                transforms[i].localPosition = instances[i].pos;
+                transforms[i].localRotation = Quaternion.Euler(0, instances[i].yRot, 0);
+
+                VegetationType vegType = vegetationAsset.GetAssetFromRoll(instances[i].roll);
+                meshFilters[i].sharedMesh = vegType.mesh;
+                renderers[i].sharedMaterial = vegType.material;
+            }
         }
 
-        public void Initialize(Mesh mesh, Material material, float chunkSize, float density)
+        public void SetVegetationAsset(VegetationAsset vegetationAsset) => this.vegetationAsset = vegetationAsset;
+        public void SetVisible(bool visible) => parent.gameObject.SetActive(visible); 
+
+        public void Initialize(float density, float chunkSize, Transform parent)
         {
-            isValidAndBound = false;
-            this.mesh = mesh;
-            targetInstanceCount = (int)(chunkSize * chunkSize * density);
+            this.parent = new GameObject();
+            this.parent.transform.SetParent(parent, false);
 
-            // Instance NativeArray/buffer // TODO directly write to bufer??
+            targetInstanceCount = (int)math.floor(chunkSize * chunkSize * density);
+            this.chunkSize = chunkSize;
+
             instances = new NativeArray<VegetationInstance>(targetInstanceCount, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            instanceBuffer = new GraphicsBuffer(GraphicsBuffer.Target.Structured, targetInstanceCount, sizeof(float) * 4 * 5);
 
-            // Command buffer
-            commandBuffer = new GraphicsBuffer(GraphicsBuffer.Target.IndirectArguments, commandCount, GraphicsBuffer.IndirectDrawIndexedArgs.size);
-            commandData = new GraphicsBuffer.IndirectDrawIndexedArgs[commandCount];
-
-            commandData[0].indexCountPerInstance = mesh.GetIndexCount(0);
-            commandData[0].instanceCount = (uint)targetInstanceCount;
-            commandBuffer.SetData(commandData);
-
-            // Render params
-            renderParams = new RenderParams(material);
+            CreateGameObjects(this.parent.transform);
         }
 
         public void Render()
         {
-            if (!isValidAndBound) return;
+            // todo implement
+        }
+        
+        private void CreateGameObjects(Transform parent)
+        {
+            transforms = new Transform[targetInstanceCount];
+            meshFilters = new MeshFilter[targetInstanceCount];
+            renderers = new MeshRenderer[targetInstanceCount];
 
-            Graphics.RenderMeshIndirect(renderParams, mesh, commandBuffer);
+            for (int i = 0; i < targetInstanceCount; i++)
+            {
+                var obj = new GameObject("Plant");
+
+                var transform = obj.transform;
+                transform.SetParent(parent, false);
+                transforms[i] = obj.transform;
+
+                meshFilters[i] = obj.AddComponent<MeshFilter>();
+
+                var meshRenderer = obj.AddComponent<MeshRenderer>();
+                meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                meshRenderer.receiveShadows = false;
+                renderers[i] = meshRenderer;
+            }
         }
 
         public void Dispose()
         {
-            instanceBuffer?.Release();
-            instanceBuffer = null;
             instances.Dispose();
         }
     }

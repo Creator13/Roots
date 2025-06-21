@@ -2058,16 +2058,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chunkGenerator: {fileID: 11400000, guid: 2df9157af49722540a31b38cb56280e2, type: 2}
-  loadRadius: 5
+  loadRadius: 3
   player: {fileID: 8997996947377729434}
   playerChunk:
     x: 0
     y: 0
   useVegetation: 1
   vegetationPrefab: {fileID: 4617365593380157513, guid: 8a62117e09a591845b2f97730092e35f, type: 3}
-  vegetationLoadRadius: 3
-  vegMaterial: {fileID: 2100000, guid: afc26801eabec2b438bd2f72f2594ba6, type: 2}
-  vegDensity: 2
+  vegetationAsset: {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
+  vegetationLoadRadius: 2
+  vegMaterial: {fileID: 2100000, guid: d08f17e1bd331b54fb5f6a592f02d60c, type: 2}
+  vegDensity: 3
 --- !u!4 &1158956744
 Transform:
   m_ObjectHideFlags: 0

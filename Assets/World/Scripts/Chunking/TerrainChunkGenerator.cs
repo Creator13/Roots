@@ -250,16 +250,17 @@ namespace Roots.World.Chunking
                 edgeVertexCount = vertexGridInfo.edgeCount,
             }.Schedule(vertexJobHandle);
 
-            var vegJobHandle = container.vegetation.RegenerateJobified(chunk, meshJobHandle);
-
-            jobData.jobHandle = vegJobHandle;
+            if (container.useVegetation)
+            {
+                var vegJobHandle = container.vegetation.RegenerateJobified(chunk, meshJobHandle);
+                jobData.jobHandle = vegJobHandle;
+            }
+            else
+            {
+                jobData.jobHandle = meshJobHandle;
+            }
 
             activeJobs.Add(jobData);
-        }
-
-        public override Chunk CreateChunkAsync(int2 chunkPosition, Transform parent = null)
-        {
-            throw new System.NotImplementedException();
         }
 
         private void FinalizeChunkJob(GenerationJobData jobData)
@@ -280,11 +281,19 @@ namespace Roots.World.Chunking
             terrainMesh.bounds = new Bounds(new Vector3(ChunkSize * .5f, noiseGenerator.height, ChunkSize * .5f), new Vector3(ChunkSize, noiseGenerator.height * 2, ChunkSize));
             Mesh.ApplyAndDisposeWritableMeshData(jobData.meshData, terrainMesh, NoCalcMeshUpdateFlags);
             jobData.container.meshFilter.mesh = terrainMesh;
-            
-            jobData.container.vegetation.Rebind();
+
+            if (jobData.container.useVegetation)
+            {
+                jobData.container.vegetation.ApplyAfterGeneration();
+            }
             
             jobData.container.isLoaded = true;
             jobData.container.gameObject.SetActive(true);
+        }
+
+        public override Chunk CreateChunkAsync(int2 chunkPosition, Transform parent = null)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void GeneratePointCloudFromHeightData(NativeArray<Vector3> points, NativeArray<float> heights)
