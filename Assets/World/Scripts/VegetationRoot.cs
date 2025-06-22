@@ -102,7 +102,7 @@ namespace Roots.World
 
         private void MatchInstanceTarget()
         {
-            // veggies.Capacity = instanceCountTarget;
+            veggies.Capacity = instanceCountTarget;
             for (int i = 0; i < instanceCountTarget - veggies.Count; i++)
             {
                 AddInstance();
@@ -131,7 +131,7 @@ namespace Roots.World
             return (int)math.ceil(density * radius * radius * math.PI);
         }
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
             const int segments = 9;
             Vector3[] points = new Vector3[segments];

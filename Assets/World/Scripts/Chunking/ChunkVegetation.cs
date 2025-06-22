@@ -65,7 +65,7 @@ namespace Roots.World.Chunking
                 instances = instances,
                 heights = chunk.heightmap,
                 chunkSize = chunkSize,
-                hashedSeed = math.hash(chunk.coords) ^ 43,
+                hashedSeed = 43
             };
 
             return job.Schedule(instances.Length, 12, dep);

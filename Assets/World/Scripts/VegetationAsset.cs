@@ -84,7 +84,7 @@ namespace Roots.World
 
         public VegetationType GetPlantType(ref Random random)
         {
-            float roll = random.NextFloat(totalWeight);
+            float roll = random.NextFloat();
             return GetAssetFromRoll(roll);
         }
     }
