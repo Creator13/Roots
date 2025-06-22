@@ -15,11 +15,11 @@ namespace Roots.World
             // TODO: Limit this to avoid a worst case scenario (store a best value, use that if a max # of attempts is reached)
             // TODO: make a function that batch requests a few heights 
             float2 randomXZ = random.NextFloat2Direction() * randomDistance;
-            float altitude = chunkLoader.GetExactGroundHeightAt(new Vector3(randomXZ.x, 0, randomXZ.y) + positionOffset);
+            float altitude = chunkLoader.GetGroundHeightAtFastest(new Vector3(randomXZ.x, 0, randomXZ.y) + positionOffset);
             while (altitude > maxAltitude)
             {
                 randomXZ = random.NextFloat2Direction() * randomDistance;
-                altitude = chunkLoader.GetExactGroundHeightAt(new Vector3(randomXZ.x, 0, randomXZ.y) + positionOffset);
+                altitude = chunkLoader.GetGroundHeightAtFastest(new Vector3(randomXZ.x, 0, randomXZ.y) + positionOffset);
             }
             
             return new Vector3(randomXZ.x, altitude, randomXZ.y);

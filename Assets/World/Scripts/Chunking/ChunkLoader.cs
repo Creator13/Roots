@@ -325,6 +325,18 @@ namespace Roots.World.Chunking
             return new Bounds(Vector3.zero, new Vector3(edgeSize, 50, edgeSize));
         }
 
+        public float GetGroundHeightAtFastest(Vector3 position)
+        {
+            if (IsChunkLoadedAt(position))
+            {
+                return GetInterpolatedGroundHeightAt(position);
+            }
+            else
+            {
+                return GetExactGroundHeightAt(position);
+            }
+        }
+        
         public float GetExactGroundHeightAt(Vector3 position)
         {
             return chunkGenerator.GetTerrainHeightAt(position);
@@ -332,6 +344,7 @@ namespace Roots.World.Chunking
 
         public float GetInterpolatedGroundHeightAt(Vector3 position)
         {
+            Assert.IsTrue(IsChunkLoadedAt(position), "Invalid call to get interpolated ground height on a chunk outside of loading range.");
             ChunkContainer cc = ChunkDataAt(position);
             Assert.IsTrue(cc.isLoaded, "Invalid call to get terrain height on a chunk that is still being loaded.");
             return cc.chunkData.InterpolateHeightAtWorldPosition(position);
@@ -427,7 +440,56 @@ namespace Roots.World.Chunking
 
             return ray.origin + ray.direction * ((minDist + maxDist) * 0.5f);
         }
+        
+        public Vector3[] TraceValleyPath(Vector3 start, Vector3 end, float terrainSampleStep, int refinementDepth = 2, float initialAngle = 45f)
+        {
+            List<Vector3> path = new();
+            Vector3 current = start;
+            path.Add(current);
 
+            while (Vector3.Distance(current, end) > terrainSampleStep)
+            {
+                Vector3 toEnd = (end - current).normalized;
+
+                float bestHeight = float.MaxValue;
+                Vector3 bestStep = current;
+
+                // Start with a broad sweep
+                float angleRange = initialAngle;
+
+                Vector3 bestDirection = toEnd;
+
+                for (int depth = 0; depth <= refinementDepth; depth++)
+                {
+                    float step = angleRange / 2f;
+                    float[] angleOffsets = { -step, -step / 2f, 0, step / 2f, step };
+
+                    foreach (float offset in angleOffsets)
+                    {
+                        Vector3 dir = Quaternion.Euler(0, offset, 0) * bestDirection;
+                        Vector3 candidate = current + dir * terrainSampleStep;
+                        float height = GetGroundHeightAtFastest(candidate);
+
+                        if (height < bestHeight)
+                        {
+                            bestHeight = height;
+                            bestStep = new Vector3(candidate.x, height, candidate.z);
+                            bestDirection = dir.normalized;
+                        }
+                    }
+
+                    // Narrow search range for next refinement
+                    angleRange *= 0.5f;
+                }
+
+                current = bestStep;
+                path.Add(current);
+            }
+
+            path.Add(end);
+            return path.ToArray();
+        }
+        
         #endregion
 
         public void SetChunkMeshRenderersEnabled(bool enabled)
@@ -476,6 +538,15 @@ namespace Roots.World.Chunking
         public int WorldPositionToLocalChunkIndex(Vector3 worldPosition)
         {
             return WorldChunkCoordinatesToLocalChunkIndex(WorldPositionToWorldChunkCoordinates(worldPosition));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsChunkLoadedAt(Vector3 worldPosition)
+        {
+            if (chunks == null) return false;
+            
+            int index = WorldPositionToLocalChunkIndex(worldPosition);
+            return index >= 0 && index < chunks.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
