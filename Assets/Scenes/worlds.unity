@@ -2077,6 +2077,7 @@ MonoBehaviour:
   chunkLoader: {fileID: 1158956743}
   instancedRenderer: {fileID: 1158956746}
   footstepAudioSource: {fileID: 8997996947377729445}
+  seedPointSpawner: {fileID: 1158956751}
   skyBox: {fileID: 2100000, guid: aeab33f69c199e54794f516d31450ec4, type: 2}
   skyBox2: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
   groundMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
@@ -2146,13 +2147,13 @@ MonoBehaviour:
   chunkLoader: {fileID: 1158956743}
   prefab: {fileID: -8405275039814645459, guid: 82da73bf058de3943802d411e55fc28d, type: 3}
   linePrefab: {fileID: 139855572440344362, guid: 95574a602b286314a99d93e9ca059cac, type: 3}
-  seedCount: 1
+  seedCount: 2
   minDistance: 180
   maxDistance: 260
   maxAltitude: 0.03
   minDistanceBetweenSeeds: 80
-  pulsePrefab: {fileID: 0}
-  pulseInterval: 0
+  pulsePrefab: {fileID: 7944621084900412279, guid: a2aa1ed0b5fe4544a98d34165920a579, type: 3}
+  pulseInterval: 3
 --- !u!1 &1480607244
 GameObject:
   m_ObjectHideFlags: 0
