@@ -14,7 +14,6 @@ namespace Roots.World.Chunking
 
         public NativeArray<Vertex> vertices;
         public NativeArray<Vector3> points;
-        // public NativeArray<float> heights;
         public ChunkHeightmap heightmap;
 
         public void Dispose()
@@ -46,7 +45,6 @@ namespace Roots.World.Chunking
             Assert.IsTrue(position.x >= 0 && position.x <= grid.size && position.z >= 0 && position.z <= grid.size,
                 "World position not inside chunk bounds (GetHeightAt called on incorrect chunk for world position)");
             
-            // return InterpolateHeightAt(position);
             return heightmap.Interpolate(position);
         }
 

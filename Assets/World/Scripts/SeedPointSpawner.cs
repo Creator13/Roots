@@ -1,4 +1,6 @@
-﻿using Roots.World.Chunking;
+﻿using System.Collections.Generic;
+using Roots.Util;
+using Roots.World.Chunking;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -31,15 +33,59 @@ namespace Roots.World
         private PlantSeed[] plantSeeds;
         private SeedAnimation[] seedAnimations;
         private Vector3[][] lines;
+        private List<FollowLine>[] activePulses;
+        private bool[] collected;
 
         private bool spawned = false;
         private bool seedsVisible;
+        private int activeSeedCount;
         private Timer intervalTimer;
-        private ObjectPool<FollowLine> pulses;
+        private ObjectPool<FollowLine> pulsePool;
 
         private void Update()
         {
             UpdateAnimations();
+        }
+
+        private void UpdateAnimations()
+        {
+            if (!spawned) return;
+
+            if (seedsVisible && intervalTimer.CheckTime())
+            {
+                DoPulse();
+            }
+        }
+
+        public void SpawnSeeds(Vector3 centerPosition)
+        {
+            centerPosition.y = chunkLoader.GetInterpolatedGroundHeightAt(centerPosition);
+
+            CreateDestinations(centerPosition);
+
+            plantSeeds = new PlantSeed[seedCount];
+            lines = new Vector3[seedCount][];
+            collected = new bool[seedCount];
+            activePulses = new List<FollowLine>[seedCount];
+            for (int i = 0; i < seedCount; i++) activePulses[i] = new List<FollowLine>(4);
+            intervalTimer = new Timer(pulseInterval, true);
+
+            pulsePool = new ObjectPool<FollowLine>(() => Instantiate(pulsePrefab),
+                actionOnGet: pulse => pulse.gameObject.SetActive(true),
+                actionOnRelease: pulse => pulse.gameObject.SetActive(false),
+                defaultCapacity: 4, maxSize: 12);
+
+            for (int i = 0; i < seedCount; i++)
+            {
+                plantSeeds[i] = Instantiate(prefab, destinations[i] + Vector3.up * 1.3f, Quaternion.identity);
+                plantSeeds[i].SetInteractable(true);
+                plantSeeds[i].gameObject.AddComponent<OwnedIndexable>().Index = i;
+
+                lines[i] = GenerateLine(centerPosition, destinations[i]);
+            }
+
+            spawned = true;
+            SetSeedPathsVisible(true);
         }
 
         public void SetSeedPathsVisible(bool visible)
@@ -59,60 +105,14 @@ namespace Roots.World
             seedsVisible = visible;
         }
 
-        private void UpdateAnimations()
+        public void SetPointCount(int count)
         {
-            if (!spawned) return;
-
-            // for (int i = 0; i < seedAnimations.Length; i++)
-            // {
-            //     if (seedAnimations[i].IsActive)
-            //     {
-            //         seedAnimations[i].UpdateAnimation(Time.deltaTime);
-            //     }
-            // }
-
-            if (seedsVisible && intervalTimer.CheckTime())
-            {
-                DoPulse();
-            }
+            this.seedCount = count;
         }
 
-        public void SpawnSeeds(Vector3 centerPosition)
+        public void MarkCollected(int index)
         {
-            centerPosition.y = chunkLoader.GetInterpolatedGroundHeightAt(centerPosition);
-
-            CreateDestinations(centerPosition);
-
-            plantSeeds = new PlantSeed[seedCount];
-            lines = new Vector3[seedCount][];
-            intervalTimer = new Timer(pulseInterval, true);
-            
-            pulses = new ObjectPool<FollowLine>(() => Instantiate(pulsePrefab),
-                actionOnGet: pulse => pulse.gameObject.SetActive(true),
-                actionOnRelease: pulse => pulse.gameObject.SetActive(false),
-                defaultCapacity: 4, maxSize: 12);
-
-            // float angleStep = math.PI2 / seedCount;
-
-            for (int i = 0; i < seedCount; i++)
-            {
-                //     Vector3 pos = Vector3.zero;
-                //     math.sincos(angleStep * i, out pos.z, out pos.x);
-                //     
-                //     pos *= 1.5f;
-                //     pos += centerPosition;
-                //     pos.y = chunkLoader.GetInterpolatedGroundHeightAt(pos);
-                //     
-                plantSeeds[i] = Instantiate(prefab, destinations[i] + Vector3.up * 1.3f, Quaternion.identity);
-                plantSeeds[i].SetInteractable(true);
-
-                lines[i] = GenerateLine(centerPosition, destinations[i]);
-            }
-
-            spawned = true;
-            SetSeedPathsVisible(true);
-
-            // StartAnimations();
+            collected[index] = true;
         }
 
         private Vector3[] GenerateLine(Vector3 start, Vector3 end)
@@ -130,35 +130,34 @@ namespace Roots.World
             return path;
         }
 
-        private void StartAnimations()
-        {
-            seedAnimations = new SeedAnimation[seedCount];
-            for (int i = 0; i < seedCount; i++)
-            {
-                seedAnimations[i] = new SeedAnimation(
-                    plantSeeds[i],
-                    destinations[i],
-                    1.3f,
-                    chunkLoader.GetGroundHeightAtFastest
-                );
-            }
-        }
-
         private void DoPulse()
         {
             for (int i = 0; i < seedCount; i++)
             {
-                FollowLine pulse = pulses.Get();
-                pulse.Activate(lines[i], p => pulses.Release(p));
+                if (collected[i]) continue; // do not show for collected points
+                
+                FollowLine pulse = pulsePool.Get();
+                
+                int iCopy = i;
+                pulse.Activate(lines[i], p =>
+                {
+                    activePulses[iCopy].Remove(p);
+                    pulsePool.Release(p);
+                });
+
+                activePulses[i].Add(pulse);
             }
         }
 
         private void StopVisiblePulses()
         {
-            // TODO fck this shiot man
-            foreach (var pulse in FindObjectsByType<FollowLine>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            for (int i = 0; i < activePulses.Length; i++)
             {
-                Destroy(pulse.gameObject);
+                foreach (var pulse in activePulses[i])
+                {
+                    pulsePool.Release(pulse);
+                }
+                activePulses[i].Clear();
             }
         }
 
@@ -175,7 +174,7 @@ namespace Roots.World
                 Vector3 position = chunkLoader.RandomLowPointNormalDistribution(ref random, centerPosition, minDistance, maxDistance, 1, maxAltitude);
                 position += centerPosition;
 
-                if (IsTooCloseToOtherPoints(sqrMinDistance, position))
+                if (IsTooCloseToOtherPoints(sqrMinDistance, position, i))
                 {
                     continue;
                 }
@@ -185,12 +184,14 @@ namespace Roots.World
             }
         }
 
-        private bool IsTooCloseToOtherPoints(float sqrMinDistance, Vector3 pointToCheck)
+        private bool IsTooCloseToOtherPoints(float sqrMinDistance, Vector3 pointToCheck, int count)
         {
-            foreach (Vector3 point in destinations)
+            for  (int i = 0; i < count; i++)
             {
-                if ((point - pointToCheck).sqrMagnitude < sqrMinDistance)
+                if ((destinations[i] - pointToCheck).sqrMagnitude < sqrMinDistance)
+                {
                     return true;
+                }
             }
 
             return false;

@@ -1,4 +1,5 @@
-﻿using Roots.World;
+﻿using Roots.Util;
+using Roots.World;
 using Roots.World.Chunking;
 using StarterAssets;
 using UnityEngine;
@@ -71,8 +72,7 @@ namespace Roots.Player
                         if (foundTree) interactionTarget.GetComponent<TreeOfLife>().Interact(transform);
                         else if (foundGlitchSeed)
                         {
-                            Destroy(interactionTarget);
-                            gameStateManager.StartPlantSpawning();
+                            gameStateManager.CollectSeed(interactionTarget);
                         }
                     }
                     else if (vegetationInteractor.HasTargetInRange)

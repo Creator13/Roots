@@ -1,6 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using UnityEngine.Pool;
 
 namespace Roots.World
 {
@@ -59,7 +58,7 @@ namespace Roots.World
 
             transform.position = Vector3.Lerp(start, end, segmentProgress);
         }
-        
+
         public void Activate(Vector3[] line, Action<FollowLine> onEndReachedCallback = null)
         {
             this.line = line;

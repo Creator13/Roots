@@ -1,4 +1,5 @@
 ﻿using Roots.Player;
+using Roots.Util;
 using UnityEngine;
 
 namespace Roots.World
@@ -8,6 +9,12 @@ namespace Roots.World
         [SerializeField] private WorldVisualizationSwitcher worldVisSwitcher;
         [SerializeField] private SeedPointSpawner seedPointSpawner;
         [SerializeField] private StepPlantSpawner stepPlantSpawner;
+
+        [SerializeField] private VegetationAsset[] vegetationStages;
+        
+        private int seedsFound = 0;
+        
+        public int StageCount => vegetationStages.Length;
         
         public void RecordTreeFall(Vector3 rootPointPosition)
         {
@@ -21,7 +28,15 @@ namespace Roots.World
             seedPointSpawner.SpawnSeeds(rootPointPosition);
         }
 
-        public void StartPlantSpawning()
+        public void CollectSeed(GameObject seedObject)
+        {
+            StartPlantSpawning();
+            seedPointSpawner.MarkCollected(seedObject.GetComponent<OwnedIndexable>().Index);
+            Destroy(seedObject);
+            seedsFound++;
+        }
+
+        private void StartPlantSpawning()
         {
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Mesh);
             stepPlantSpawner.enabled = true;

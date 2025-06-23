@@ -2131,6 +2131,7 @@ MonoBehaviour:
   worldVisSwitcher: {fileID: 1158956747}
   seedPointSpawner: {fileID: 1158956751}
   stepPlantSpawner: {fileID: 8997996947377729452}
+  vegetationStages: []
 --- !u!114 &1158956751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3133,7 +3134,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8616685848430114080}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4c13b06d6c4480088c774968aad08d6, type: 3}
   m_Name: 
