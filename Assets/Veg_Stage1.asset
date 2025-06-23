@@ -33,3 +33,4 @@ MonoBehaviour:
     mesh: {fileID: 296662908609807221, guid: fae41420f7df7a342a678bbe30b4d4a0, type: 3}
     material: {fileID: 2100000, guid: 12ba90b8de708e2448443980ff892ad7, type: 2}
     weight: 0.5
+  <density>k__BackingField: 5

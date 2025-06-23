@@ -1,3 +1,4 @@
+using System;
 using Roots.World.Chunking;
 using UnityEngine;
 using Random = Unity.Mathematics.Random;
@@ -6,6 +7,8 @@ namespace Roots.World
 {
     public class TreeSpawner : MonoBehaviour
     {
+        public static event Action<Transform> treeSpawned;
+        
         [SerializeField] private ChunkLoader chunkLoader;
         
         [Space]
@@ -36,8 +39,8 @@ namespace Roots.World
 
         private void SpawnTree()
         {
-            
             GameObject tree = Instantiate(treePrefab, TreePosition, Quaternion.Euler(0, random.NextFloat(0, 360), 0), transform);
+            treeSpawned?.Invoke(tree.transform);
             
             chunkLoader.InitialChunksLoaded -= SpawnTree;
         }

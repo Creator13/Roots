@@ -16,7 +16,7 @@ namespace Roots.Player
         private void Update()
         {
             // UpdateClosestInstance();
-            ShootBeamThroughGrass();
+            // ShootBeamThroughGrass();
         }
 
         public void Interact()

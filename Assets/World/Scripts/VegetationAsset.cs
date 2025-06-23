@@ -23,6 +23,7 @@ namespace Roots.World
         private int[] samplingLUT = new int[LUT_SIZE];
 
         [SerializeField] private List<VegetationType> plantTypes = new();
+        [field: SerializeField] public float density { get; private set; }
 
         private float totalWeight = 0;
 

@@ -40,7 +40,7 @@ Material:
     m_Floats:
     - _Gradient_offset: -0.1
     - _Gradient_width: 0.8
-    - _Interval: 0.06
+    - _Interval: 0.08
     - _Line_thickness: 0.1
     - _Minimum_height: 0.08
     - _Noise_scale: 0

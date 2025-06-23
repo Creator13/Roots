@@ -18,6 +18,7 @@ namespace Roots.World
         // [SerializeField] private Camera camera;
         [SerializeField] private AudioSource footstepAudioSource;
         [SerializeField] private SeedPointSpawner seedPointSpawner;
+        [SerializeField] private VegetationRootManager rootManager;
         
         [Space]
         [SerializeField] private Material skyBox;
@@ -66,6 +67,7 @@ namespace Roots.World
             UpdateAudioSettings();
             
             seedPointSpawner.SetSeedPathsVisible(currentWorldType is WorldType.Isoline or WorldType.Instanced);
+            rootManager.SetVisible(currentWorldType is WorldType.Mesh);
         }
 
         private void UpdateCameraSettings()

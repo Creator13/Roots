@@ -2078,6 +2078,7 @@ MonoBehaviour:
   instancedRenderer: {fileID: 1158956746}
   footstepAudioSource: {fileID: 8997996947377729445}
   seedPointSpawner: {fileID: 1158956751}
+  rootManager: {fileID: 1158956749}
   skyBox: {fileID: 2100000, guid: aeab33f69c199e54794f516d31450ec4, type: 2}
   skyBox2: {fileID: 2100000, guid: 0e26ebf79b4f1174f8778dd4430f81d2, type: 2}
   groundMaterial: {fileID: 2100000, guid: a77aedf24f833844ba35aca63beb9aa7, type: 2}
@@ -2131,7 +2132,10 @@ MonoBehaviour:
   worldVisSwitcher: {fileID: 1158956747}
   seedPointSpawner: {fileID: 1158956751}
   stepPlantSpawner: {fileID: 8997996947377729452}
-  vegetationStages: []
+  rootManager: {fileID: 1158956749}
+  vegetationStages:
+  - {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
+  - {fileID: 11400000, guid: 5c924c5f04e304648b5d34abfae16226, type: 2}
 --- !u!114 &1158956751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2932,6 +2936,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8997996947377729452}
+    - targetCorrespondingSourceObject: {fileID: 1113940953097139676, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8997996947377729455}
     - targetCorrespondingSourceObject: {fileID: 831697712601080225, guid: 5af5682c988df9147a1a40e4dfbe36ed, type: 3}
       insertIndex: -1
       addedObject: {fileID: 706234148}
@@ -3141,6 +3148,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stepTracker: {fileID: 8997996947377729444}
   chunkLoader: {fileID: 1158956743}
+  rootManager: {fileID: 1158956749}
   distanceMin: 10
   distanceMax: 30
   distanceDeviation: 0.95
@@ -3156,6 +3164,22 @@ MonoBehaviour:
   easingFunction: 2
   timeToGuidanceParticle: 4
   guidanceParticleStepInterval: 5
+--- !u!114 &8997996947377729455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8616685848430114080}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8246129499a7417bb7ab9d2433c9c5e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameStateManager: {fileID: 1158956750}
+  player: {fileID: 8997996947377729434}
+  tree: {fileID: 0}
+  triggerDistance: 30
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -21,8 +21,8 @@ namespace Roots.World
             if (veggieAge < growthTime)
             {
                 ages[i] = veggieAge += deltaTime;
-
                 float progress = veggieAge / growthTime;
+                
                 transform.localScale = new Vector3(progress, progress, progress);
             }
         }
@@ -32,7 +32,6 @@ namespace Roots.World
     {
         [SerializeField] private RngSeedProvider seedProvider;
         [SerializeField] private VegetationAsset vegetationType;
-        [SerializeField] private float density = 1;
         [SerializeField] private float growthTime = 9;
 
         public float Radius { get; private set; }
@@ -40,6 +39,7 @@ namespace Roots.World
 
         private TransformAccessArray transforms;
         private NativeList<float> ages;
+        
         private int instanceCountTarget;
         private int fullGrownInstances;
         private Random random;
@@ -67,6 +67,8 @@ namespace Roots.World
                     deltaTime = Time.deltaTime,
                 };
                 jobHandle = job.Schedule(transforms);
+                
+                // TODO::NOTE: transformaccessarray is only truly parallel if the transforms in it are in different "root objects" (see https://medium.com/toca-boca-tech-blog/unitys-transformaccessarray-internals-and-best-practices-2923546e0b41)
             }
         }
 
@@ -94,11 +96,13 @@ namespace Roots.World
             transforms.Dispose();
         }
 
-        public void Initialize(int radius)
+        public void Initialize(float radius, VegetationAsset vegetationAsset = null)
         {
+            if (vegetationAsset != null) vegetationType = vegetationAsset;
+            
             // do some stupid hashing so that not every root starts out with the same rng state
             random = seedProvider.GetRngWithOffset(math.hash((int3)((float3)transform.position * 10000)));
-            int predictedInstanceCount = GetInstanceCount(radius, density);
+            int predictedInstanceCount = GetInstanceCount(radius, vegetationType.density);
             ages.Capacity = predictedInstanceCount;
             transforms = new TransformAccessArray(predictedInstanceCount);
 
@@ -117,38 +121,16 @@ namespace Roots.World
 
                 Radius = math.lerp(startRadius, targetRadius, t);
 
-                instanceCountTarget = GetInstanceCount(Radius, density);
+                instanceCountTarget = GetInstanceCount(Radius, vegetationType.density);
                 MatchInstanceTarget();
 
                 yield return null;
             }
 
             Radius = targetRadius;
-            instanceCountTarget = GetInstanceCount(Radius, density);
+            instanceCountTarget = GetInstanceCount(Radius, vegetationType.density);
             MatchInstanceTarget();
         }
-
-        // private void UpdateInstanceGrowth()
-        // {
-        //     int fullGrownInstanceCount = 0;
-        //     for (int i = 0; i < ages.Length; i++)
-        //     {
-        //         float veggieAge = ages[i];
-        //         if (veggieAge < growthTime)
-        //         {
-        //             ages[i] = veggieAge += Time.deltaTime;
-        //
-        //             float progress = veggieAge / growthTime;
-        //             transforms[i].localScale = new Vector3(progress, progress, progress);
-        //         }
-        //         else
-        //         {
-        //             fullGrownInstanceCount++;
-        //         }
-        //     }
-        //
-        //     fullGrownInstances = fullGrownInstanceCount;
-        // }
 
         private void MatchInstanceTarget()
         {

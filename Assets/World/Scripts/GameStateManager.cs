@@ -9,13 +9,18 @@ namespace Roots.World
         [SerializeField] private WorldVisualizationSwitcher worldVisSwitcher;
         [SerializeField] private SeedPointSpawner seedPointSpawner;
         [SerializeField] private StepPlantSpawner stepPlantSpawner;
+        [SerializeField] private VegetationRootManager rootManager;
 
         [SerializeField] private VegetationAsset[] vegetationStages;
         
         private int seedsFound = 0;
-        
-        public int StageCount => vegetationStages.Length;
-        
+        public bool IsInPlantingStage { get; private set; }
+
+        private void Start()
+        {
+            seedPointSpawner.SetPointCount(vegetationStages.Length);
+        }
+
         public void RecordTreeFall(Vector3 rootPointPosition)
         {
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
@@ -30,20 +35,27 @@ namespace Roots.World
 
         public void CollectSeed(GameObject seedObject)
         {
-            StartPlantSpawning();
             seedPointSpawner.MarkCollected(seedObject.GetComponent<OwnedIndexable>().Index);
             Destroy(seedObject);
+            StartPlantSpawning(seedsFound);
             seedsFound++;
         }
 
-        private void StartPlantSpawning()
+        private void StartPlantSpawning(int stageIndex)
         {
+            IsInPlantingStage = true;
+            
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Mesh);
             stepPlantSpawner.enabled = true;
+            
+            rootManager.SetCurrentVegetationAsset(vegetationStages[stageIndex]);
+            rootManager.SetKey(stageIndex + 1);
         }
 
         public void EndPlantSpawning()
         {            
+            IsInPlantingStage = false;
+
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);
             stepPlantSpawner.enabled = false;
         }

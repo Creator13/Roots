@@ -14,4 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   plantTypes:
   - prefab: {fileID: 4617365593380157513, guid: 8a62117e09a591845b2f97730092e35f, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
     weight: 1
+  <density>k__BackingField: 5

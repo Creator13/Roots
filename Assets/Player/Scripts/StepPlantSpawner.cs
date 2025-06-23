@@ -12,6 +12,7 @@ namespace Roots.Player
     {
         [SerializeField] private StepTracker stepTracker;
         [SerializeField] private ChunkLoader chunkLoader;
+        [SerializeField] private VegetationRootManager rootManager;
 
         [Header("Location parameters")]
         [SerializeField] private float distanceMin = 10;
@@ -57,9 +58,18 @@ namespace Roots.Player
 
         private void Start()
         {
-            stepTracker.Stepped += OnStep;
             TreeSpawner treeSpawner = FindFirstObjectByType<TreeSpawner>();
             treePosition = treeSpawner.TreePosition;
+        }
+
+        private void OnEnable()
+        {
+            stepTracker.Stepped += OnStep;
+        }
+
+        private void OnDisable()
+        {
+            stepTracker.Stepped -= OnStep;
         }
 
         private void OnStep(StepTracker.StepInfo stepInfo)
@@ -97,8 +107,6 @@ namespace Roots.Player
 
         private void SpawnGuidanceParticle(Vector3 from)
         {
-            Debug.Log("Spawning guidance particle");
-
             Vector3 direction = (treePosition - from).normalized * Math.RandomNormalDistribution(distanceMin, distanceMax, distanceDeviation); 
             StartCoroutine(MoveParticle(guidancePool, from, from + direction, 1.5f));
         }
@@ -110,8 +118,7 @@ namespace Roots.Player
 
         private void SpawnPlantPayload(Transform particle, Vector3 endPos)
         {
-            var root = Instantiate(payload, endPos, Quaternion.identity);
-            root.Initialize(5);
+            rootManager.PlaceNew(endPos, 5);
         }
 
         private IEnumerator MoveParticle(ObjectPool<Transform> pool, Vector3 from, Vector3 to, float timeToDestroy = 0, Action<Transform, Vector3> onDestinationReached = null)

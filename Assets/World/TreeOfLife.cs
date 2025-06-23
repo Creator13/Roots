@@ -20,7 +20,7 @@ namespace Roots.World
 
         private void Awake()
         {
-            gameStateManager = FindAnyObjectByType<GameStateManager>();
+            if (!gameStateManager) gameStateManager = FindAnyObjectByType<GameStateManager>();
         }
 
         public void Interact(Transform sourceTransform)
