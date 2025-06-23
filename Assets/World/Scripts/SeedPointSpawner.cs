@@ -1,7 +1,5 @@
-﻿using System.Threading;
-using Roots.World.Chunking;
+﻿using Roots.World.Chunking;
 using Unity.Mathematics;
-using Unity.Mathematics.Geometry;
 using UnityEngine;
 using UnityEngine.Pool;
 using Math = Roots.Util.Math;
@@ -37,6 +35,7 @@ namespace Roots.World
         private bool spawned = false;
         private bool seedsVisible;
         private Timer intervalTimer;
+        private ObjectPool<FollowLine> pulses;
 
         private void Update()
         {
@@ -46,7 +45,7 @@ namespace Roots.World
         public void SetSeedPathsVisible(bool visible)
         {
             if (!spawned) return;
-            
+
             if (!seedsVisible && visible)
             {
                 intervalTimer.Reset();
@@ -87,6 +86,11 @@ namespace Roots.World
             plantSeeds = new PlantSeed[seedCount];
             lines = new Vector3[seedCount][];
             intervalTimer = new Timer(pulseInterval, true);
+            
+            pulses = new ObjectPool<FollowLine>(() => Instantiate(pulsePrefab),
+                actionOnGet: pulse => pulse.gameObject.SetActive(true),
+                actionOnRelease: pulse => pulse.gameObject.SetActive(false),
+                defaultCapacity: 4, maxSize: 12);
 
             // float angleStep = math.PI2 / seedCount;
 
@@ -104,7 +108,7 @@ namespace Roots.World
 
                 lines[i] = GenerateLine(centerPosition, destinations[i]);
             }
-            
+
             spawned = true;
             SetSeedPathsVisible(true);
 
@@ -113,7 +117,7 @@ namespace Roots.World
 
         private Vector3[] GenerateLine(Vector3 start, Vector3 end)
         {
-            var path = chunkLoader.TraceValleyPath(start, end, 30);
+            var path = chunkLoader.TraceValleyPath(start, end, 30, refinementDepth: 3, initialAngle: 65);
 
             path = Math.SmoothPathChaikin(path, 2);
             path = Math.SubdividePath(path, 4);
@@ -144,8 +148,8 @@ namespace Roots.World
         {
             for (int i = 0; i < seedCount; i++)
             {
-                FollowLine pulse = Instantiate(pulsePrefab);
-                pulse.SetLine(lines[i]);
+                FollowLine pulse = pulses.Get();
+                pulse.Activate(lines[i], p => pulses.Release(p));
             }
         }
 

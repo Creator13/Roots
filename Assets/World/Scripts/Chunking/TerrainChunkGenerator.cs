@@ -197,7 +197,7 @@ namespace Roots.World.Chunking
             }
             if (!container.chunkData.heightmap.IsCreated)
             {
-                container.chunkData.heightmap = ChunkHeightmap.Create(vertexGridInfo, 1);
+                container.chunkData.heightmap = ChunkHeightmap.CreateEmpty(vertexGridInfo, 1);
             }
             
             Chunk chunk = new Chunk()

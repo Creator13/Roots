@@ -47,7 +47,7 @@ namespace Roots.World.Chunking
             this.edgePointCount = edgePointCount;
         }
 
-        public static ChunkHeightmap Create(GridInfo chunkGrid, int edgeExtension = 1)
+        public static ChunkHeightmap CreateEmpty(GridInfo chunkGrid, int edgeExtension = 1)
         {
             int edgePointCount = chunkGrid.edgeCount + 2 * edgeExtension;
             int totalSamplePointCount = edgePointCount * edgePointCount;

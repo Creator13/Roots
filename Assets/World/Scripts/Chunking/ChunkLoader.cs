@@ -454,7 +454,6 @@ namespace Roots.World.Chunking
                 float bestHeight = float.MaxValue;
                 Vector3 bestStep = current;
 
-                // Start with a broad sweep
                 float angleRange = initialAngle;
 
                 Vector3 bestDirection = toEnd;
@@ -462,7 +461,7 @@ namespace Roots.World.Chunking
                 for (int depth = 0; depth <= refinementDepth; depth++)
                 {
                     float step = angleRange / 2f;
-                    float[] angleOffsets = { -step, -step / 2f, 0, step / 2f, step };
+                    Span<float> angleOffsets = stackalloc[] { -step, -step / 2f, 0, step / 2f, step };
 
                     foreach (float offset in angleOffsets)
                     {
@@ -478,7 +477,6 @@ namespace Roots.World.Chunking
                         }
                     }
 
-                    // Narrow search range for next refinement
                     angleRange *= 0.5f;
                 }
 

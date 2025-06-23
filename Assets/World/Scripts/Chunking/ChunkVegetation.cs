@@ -32,8 +32,6 @@ namespace Roots.World.Chunking
         }
     }
 
-    // [StructLayout(LayoutKind.Sequential)]
-    // [BurstCompile]
     public struct VegetationInstance
     {
         public float3 pos;
@@ -87,7 +85,7 @@ namespace Roots.World.Chunking
         }
 
         public void SetVegetationAsset(VegetationAsset vegetationAsset) => this.vegetationAsset = vegetationAsset;
-        public void SetVisible(bool visible) => parent.gameObject.SetActive(visible); 
+        public void SetVisible(bool visible) => parent.gameObject.SetActive(visible);
 
         public void Initialize(float density, float chunkSize, Transform parent)
         {
@@ -106,7 +104,7 @@ namespace Roots.World.Chunking
         {
             // todo implement
         }
-        
+
         private void CreateGameObjects(Transform parent)
         {
             transforms = new Transform[targetInstanceCount];

@@ -2151,9 +2151,9 @@ MonoBehaviour:
   minDistance: 180
   maxDistance: 260
   maxAltitude: 0.03
-  minDistanceBetweenSeeds: 80
+  minDistanceBetweenSeeds: 100
   pulsePrefab: {fileID: 7944621084900412279, guid: a2aa1ed0b5fe4544a98d34165920a579, type: 3}
-  pulseInterval: 3
+  pulseInterval: 2.4
 --- !u!1 &1480607244
 GameObject:
   m_ObjectHideFlags: 0
@@ -3133,7 +3133,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8616685848430114080}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4c13b06d6c4480088c774968aad08d6, type: 3}
   m_Name: 
@@ -3146,7 +3146,7 @@ MonoBehaviour:
   angleOffsetMin: 5
   angleOffsetMax: 30
   angleDeviation: 1.1
-  payload: {fileID: 7319467359256934598, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
+  payload: {fileID: 1235165070994915260, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
   particlePrefab: {fileID: 6626574175321101745, guid: c673872ea46e7be459125c0eb1312076, type: 3}
   guidancePrefab: {fileID: 6626574175321101745, guid: dda63276df2b0764b96fb9bb495af984, type: 3}
   particleSpeed: 18

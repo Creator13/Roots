@@ -4,6 +4,7 @@ namespace Roots.World.Chunking
 {
     public static class GridInfoMeshExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetIndicesCount(this GridInfo info)
         {
             return (info.totalPoints - info.edgeCount) * 6;

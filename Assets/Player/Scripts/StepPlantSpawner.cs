@@ -22,7 +22,7 @@ namespace Roots.Player
         [SerializeField] private float angleDeviation = 1;
 
         [Header("Line")]
-        [SerializeField] private GameObject payload;
+        [SerializeField] private VegetationRoot payload;
         [SerializeField] private GameObject particlePrefab;
         [SerializeField] private GameObject guidancePrefab;
         [SerializeField] private float particleSpeed;
@@ -110,7 +110,8 @@ namespace Roots.Player
 
         private void SpawnPlantPayload(Transform particle, Vector3 endPos)
         {
-            Instantiate(payload, endPos, Quaternion.identity);
+            var root = Instantiate(payload, endPos, Quaternion.identity);
+            root.Initialize(5);
         }
 
         private IEnumerator MoveParticle(ObjectPool<Transform> pool, Vector3 from, Vector3 to, float timeToDestroy = 0, Action<Transform, Vector3> onDestinationReached = null)

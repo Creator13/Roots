@@ -15,22 +15,22 @@ namespace Roots.World.Chunking
         public readonly int edgeCount;
         public readonly int totalPoints;
         
-        private GridInfo(float size, float stepSize, int edgeCount, int totalPoints)
+        private GridInfo(float size, float stepSize, int edgeCount)
         {
             this.size = size;
             this.stepSize = stepSize;
-            this.invStepSize = 1.0f / stepSize;
             this.edgeCount = edgeCount;
-            this.totalPoints = totalPoints;
+            
+            this.invStepSize = 1.0f / stepSize;
+            this.totalPoints = edgeCount * edgeCount;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GridInfo FromEdgePointCount(float size, int edgeCount)
         {
             float stepSize = size / (edgeCount - 1);
-            int totalPoints = edgeCount * edgeCount;
 
-            return new GridInfo(size, stepSize, edgeCount, totalPoints);
+            return new GridInfo(size, stepSize, edgeCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,8 +38,7 @@ namespace Roots.World.Chunking
         {
             int edgeCount = size * (subdivisions + 1) + 1;
             float stepSize = 1.0f / (subdivisions + 1);
-            int totalPoints = edgeCount * edgeCount;
-            return new GridInfo(size, stepSize, edgeCount, totalPoints);
+            return new GridInfo(size, stepSize, edgeCount);
         }
     }
 }
