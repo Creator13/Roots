@@ -118,7 +118,8 @@ namespace Roots.World
             {
                 time += Time.deltaTime;
                 float t = time / duration;
-
+                t = math.clamp(t, 0, 1);
+                
                 Radius = math.lerp(startRadius, targetRadius, t);
 
                 instanceCountTarget = GetInstanceCount(Radius, vegetationType.density);
