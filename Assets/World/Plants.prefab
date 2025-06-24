@@ -45,6 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seedProvider: {fileID: 11400000, guid: 4a0bc56586ca2c545b21169d56804d76, type: 2}
-  vegetationType: {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
-  density: 4.5
+  vegetationType: {fileID: 11400000, guid: c91128167dcfdd5428ac2eabca9416b3, type: 2}
   growthTime: 11
