@@ -53,6 +53,7 @@ namespace Roots.World
         private JobHandle jobHandle;
 
         private bool initialized;
+        private bool isVisible;
 
         private void Awake()
         {
@@ -115,61 +116,21 @@ namespace Roots.World
 
             // do some stupid hashing so that not every root starts out with the same rng state
             random = seedProvider.GetRngWithOffset(math.hash((int3)((float3)transform.position * 10000)));
-            int predictedInstanceCount = GetInstanceCount(radius, currentVegetation.density);
+            int predictedInstanceCount = CalcInstanceCount(radius, currentVegetation.density);
             ages.Capacity = predictedInstanceCount;
             transforms = new TransformAccessArray(predictedInstanceCount);
 
             StartCoroutine(GrowCoroutine(radius, growthTime));
             initialized = true;
-        }
-
-        private IEnumerator GrowCoroutine(float targetRadius, float duration)
-        {
-            float startRadius = Radius;
-            float time = 0;
-            while (time < duration)
-            {
-                time += Time.deltaTime;
-                float t = time / duration;
-                t = math.saturate(t);
-
-                Radius = math.lerp(startRadius, targetRadius, t);
-
-                currentInstanceCount = GetInstanceCount(Radius, currentVegetation.density);
-                MatchInstanceTarget();
-
-                yield return null;
-            }
-
-            Radius = targetRadius;
-            currentInstanceCount = GetInstanceCount(Radius, currentVegetation.density);
-            MatchInstanceTarget();
-        }
-
-        private void MatchInstanceTarget()
-        {
-            if (currentInstanceCount > transforms.capacity)
-            {
-                transforms.capacity = currentInstanceCount;
-                ages.Capacity = currentInstanceCount;
-                statuses.Capacity = currentInstanceCount;
-                types.Capacity = currentInstanceCount;
-#if DEBUG
-                if (math.abs(currentInstanceCount - transforms.capacity) > 2) Debug.LogWarning("Growing vegetation root arrays should be avoided.");
-#endif
-            }
-
-            for (int i = 0; i < currentInstanceCount - transforms.length; i++)
-            {
-                AddInstance();
-            }
+            isVisible = true;
         }
 
         public void ReplaceVegetation(VegetationAsset newVegetation)
         {
-            int newInstanceCount = GetInstanceCount(Radius, newVegetation.density);
+            int newInstanceCount = CalcInstanceCount(Radius, newVegetation.density);
             currentVegetation = newVegetation;
 
+            // Replace existing objects/transforms
             if (newInstanceCount < currentInstanceCount)
             {
                 float step = (float)currentInstanceCount / newInstanceCount;
@@ -218,9 +179,53 @@ namespace Roots.World
 
         public void SetVisible(bool visible)
         {
+            isVisible =  visible;
             foreach (var renderer in GetComponentsInChildren<Renderer>())
             {
                 renderer.enabled = visible;
+            }
+        }
+
+        private IEnumerator GrowCoroutine(float targetRadius, float duration)
+        {
+            float startRadius = Radius;
+            float time = 0;
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float t = time / duration;
+                t = math.saturate(t);
+
+                Radius = math.lerp(startRadius, targetRadius, t);
+
+                currentInstanceCount = CalcInstanceCount(Radius, currentVegetation.density);
+                MatchInstanceTarget();
+
+                yield return null;
+            }
+
+            Radius = targetRadius;
+            currentInstanceCount = CalcInstanceCount(Radius, currentVegetation.density);
+            MatchInstanceTarget();
+        }
+
+        private void MatchInstanceTarget()
+        {
+            if (currentInstanceCount > transforms.capacity)
+            {
+#if DEBUG
+                if (currentInstanceCount - transforms.capacity > 2) 
+                    Debug.LogWarning("Growing vegetation root arrays should be avoided for small increments.");
+#endif
+                transforms.capacity = currentInstanceCount;
+                ages.Capacity = currentInstanceCount;
+                statuses.Capacity = currentInstanceCount;
+                types.Capacity = currentInstanceCount;
+            }
+
+            for (int i = 0; i < currentInstanceCount - transforms.length; i++)
+            {
+                AddInstance();
             }
         }
         
@@ -238,14 +243,21 @@ namespace Roots.World
             instanceParent.localScale = Vector3.zero;
 
             Instantiate(currentVegetation.GetPlantType(ref random).prefab, instanceParent, false);
+            if (!isVisible)
+            {
+                foreach (var renderer in instanceParent.GetComponentsInChildren<Renderer>())
+                {
+                    renderer.enabled = false;
+                }
+            }
             return instanceParent;
         }
 
-        private void AddInstance()
+        private void AddInstance(bool fulLGrown = false)
         {
             Transform instance = CreateInstance();
             transforms.Add(instance);
-            ages.Add(2f);
+            ages.Add(fulLGrown ? growthTime : 2f);
             statuses.Add(true);
             types.Add(currentVegetation.GetInstanceID());
         }
@@ -270,7 +282,7 @@ namespace Roots.World
             types[index] = currentVegetation.GetHashCode();
         }
 
-        private static int GetInstanceCount(float radius, float density)
+        private static int CalcInstanceCount(float radius, float density)
         {
             return (int)math.ceil(density * radius * radius * math.PI);
         }
