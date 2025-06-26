@@ -21,6 +21,14 @@ namespace Roots.World
             seedPointSpawner.SetPointCount(vegetationStages.Length);
         }
 
+        private void Update()
+        {
+            if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                CollectSeed(FindAnyObjectByType<PlantSeed>().gameObject);
+            }
+        }
+
         public void RecordTreeFall(Vector3 rootPointPosition)
         {
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Isoline);

@@ -58,6 +58,8 @@ namespace Roots.World
 
         public void SetVisualizationType(WorldType worldType)
         {
+            if (worldType == currentWorldType) return; // Only update if necessary (save compute)
+            
             currentWorldType = worldType;
             UpdateAll();
         }

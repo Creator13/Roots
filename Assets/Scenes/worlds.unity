@@ -3308,10 +3308,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8246129499a7417bb7ab9d2433c9c5e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  speedModifier: 4
   gameStateManager: {fileID: 1158956750}
+  worldVisSwitcher: {fileID: 1158956747}
   player: {fileID: 8997996947377729434}
   tree: {fileID: 0}
-  triggerDistance: 30
+  triggerDistanceMin: 15
+  triggerDistanceMax: 40
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

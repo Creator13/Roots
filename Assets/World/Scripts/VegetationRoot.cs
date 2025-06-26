@@ -54,6 +54,7 @@ namespace Roots.World
 
         private bool initialized;
         private bool isVisible;
+        private bool jobScheduled;
 
         private void Awake()
         {
@@ -67,6 +68,7 @@ namespace Roots.World
         {
             if (!initialized) return;
 
+            jobScheduled = false;
             if (fullGrownInstances != currentInstanceCount)
             {
                 UpdateGrowthJob job = new()
@@ -76,6 +78,7 @@ namespace Roots.World
                     deltaTime = Time.deltaTime,
                 };
                 jobHandle = job.Schedule(transforms);
+                jobScheduled = true;
 
                 // TODO::NOTE: transformaccessarray is only truly parallel if the transforms in it are in different "root objects" (see https://medium.com/toca-boca-tech-blog/unitys-transformaccessarray-internals-and-best-practices-2923546e0b41)
             }
@@ -83,7 +86,7 @@ namespace Roots.World
 
         private void LateUpdate()
         {
-            if (!initialized) return;
+            if (!initialized || !jobScheduled) return;
 
             jobHandle.Complete();
 
@@ -108,6 +111,8 @@ namespace Roots.World
         {
             ages.Dispose();
             transforms.Dispose();
+            types.Dispose();
+            statuses.Dispose();
         }
 
         public void Initialize(float radius, VegetationAsset vegetationAsset = null)
