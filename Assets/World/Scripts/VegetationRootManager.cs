@@ -61,7 +61,24 @@ namespace Roots.World
             isVisible = visible;
             foreach (VegetationRoot root in roots)
             {
-                root.gameObject.SetActive(visible);
+                root.SetVisible(visible);
+            }
+        }
+
+        public void ReplaceAll(VegetationAsset newVegetation)
+        {
+            for (int i = 0; i < roots.Count; i++)
+            {
+                roots[i].ReplaceVegetation(newVegetation);
+            }
+        }
+
+        public void ReplaceAllByKey(int key, VegetationAsset newVegetation)
+        {
+            var set = rootsKeyed[key];
+            for (int i = 0; i < set.Count; i++)
+            {
+                set[i].ReplaceVegetation(newVegetation);
             }
         }
     }

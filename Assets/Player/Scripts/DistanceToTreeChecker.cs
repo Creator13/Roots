@@ -30,7 +30,7 @@ namespace Roots.Player
 
         private void Update()
         {
-            if (!CheckActive()) return;
+            if (!CheckActive() || !tree) return;
             
             float currentDistance = Vector3.Distance(player.position, tree.position);
 
