@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using Roots.World.Chunking;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Jobs;
 using UnityEngine.Serialization;
 using Random = Unity.Mathematics.Random;
@@ -34,16 +35,22 @@ namespace Roots.World
         }
     }
 
+    public enum GrowthType { Circle, Tendrils }
+
     public class VegetationRoot : MonoBehaviour
     {
-        public enum GrowthType { Circle, Tendrils }
+        private const int tendrilCount = 5;
 
         [SerializeField] private RngSeedProvider seedProvider;
-        [FormerlySerializedAs("vegetationType")] [SerializeField] private VegetationAsset currentVegetation;
-        [FormerlySerializedAs("growthTime")] [SerializeField] private float expansionTime = 9;
+        [FormerlySerializedAs("vegetationType")] [SerializeField]
+        private VegetationAsset currentVegetation;
+        [FormerlySerializedAs("growthTime")] [SerializeField]
+        private float expansionTime = 9;
 
         public float Radius { get; private set; }
         public float FullGrownInstanceRatio => fullGrownInstances / (float)currentInstanceCount;
+        public GrowthType GrowthType { get; private set; }
+        public int Key { get; private set; }
 
         private TransformAccessArray transforms;
         private NativeList<float> ages;
@@ -55,6 +62,7 @@ namespace Roots.World
         private Random random;
         private ChunkLoader chunkLoader;
         private JobHandle jobHandle;
+        private int originalVegType;
 
         private bool initialized;
         private bool isVisible;
@@ -119,17 +127,20 @@ namespace Roots.World
             statuses.Dispose();
         }
 
-        public void Initialize(float radius, VegetationAsset vegetationAsset, GrowthType growthType)
+        public void Initialize(float radius, int key, VegetationAsset vegetationAsset, GrowthType growthType, VegetationRoot growTowards = null, Action onTargetReached = null)
         {
             // do some stupid hashing so that not every root starts out with the same rng state
             random = seedProvider.GetRngWithOffset(math.hash((int3)((float3)transform.position * 10000)));
 
             currentVegetation = vegetationAsset;
+            originalVegType = vegetationAsset.GetInstanceID();
+            this.GrowthType = growthType;
+            this.Key = key;
 
             int predictedInstanceCount = growthType switch
             {
                 GrowthType.Circle => CalcInstanceCountCircle(radius, currentVegetation.density),
-                GrowthType.Tendrils => CalcInstanceCountTendrils(5, radius, currentVegetation.density),
+                GrowthType.Tendrils => CalcInstanceCountTendrils(tendrilCount, radius, currentVegetation.density),
             };
             transforms = new TransformAccessArray(predictedInstanceCount);
             GrowContainers(predictedInstanceCount);
@@ -142,12 +153,27 @@ namespace Roots.World
                 GrowthType.Circle => ExpandAreaCoroutine(radius, expansionTime),
                 GrowthType.Tendrils => GrowTendrilsCoroutine(radius, expansionTime)
             };
-            
+
             StartCoroutine(routine);
+
+            if (growthType == GrowthType.Tendrils && growTowards != null)
+            {
+                float length = (transform.position - growTowards.transform.position).magnitude;
+                int instanceCount = (int)math.ceil(length * vegetationAsset.density) * 2;
+                float duration = length / (radius / expansionTime);
+
+                StartCoroutine(GrowTendril(float3.zero, instanceCount, 0, float3.zero, duration, true, growTowards.transform.position, onTargetReached));
+            }
         }
 
         public void ReplaceVegetation(VegetationAsset newVegetation)
         {
+            if (GrowthType == GrowthType.Tendrils)
+            {
+                Debug.LogWarning("Replacing tendril vegetation is not supported.");
+                return;
+            }
+
             int newInstanceCount = CalcInstanceCountCircle(Radius, newVegetation.density);
             currentVegetation = newVegetation;
 
@@ -163,7 +189,7 @@ namespace Roots.World
 
                 for (int i = 0; i < newInstanceCount; i++)
                 {
-                    int index = Mathf.FloorToInt(i * step);
+                    int index = (int)math.floor(i * step);
                     if (index < statuses.Length)
                     {
                         statuses[index] = true;
@@ -209,9 +235,8 @@ namespace Roots.World
 
         private IEnumerator GrowTendrilsCoroutine(float targetLength, float duration)
         {
-            const int tendrilCount = 5;
             const float angleStep = math.PI2 / tendrilCount;
-            
+
             int tendrilStepCount = CalcInstanceCountTendrils(tendrilCount, targetLength, currentVegetation.density);
 
             for (int t = 0; t < tendrilCount; t++)
@@ -226,20 +251,32 @@ namespace Roots.World
             yield return null;
         }
 
-        private IEnumerator GrowTendril(float3 startPos, int instanceCount, float targetLength, float3 baseDirection, float duration)
+        private IEnumerator GrowTendril(
+            float3 startPos, int instanceCount, float targetLength, float3 baseDirection, float duration,
+            bool useTarget = false, float3 endPos = default, Action onTargetReached = null)
         {
-            float stepLength = targetLength / instanceCount;
             float3 pos = startPos;
             float timePerStep = duration / instanceCount;
+
+            float stepLength = targetLength / instanceCount;
+
+            if (useTarget)
+            {
+                float totalDist = math.distance(transform.position, endPos);
+                stepLength = totalDist / instanceCount;
+                baseDirection = math.normalize(endPos - (float3)transform.position);
+            }
 
             float2 noiseSeed = random.NextFloat2(1000f);
 
             for (int i = 0; i < instanceCount; i++)
             {
-                float2 p = noiseSeed + new float2(pos.x, pos.z) * .3f;
+                float2 p = noiseSeed + new float2(pos.x, pos.z) * 0.3f;
 
                 float2 curl = CurlNoise(p, 5f);
-                float3 direction = math.normalize(new float3(curl.x, 0, curl.y) * 15 + baseDirection);
+                float3 curlDir = new float3(curl.x, 0, curl.y);
+
+                float3 direction = math.normalize(curlDir * 15 + baseDirection);
 
                 pos += direction * stepLength;
 
@@ -248,6 +285,8 @@ namespace Roots.World
 
                 yield return new WaitForSeconds(timePerStep);
             }
+
+            onTargetReached?.Invoke();
         }
 
         private IEnumerator ExpandAreaCoroutine(float targetRadius, float duration)
@@ -280,7 +319,7 @@ namespace Roots.World
             statuses.Capacity = targetSize;
             types.Capacity = targetSize;
         }
-        
+
         private void MatchInstanceTarget()
         {
             if (currentInstanceCount > transforms.capacity)
@@ -347,9 +386,11 @@ namespace Roots.World
         private void ReplaceInstanceAt(int index)
         {
             var parent = transforms[index];
+            parent.gameObject.SetActive(true);
             Destroy(parent.GetChild(0).gameObject);
             Instantiate(currentVegetation.GetPlantType(ref random).prefab, parent, false);
             types[index] = currentVegetation.GetInstanceID();
+            statuses[index] = true;
         }
 
         private static int CalcInstanceCountCircle(float radius, float density)
@@ -377,7 +418,7 @@ namespace Roots.World
 
             return new float2(ddx, -ddy);
         }
-        
+
         private void OnDrawGizmosSelected()
         {
             const int segments = 9;
@@ -399,6 +440,11 @@ namespace Roots.World
 
             Gizmos.color = Color.olive;
             Gizmos.DrawLineStrip(points, true);
+        }
+
+        public void ModifyKey(int newKey)
+        {
+            Key = newKey;
         }
     }
 }

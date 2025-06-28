@@ -1702,6 +1702,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 714166162}
   m_CullTransparentMesh: 1
+--- !u!1 &719473272
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 719473274}
+  - component: {fileID: 719473273}
+  m_Layer: 0
+  m_Name: Tracker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &719473273
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 719473272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d38c93d0ca484e379331111b994ec0ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  target: {fileID: 8997996947377729434}
+  interval: 1
+--- !u!4 &719473274
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 719473272}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 42.16471, y: 0, z: 53.15409}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &884243678
 GameObject:
   m_ObjectHideFlags: 0
@@ -2168,13 +2214,17 @@ MonoBehaviour:
   seedPointSpawner: {fileID: 1158956751}
   stepPlantSpawner: {fileID: 8997996947377729452}
   rootManager: {fileID: 1158956749}
+  distanceToTreeChecker: {fileID: 8997996947377729455}
+  tree: {fileID: 0}
   vegetationStages:
   - vegetationAsset: {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
-    growthType: 1
-    radius: 8
-  - vegetationAsset: {fileID: 11400000, guid: c91128167dcfdd5428ac2eabca9416b3, type: 2}
-    growthType: 1
+    growthType: 0
     radius: 5
+  - vegetationAsset: {fileID: 11400000, guid: f7c9692a2cd091848890d963f3eb8a9d, type: 2}
+    growthType: 1
+    radius: 6
+  secondStageReplacementVegetation: {fileID: 11400000, guid: c91128167dcfdd5428ac2eabca9416b3, type: 2}
+  peakVegetation: {fileID: 11400000, guid: 69f141c0d3af5384db8acd446cf5dab7, type: 2}
 --- !u!114 &1158956751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3299,7 +3349,7 @@ MonoBehaviour:
   jitter: 0.1
   noiseScale: 4
   easingFunction: 2
-  timeToGuidanceParticle: 4
+  timeToGuidanceParticle: 2
   guidanceParticleStepInterval: 5
 --- !u!114 &8997996947377729455
 MonoBehaviour:
@@ -3335,3 +3385,4 @@ SceneRoots:
   - {fileID: 437320337}
   - {fileID: 177541716}
   - {fileID: 975723605}
+  - {fileID: 719473274}

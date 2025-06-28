@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f2c160ad0cc425cbe091db329eff493, type: 3}
+  m_Name: Veg_Peak
+  m_EditorClassIdentifier: 
+  plantTypes:
+  - prefab: {fileID: 8078879316959397894, guid: 3944577a3dac63b438b1f5b106dda8aa, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 12
+  - prefab: {fileID: 8078879316959397894, guid: d4e7e4df91532f042a5931325be30ad6, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 12
+  - prefab: {fileID: 8078879316959397894, guid: 3e0d1e4432070f34c81c24454e232596, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 1
+  - prefab: {fileID: 984815204203013483, guid: dad2deeb7d0887042aac124ee84ca021, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 0.2
+  - prefab: {fileID: 633316707852660641, guid: 59d233c612b75e5469a1f6cb73da91a1, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 1
+  - prefab: {fileID: 8078879316959397894, guid: 452a0b0a97f70d54f8fe16f9abd17b71, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 2
+  - prefab: {fileID: 8078879316959397894, guid: 02bc617b977b03e439c187b81f3a3398, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 1
+  - prefab: {fileID: 8078879316959397894, guid: 42a8c5b42c264be46b8455d89b1f6b10, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 1
+  - prefab: {fileID: 4478433808111741674, guid: e4d5df3211b97ff4f89bd0bfeccfddf3, type: 3}
+    mesh: {fileID: 0}
+    material: {fileID: 0}
+    weight: 0.2
+  <density>k__BackingField: 4
+  <growthTime>k__BackingField: 11

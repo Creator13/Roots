@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Roots.World.Chunking;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -19,9 +21,10 @@ namespace Roots.World
         // -1 is global key, 0 is invalid key
         private int currentKey;
         private VegetationAsset currentVegetationAsset;
-        private VegetationRoot.GrowthType currentGrowthType;
+        private GrowthType currentGrowthType;
         private float currentRadius;
-        
+        private VegetationAsset currentReplacementVegetation;
+
         private bool isVegetationVisible = true;
 
         private void Awake()
@@ -40,10 +43,58 @@ namespace Roots.World
             Assert.IsFalse(currentRadius == 0, "Radius cannot be 0.");
 
             if (!isVegetationVisible) return;
-            
+
             VegetationRoot instance = Instantiate(placePrefab, position, Quaternion.identity);
-            instance.Initialize(currentRadius, currentVegetationAsset, currentGrowthType);
+            if (currentGrowthType == GrowthType.Circle)
+            {
+                instance.Initialize(currentRadius, currentKey, currentVegetationAsset, currentGrowthType);
+            }
+            else if (currentGrowthType == GrowthType.Tendrils)
+            {
+                var target = FindRootInRadiusByKey(10, position, 20); // key 10 is a root from stage 1, TODO plz don't hardcode this :( actually this is game logic and should be controlled by the gamemanager i suppose
+                Action onReached = null;
+                if (target && target.Key != currentKey)
+                {
+                    onReached = () => target.ReplaceVegetation(currentReplacementVegetation);
+                }
+
+                instance.Initialize(currentRadius, currentKey, currentVegetationAsset, currentGrowthType, target, onReached);
+            }
+
             StoreRoot(instance, position);
+        }
+
+        private VegetationRoot FindRootInRadiusByKey(int key, Vector3 position, float radius)
+        {
+            float sqrRadius = radius * radius;
+
+            VegetationRoot closest = null;
+            float closestSqrDistance = float.MaxValue;
+            int closestIndex = -1;
+            for (int i = 0; i < rootsByKey[key].Count; i++)
+            {
+                VegetationRoot root = rootsByKey[key][i];
+                // TODO remove bias towards first added
+                float sqrDistance = (position - root.transform.position).sqrMagnitude;
+                if (sqrDistance < sqrRadius)
+                {
+                    if (sqrDistance < closestSqrDistance)
+                    {
+                        closest = root;
+                        closestSqrDistance = sqrDistance;
+                        closestIndex = i;
+                    }
+                }
+            }
+
+            if (closest != null)
+            {
+                rootsByKey[key].RemoveAtSwapBack(closestIndex);
+                EnsureKey(key + 1);
+                rootsByKey[key + 1].Add(closest);
+            }
+
+            return closest;
         }
 
         public void SetCurrentVegetationAsset(VegetationAsset asset)
@@ -51,7 +102,7 @@ namespace Roots.World
             currentVegetationAsset = asset;
         }
 
-        public void SetGrowthType(VegetationRoot.GrowthType growthType)
+        public void SetGrowthType(GrowthType growthType)
         {
             currentGrowthType = growthType;
         }
@@ -61,15 +112,16 @@ namespace Roots.World
             currentRadius = radius;
         }
 
+        public void SetReplacementVegetationAsset(VegetationAsset vegetationAsset)
+        {
+            currentReplacementVegetation = vegetationAsset;
+        }
+
         public void SetKey(int key)
         {
             Assert.IsFalse(key == 0, "0 is an invalid key.");
 
-            if (!rootsByKey.ContainsKey(key))
-            {
-                rootsByKey.Add(key, new List<VegetationRoot>(48));
-            }
-
+            EnsureKey(key);
             currentKey = key;
         }
 
@@ -101,9 +153,9 @@ namespace Roots.World
 
         public void ReplaceInRadius(Vector3 position, float radius, VegetationAsset newVegetation)
         {
-            float sqrRadius =  radius * radius;
+            float sqrRadius = radius * radius;
             position.y = 0;
-            
+
             foreach (var root in roots)
             {
                 Vector3 rootPos = root.transform.position;
@@ -121,12 +173,24 @@ namespace Roots.World
             roots.Add(instance);
 
             int2 coords = chunkLoader.WorldPositionToWorldChunkCoordinates(position);
+            EnsureChunk(coords);
+            rootsByChunk[coords].Add(instance);
+        }
+
+        private void EnsureKey(int key)
+        {
+            if (!rootsByKey.ContainsKey(key))
+            {
+                rootsByKey.Add(key, new List<VegetationRoot>(24));
+            }
+        }
+
+        private void EnsureChunk(int2 coords)
+        {
             if (!rootsByChunk.ContainsKey(coords))
             {
                 rootsByChunk.Add(coords, new List<VegetationRoot>(24));
             }
-
-            rootsByChunk[coords].Add(instance);
         }
     }
 }

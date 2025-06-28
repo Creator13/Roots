@@ -15,6 +15,8 @@ namespace Roots.Player
         [SerializeField] private float triggerDistanceMin = 15;
         [SerializeField] private float triggerDistanceMax = 25;
 
+        private bool ending = false;
+        
         private void OnEnable()
         {
             TreeSpawner.treeSpawned += OnTreeSpawned;
@@ -41,6 +43,7 @@ namespace Roots.Player
                 gameStateManager.EndPlantSpawning();
             }
 
+            if (ending) return;
             if (currentDistance > triggerDistanceMax) return; // we don't have to do anything until the player gets within range
             
             float t = (currentDistance - triggerDistanceMin) / (triggerDistanceMax - triggerDistanceMin);
@@ -59,6 +62,11 @@ namespace Roots.Player
         private bool CheckActive()
         {
             return gameStateManager.IsInPlantingStage;
+        }
+
+        public void SetEnding(bool ending)
+        {
+            this.ending = ending;
         }
     }
 }
