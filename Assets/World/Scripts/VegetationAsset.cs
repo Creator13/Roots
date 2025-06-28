@@ -9,7 +9,6 @@ namespace Roots.World
     [Serializable]
     public struct VegetationType
     {
-        // public GameObject prefab;
         public GameObject prefab;
         public Mesh mesh;
         public Material material;
@@ -24,6 +23,7 @@ namespace Roots.World
 
         [SerializeField] private List<VegetationType> plantTypes = new();
         [field: SerializeField] public float density { get; private set; }
+        [field: SerializeField] public float growthTime { get; private set; }
 
         private float totalWeight = 0;
 

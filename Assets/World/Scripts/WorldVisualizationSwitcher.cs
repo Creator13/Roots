@@ -71,7 +71,7 @@ namespace Roots.World
             UpdateAudioSettings();
 
             seedPointSpawner.SetSeedPathsVisible(currentWorldType is WorldType.Isoline or WorldType.Instanced);
-            rootManager.SetVisible(currentWorldType is WorldType.Mesh);
+            rootManager.SetVegetationVisible(currentWorldType is WorldType.Mesh);
             additionalFogVolume.enabled = currentWorldType is WorldType.Mesh;
         }
 

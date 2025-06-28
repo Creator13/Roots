@@ -22,3 +22,4 @@ MonoBehaviour:
     material: {fileID: 0}
     weight: 1
   <density>k__BackingField: 0.15
+  <growthTime>k__BackingField: 11

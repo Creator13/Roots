@@ -1,9 +1,18 @@
-﻿using Roots.Player;
+﻿using System;
+using Roots.Player;
 using Roots.Util;
 using UnityEngine;
 
 namespace Roots.World
 {
+    [Serializable]
+    public struct VegetationStage
+    {
+        public VegetationAsset vegetationAsset;
+        public VegetationRoot.GrowthType growthType;
+        public float radius;
+    }
+    
     public class GameStateManager : MonoBehaviour
     {
         [SerializeField] private WorldVisualizationSwitcher worldVisSwitcher;
@@ -11,7 +20,7 @@ namespace Roots.World
         [SerializeField] private StepPlantSpawner stepPlantSpawner;
         [SerializeField] private VegetationRootManager rootManager;
 
-        [SerializeField] private VegetationAsset[] vegetationStages;
+        [SerializeField] private VegetationStage[] vegetationStages;
         
         private int seedsFound = 0;
         public bool IsInPlantingStage { get; private set; }
@@ -56,8 +65,11 @@ namespace Roots.World
             worldVisSwitcher.SetVisualizationType(WorldVisualizationSwitcher.WorldType.Mesh);
             stepPlantSpawner.enabled = true;
             
-            rootManager.SetCurrentVegetationAsset(vegetationStages[stageIndex]);
+            VegetationStage stage =  vegetationStages[stageIndex];
+            rootManager.SetCurrentVegetationAsset(stage.vegetationAsset);
             rootManager.SetKey(stageIndex + 1);
+            rootManager.SetGrowthType(stage.growthType);
+            rootManager.SetRadius(stage.radius);
         }
 
         public void EndPlantSpawning()

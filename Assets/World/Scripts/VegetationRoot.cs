@@ -4,6 +4,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Jobs;
 using UnityEngine.Serialization;
@@ -12,7 +13,7 @@ using Random = Unity.Mathematics.Random;
 namespace Roots.World
 {
     [BurstCompile]
-    public struct UpdateGrowthJob : IJobParallelForTransform
+    public struct UpdateInstanceGrowthJob : IJobParallelForTransform
     {
         public NativeArray<float> ages;
         public float growthTime;
@@ -23,7 +24,8 @@ namespace Roots.World
             float veggieAge = ages[i];
             if (veggieAge < growthTime)
             {
-                ages[i] = veggieAge += deltaTime;
+                veggieAge += deltaTime;
+                ages[i] = veggieAge;
                 float progress = veggieAge / growthTime;
                 progress = math.saturate(progress);
 
@@ -34,9 +36,11 @@ namespace Roots.World
 
     public class VegetationRoot : MonoBehaviour
     {
+        public enum GrowthType { Circle, Tendrils }
+
         [SerializeField] private RngSeedProvider seedProvider;
         [FormerlySerializedAs("vegetationType")] [SerializeField] private VegetationAsset currentVegetation;
-        [SerializeField] private float growthTime = 9;
+        [FormerlySerializedAs("growthTime")] [SerializeField] private float expansionTime = 9;
 
         public float Radius { get; private set; }
         public float FullGrownInstanceRatio => fullGrownInstances / (float)currentInstanceCount;
@@ -54,7 +58,7 @@ namespace Roots.World
 
         private bool initialized;
         private bool isVisible;
-        private bool jobScheduled;
+        private bool jobScheduledThisFrame;
 
         private void Awake()
         {
@@ -68,17 +72,17 @@ namespace Roots.World
         {
             if (!initialized) return;
 
-            jobScheduled = false;
+            jobScheduledThisFrame = false;
             if (fullGrownInstances != currentInstanceCount)
             {
-                UpdateGrowthJob job = new()
+                UpdateInstanceGrowthJob job = new()
                 {
                     ages = ages.AsArray(),
-                    growthTime = growthTime,
+                    growthTime = currentVegetation.growthTime,
                     deltaTime = Time.deltaTime,
                 };
                 jobHandle = job.Schedule(transforms);
-                jobScheduled = true;
+                jobScheduledThisFrame = true;
 
                 // TODO::NOTE: transformaccessarray is only truly parallel if the transforms in it are in different "root objects" (see https://medium.com/toca-boca-tech-blog/unitys-transformaccessarray-internals-and-best-practices-2923546e0b41)
             }
@@ -86,7 +90,7 @@ namespace Roots.World
 
         private void LateUpdate()
         {
-            if (!initialized || !jobScheduled) return;
+            if (!initialized || !jobScheduledThisFrame) return;
 
             jobHandle.Complete();
 
@@ -98,7 +102,7 @@ namespace Roots.World
             int fullGrownInstanceCount = 0;
             for (int i = 0; i < ages.Length; i++)
             {
-                if (ages[i] >= growthTime)
+                if (ages[i] >= currentVegetation.growthTime)
                 {
                     fullGrownInstanceCount++;
                 }
@@ -115,24 +119,36 @@ namespace Roots.World
             statuses.Dispose();
         }
 
-        public void Initialize(float radius, VegetationAsset vegetationAsset = null)
+        public void Initialize(float radius, VegetationAsset vegetationAsset, GrowthType growthType)
         {
-            if (vegetationAsset != null) currentVegetation = vegetationAsset;
-
             // do some stupid hashing so that not every root starts out with the same rng state
             random = seedProvider.GetRngWithOffset(math.hash((int3)((float3)transform.position * 10000)));
-            int predictedInstanceCount = CalcInstanceCount(radius, currentVegetation.density);
-            ages.Capacity = predictedInstanceCount;
-            transforms = new TransformAccessArray(predictedInstanceCount);
 
-            StartCoroutine(GrowCoroutine(radius, growthTime));
+            currentVegetation = vegetationAsset;
+
+            int predictedInstanceCount = growthType switch
+            {
+                GrowthType.Circle => CalcInstanceCountCircle(radius, currentVegetation.density),
+                GrowthType.Tendrils => CalcInstanceCountTendrils(5, radius, currentVegetation.density),
+            };
+            transforms = new TransformAccessArray(predictedInstanceCount);
+            GrowContainers(predictedInstanceCount);
+
             initialized = true;
             isVisible = true;
+
+            IEnumerator routine = growthType switch
+            {
+                GrowthType.Circle => ExpandAreaCoroutine(radius, expansionTime),
+                GrowthType.Tendrils => GrowTendrilsCoroutine(radius, expansionTime)
+            };
+            
+            StartCoroutine(routine);
         }
 
         public void ReplaceVegetation(VegetationAsset newVegetation)
         {
-            int newInstanceCount = CalcInstanceCount(Radius, newVegetation.density);
+            int newInstanceCount = CalcInstanceCountCircle(Radius, newVegetation.density);
             currentVegetation = newVegetation;
 
             // Replace existing objects/transforms
@@ -153,7 +169,7 @@ namespace Roots.World
                         statuses[index] = true;
                     }
                 }
-                
+
                 for (int i = 0; i < transforms.length; i++)
                 {
                     if (statuses[i])
@@ -175,23 +191,66 @@ namespace Roots.World
                     ReplaceAtOrWake(i);
                     statuses[i] = true;
                 }
-                
+
                 MatchInstanceTarget();
             }
-            
+
             currentInstanceCount = newInstanceCount;
         }
 
         public void SetVisible(bool visible)
         {
-            isVisible =  visible;
+            isVisible = visible;
             foreach (var renderer in GetComponentsInChildren<Renderer>())
             {
                 renderer.enabled = visible;
             }
         }
 
-        private IEnumerator GrowCoroutine(float targetRadius, float duration)
+        private IEnumerator GrowTendrilsCoroutine(float targetLength, float duration)
+        {
+            const int tendrilCount = 5;
+            const float angleStep = math.PI2 / tendrilCount;
+            
+            int tendrilStepCount = CalcInstanceCountTendrils(tendrilCount, targetLength, currentVegetation.density);
+
+            for (int t = 0; t < tendrilCount; t++)
+            {
+                float angle = angleStep * t + random.NextFloat(-0.2f, 0.2f);
+                float3 baseDirection = new float3(math.cos(angle), 0, math.sin(angle));
+                float3 startPos = baseDirection * .1f;
+
+                StartCoroutine(GrowTendril(startPos, (int)math.ceil(tendrilStepCount / (float)tendrilCount), targetLength, baseDirection, duration));
+            }
+
+            yield return null;
+        }
+
+        private IEnumerator GrowTendril(float3 startPos, int instanceCount, float targetLength, float3 baseDirection, float duration)
+        {
+            float stepLength = targetLength / instanceCount;
+            float3 pos = startPos;
+            float timePerStep = duration / instanceCount;
+
+            float2 noiseSeed = random.NextFloat2(1000f);
+
+            for (int i = 0; i < instanceCount; i++)
+            {
+                float2 p = noiseSeed + new float2(pos.x, pos.z) * .3f;
+
+                float2 curl = CurlNoise(p, 5f);
+                float3 direction = math.normalize(new float3(curl.x, 0, curl.y) * 15 + baseDirection);
+
+                pos += direction * stepLength;
+
+                AddInstance(pos);
+                currentInstanceCount++;
+
+                yield return new WaitForSeconds(timePerStep);
+            }
+        }
+
+        private IEnumerator ExpandAreaCoroutine(float targetRadius, float duration)
         {
             float startRadius = Radius;
             float time = 0;
@@ -203,40 +262,45 @@ namespace Roots.World
 
                 Radius = math.lerp(startRadius, targetRadius, t);
 
-                currentInstanceCount = CalcInstanceCount(Radius, currentVegetation.density);
+                currentInstanceCount = CalcInstanceCountCircle(Radius, currentVegetation.density);
                 MatchInstanceTarget();
 
                 yield return null;
             }
 
             Radius = targetRadius;
-            currentInstanceCount = CalcInstanceCount(Radius, currentVegetation.density);
+            currentInstanceCount = CalcInstanceCountCircle(Radius, currentVegetation.density);
             MatchInstanceTarget();
         }
 
+        private void GrowContainers(int targetSize)
+        {
+            transforms.capacity = targetSize;
+            ages.Capacity = targetSize;
+            statuses.Capacity = targetSize;
+            types.Capacity = targetSize;
+        }
+        
         private void MatchInstanceTarget()
         {
             if (currentInstanceCount > transforms.capacity)
             {
 #if DEBUG
-                if (currentInstanceCount - transforms.capacity > 2) 
+                if (currentInstanceCount - transforms.capacity > 2)
                     Debug.LogWarning("Growing vegetation root arrays should be avoided for small increments.");
 #endif
-                transforms.capacity = currentInstanceCount;
-                ages.Capacity = currentInstanceCount;
-                statuses.Capacity = currentInstanceCount;
-                types.Capacity = currentInstanceCount;
+                GrowContainers(currentInstanceCount);
             }
 
             for (int i = 0; i < currentInstanceCount - transforms.length; i++)
             {
-                AddInstance();
+                float3 relativePos = random.NextFloat3Direction() * (math.sqrt(random.NextFloat()) * Radius);
+                AddInstance(relativePos);
             }
         }
-        
-        private Transform CreateInstance()
+
+        private Transform CreateInstance(float3 relativePos)
         {
-            float3 relativePos = random.NextFloat3Direction() * (math.sqrt(random.NextFloat()) * Radius);
             float rotation = random.NextFloat(360);
 
             Vector3 pos = transform.position + (Vector3)relativePos;
@@ -255,14 +319,15 @@ namespace Roots.World
                     renderer.enabled = false;
                 }
             }
+
             return instanceParent;
         }
 
-        private void AddInstance(bool fulLGrown = false)
+        private void AddInstance(float3 relativePos, bool fulLGrown = false)
         {
-            Transform instance = CreateInstance();
+            Transform instance = CreateInstance(relativePos);
             transforms.Add(instance);
-            ages.Add(fulLGrown ? growthTime : 2f);
+            ages.Add(fulLGrown ? currentVegetation.growthTime : 2f);
             statuses.Add(true);
             types.Add(currentVegetation.GetInstanceID());
         }
@@ -278,20 +343,41 @@ namespace Roots.World
                 ReplaceInstanceAt(index);
             }
         }
-        
+
         private void ReplaceInstanceAt(int index)
         {
             var parent = transforms[index];
             Destroy(parent.GetChild(0).gameObject);
             Instantiate(currentVegetation.GetPlantType(ref random).prefab, parent, false);
-            types[index] = currentVegetation.GetHashCode();
+            types[index] = currentVegetation.GetInstanceID();
         }
 
-        private static int CalcInstanceCount(float radius, float density)
+        private static int CalcInstanceCountCircle(float radius, float density)
         {
             return (int)math.ceil(density * radius * radius * math.PI);
         }
 
+        private static int CalcInstanceCountTendrils(int tendrilCount, float radius, float density)
+        {
+            return (int)math.ceil(tendrilCount * radius * density) * 2;
+        }
+
+        private static float2 CurlNoise(float2 p, float frequency = 1f, float epsilon = 0.01f)
+        {
+            float2 dx = new float2(epsilon, 0);
+            float2 dy = new float2(0, epsilon);
+
+            float a = noise.cnoise((p + dy) * frequency);
+            float b = noise.cnoise((p - dy) * frequency);
+            float c = noise.cnoise((p + dx) * frequency);
+            float d = noise.cnoise((p - dx) * frequency);
+
+            float ddx = (a - b) * 0.5f;
+            float ddy = (c - d) * 0.5f;
+
+            return new float2(ddx, -ddy);
+        }
+        
         private void OnDrawGizmosSelected()
         {
             const int segments = 9;

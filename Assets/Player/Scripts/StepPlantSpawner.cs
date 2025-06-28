@@ -118,7 +118,7 @@ namespace Roots.Player
 
         private void SpawnPlantPayload(Transform particle, Vector3 endPos)
         {
-            rootManager.PlaceNew(endPos, 5);
+            rootManager.PlaceNew(endPos);
         }
 
         private IEnumerator MoveParticle(ObjectPool<Transform> pool, Vector3 from, Vector3 to, float timeToDestroy = 0, Action<Transform, Vector3> onDestinationReached = null)

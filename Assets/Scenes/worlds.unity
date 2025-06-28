@@ -151,10 +151,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 888673304}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -131.4, y: -0.378}
-  m_SizeDelta: {x: 44, y: 44}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -48, y: 0}
+  m_SizeDelta: {x: 64, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &70492794
 MonoBehaviour:
@@ -1771,8 +1771,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 232}
-  m_SizeDelta: {x: 334.7072, y: 64.2394}
+  m_AnchoredPosition: {x: 7.2633, y: 210.02911}
+  m_SizeDelta: {x: 195.1369, y: 81}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &888673305
 MonoBehaviour:
@@ -2150,6 +2150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 969661e0967f40edbd631227027b66e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  chunkLoader: {fileID: 1158956743}
   placePrefab: {fileID: 1235165070994915260, guid: 9f5ec0ac7b01bb94b8790d0fcbb06c50, type: 3}
 --- !u!114 &1158956750
 MonoBehaviour:
@@ -2168,8 +2169,12 @@ MonoBehaviour:
   stepPlantSpawner: {fileID: 8997996947377729452}
   rootManager: {fileID: 1158956749}
   vegetationStages:
-  - {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
-  - {fileID: 11400000, guid: c91128167dcfdd5428ac2eabca9416b3, type: 2}
+  - vegetationAsset: {fileID: 11400000, guid: fb66dcdd364ea884ba2857a8178384bf, type: 2}
+    growthType: 1
+    radius: 8
+  - vegetationAsset: {fileID: 11400000, guid: c91128167dcfdd5428ac2eabca9416b3, type: 2}
+    growthType: 1
+    radius: 5
 --- !u!114 &1158956751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2274,10 +2279,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 888673304}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 75.64616, y: 0}
+  m_SizeDelta: {x: 100.3896, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1480607246
 MonoBehaviour:
@@ -2299,7 +2304,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Interact
+  m_text: 'Press
 
 '
   m_isRightToLeft: 0
